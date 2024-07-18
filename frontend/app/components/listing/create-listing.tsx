@@ -36,7 +36,7 @@ export default function Component() {
       <div className="flex flex-col gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Edit Post</CardTitle>
+            <CardTitle>Create Listing</CardTitle>
           </CardHeader>
           <CardContent>
             <form className="grid gap-4">

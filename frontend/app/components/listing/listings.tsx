@@ -1,10 +1,17 @@
 "use client"
 import { Button } from "@/components/ui/button"
 import React, { useEffect, useState } from "react"
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
+import { Calendar } from "@/components/ui/calendar"
+import { cn } from "@/lib/utils"
 import {
     MessageSquareShare,
     BarChartHorizontal,
+    Calendar as CalendarIcon
   } from "lucide-react"
+import { Card, CardContent } from "@/components/ui/card"
+import { format } from "date-fns"
 
 const initialListings = [
   {
@@ -39,6 +46,8 @@ const initialListings = [
 
 export default function Listings() {
   const [listings, setListings] = useState(initialListings.map(listing => ({ ...listing, isAvailable: false })))
+  const [startDate, setStartDate] = useState<Date | null>(null)
+  const [endDate, setEndDate] = useState<Date | null>(null)
 
   useEffect(() => {
     setListings(listings.map(listing => ({
@@ -47,31 +56,84 @@ export default function Listings() {
     })))
   }, [])
 
-  return (
-    <main className="w-full py-5">
-      <div className="container px-4 md:px-6">
-        <div className="flex flex-col items-center justify-center space-y-6 text-center">
-          <div className="space-y-3">
-            <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">Explore Unique Trips</h2>
-            <p className="max-w-[700px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-              Participate. Meet. Split costs.
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4">
-            <Button variant="outline" size="sm" className="px-4 py-2">
-              All
-            </Button>
-            <Button variant="outline" size="sm" className="px-4 py-2">
-              Electronics
-            </Button>
-            <Button variant="outline" size="sm" className="px-4 py-2">
-              Home & Garden
-            </Button>
-            <Button variant="outline" size="sm" className="px-4 py-2">
-              Fashion
-            </Button>
-          </div>
+  const FilterBar = (
+    <Card>
+      <CardContent className="flex justify-center items-center p-4">
+        <div className="flex flex-wrap items-center justify-center gap-4">
+          <Select>
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Country" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="usa">United States</SelectItem>
+              <SelectItem value="canada">Canada</SelectItem>
+              <SelectItem value="mexico">Mexico</SelectItem>
+              <SelectItem value="uk">United Kingdom</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select>
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="City" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="newyork">New York</SelectItem>
+              <SelectItem value="london">London</SelectItem>
+              <SelectItem value="paris">Paris</SelectItem>
+              <SelectItem value="tokyo">Tokyo</SelectItem>
+            </SelectContent>
+          </Select>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "w-[150px] justify-start text-left font-normal",
+                  !startDate && "text-muted-foreground"
+                )}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {startDate ? format(startDate, "PPP") : <span>Start date</span>}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar mode="single" onSelect={(day) => day && setStartDate(day)} />
+            </PopoverContent>
+          </Popover>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "w-[150px] justify-start text-left font-normal",
+                  !endDate && "text-muted-foreground"
+                )}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {endDate ? format(endDate, "PPP") : <span>End date</span>}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar mode="single" onSelect={(day) => day && setEndDate(day)} />
+            </PopoverContent>
+          </Popover>
         </div>
+      </CardContent>
+    </Card>
+  )
+
+  return (
+    <main className="w-full">
+      <div className="flex flex-col items-center justify-center space-y-4 text-center">
+        <div className="space-y-3">
+          <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">Explore Unique Trips</h2>
+          <p className="max-w-[700px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+            Participate. Meet. Split costs.
+          </p>
+        </div>
+        <div className="flex flex-col col-1 sm:col-2 gap-4 sm:flex-row sm:items-center sm:justify-between p-2">
+          {FilterBar}
+        </div>
+      </div>
       <section className="grid grid-cols-1 gap-8 mt-4 md:grid-cols-2 lg:grid-cols-3">
         {listings.map((listing) => (
           <div key={listing.id} className="overflow-hidden rounded-lg bg-background shadow">
@@ -106,7 +168,6 @@ export default function Listings() {
           </div>
         ))}
       </section>
-      </div>
     </main>
   )
 }

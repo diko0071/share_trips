@@ -51,9 +51,9 @@ export default function UserProfile() {
   }, [])
 
   return (
-    <div className="flex flex-col items-left justify-left min-h-screen p-4">
-      <div className="flex flex-col md:flex-row w-full max-w-full bg-white">
-        <div className="w-full md:w-1/4 p-4">
+    <div className="flex flex-col items-left justify-left min-h-screen">
+      <div className="flex flex-col md:flex-row w-full max-w-full bg-white gap-10">
+        <div className="w-full md:w-3/4">
           <Card>
             <CardContent>
               <div className="flex flex-col items-start mt-4">
@@ -69,14 +69,14 @@ export default function UserProfile() {
             </CardContent>
           </Card>
         </div>
-        <div className="w-full md:w-3/4 p-4">
+        <div className="w-full md:w-3/4">
           <Tabs defaultValue="active" className="w-full">
             <TabsList className="flex justify-end">
               <TabsTrigger value="active">Active</TabsTrigger>
               <TabsTrigger value="archived">Archived</TabsTrigger>
             </TabsList>
             <TabsContent value="active">
-              <div className="grid grid-cols-1 gap-8 p-4 md:grid-cols-1 lg:grid-cols-2">
+              <div className="grid grid-cols-1 gap-8 md:grid-cols-1 lg:grid-cols-1">
                 {listings.map((listing) => (
                   <Card key={listing.id} className="overflow-hidden rounded-lg bg-background shadow">
                     <div className="relative h-48">
