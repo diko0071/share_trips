@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { Toaster } from "sonner";
+import { MenuBar } from "./components/menu-bar/menu-bar";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Oura AI Extension",
-  description: "Oura AI Extension",
+  title: "Airbnb Sharing",
+  description: "Airbnb Sharing",
 };
 
 export default function RootLayout({
@@ -17,9 +19,11 @@ export default function RootLayout({
   return (  
     <html lang="en">
       <body className={`${inter.className}`}>
+        <MenuBar />
         <main className="grid w-full h-full">
           {children}
         </main>
+        <Toaster />
       </body>
     </html>
   );
