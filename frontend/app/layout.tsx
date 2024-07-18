@@ -20,7 +20,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.className}`}>
         <MenuBar />
-        <main className="grid w-full h-full">
+        <main className="mt-8 grid w-full h-full">
           {children}
         </main>
         <Toaster />

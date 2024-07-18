@@ -32,7 +32,7 @@ export default function Component() {
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6 md:p-8 lg:p-12">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
       <div className="flex flex-col gap-6">
         <Card>
           <CardHeader>

@@ -37,7 +37,7 @@ const initialListings = [
   },
 ]
 
-export default function Component() {
+export default function Listings() {
   const [listings, setListings] = useState(initialListings.map(listing => ({ ...listing, isAvailable: false })))
 
   useEffect(() => {
@@ -48,8 +48,31 @@ export default function Component() {
   }, [])
 
   return (
-    <>
-      <section className="mt-8 grid grid-cols-1 gap-8 p-4 md:grid-cols-2 lg:grid-cols-3">
+    <main className="w-full py-5">
+      <div className="container px-4 md:px-6">
+        <div className="flex flex-col items-center justify-center space-y-6 text-center">
+          <div className="space-y-3">
+            <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">Explore Unique Trips</h2>
+            <p className="max-w-[700px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+              Participate. Meet. Split costs.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4">
+            <Button variant="outline" size="sm" className="px-4 py-2">
+              All
+            </Button>
+            <Button variant="outline" size="sm" className="px-4 py-2">
+              Electronics
+            </Button>
+            <Button variant="outline" size="sm" className="px-4 py-2">
+              Home & Garden
+            </Button>
+            <Button variant="outline" size="sm" className="px-4 py-2">
+              Fashion
+            </Button>
+          </div>
+        </div>
+      <section className="grid grid-cols-1 gap-8 mt-4 md:grid-cols-2 lg:grid-cols-3">
         {listings.map((listing) => (
           <div key={listing.id} className="overflow-hidden rounded-lg bg-background shadow">
             <div className="relative h-48">
@@ -83,6 +106,7 @@ export default function Component() {
           </div>
         ))}
       </section>
-    </>
+      </div>
+    </main>
   )
 }

@@ -52,26 +52,30 @@ export default function UserProfile() {
 
   return (
     <div className="flex flex-col items-left justify-left min-h-screen p-4">
-      <div className="flex flex-col md:flex-row w-full max-w-6xl bg-white">
+      <div className="flex flex-col md:flex-row w-full max-w-full bg-white">
         <div className="w-full md:w-1/4 p-4">
-          <div className="flex flex-col items-center">
-            <Avatar className="w-24 h-24">
-              <AvatarImage src="/placeholder-user.jpg" />
-              <AvatarFallback>U</AvatarFallback>
-            </Avatar>
-            <h2 className="mt-4 text-xl font-semibold">User</h2>
-            <Button variant="outline" className="mt-4">
-              Edit Profile
-            </Button>
-          </div>
+          <Card>
+            <CardContent>
+              <div className="flex flex-col items-start mt-4">
+                <Avatar className="w-24 h-24 rounded-[10px]">
+                  <AvatarImage src="/dima.jpeg" />
+                  <AvatarFallback>D</AvatarFallback>
+              </Avatar>
+                <h2 className="mt-4 text-xl font-semibold">Dmitry Korzhov</h2>
+                <Button variant="outline" className="mt-4">
+                  Edit Profile
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
         <div className="w-full md:w-3/4 p-4">
-          <Tabs defaultValue="recent" className="w-full">
+          <Tabs defaultValue="active" className="w-full">
             <TabsList className="flex justify-end">
-              <TabsTrigger value="recent">Recent</TabsTrigger>
-              <TabsTrigger value="stars">Stars</TabsTrigger>
+              <TabsTrigger value="active">Active</TabsTrigger>
+              <TabsTrigger value="archived">Archived</TabsTrigger>
             </TabsList>
-            <TabsContent value="recent">
+            <TabsContent value="active">
               <div className="grid grid-cols-1 gap-8 p-4 md:grid-cols-1 lg:grid-cols-2">
                 {listings.map((listing) => (
                   <Card key={listing.id} className="overflow-hidden rounded-lg bg-background shadow">
