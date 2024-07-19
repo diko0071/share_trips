@@ -3,16 +3,64 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
+
+import {
+  Trash2
+} from "lucide-react"
 
 export default function Register() {
   const [step, setStep] = useState(1)
-  const totalSteps = 5
+  const totalSteps = 4
+  const [links, setLinks] = useState([{ id: 1, value: "" }])
+  const [password, setPassword] = useState("")
+  const [repeatPassword, setRepeatPassword] = useState("")
+  const [passwordError, setPasswordError] = useState("")
+  const [email, setEmail] = useState("")
+  const [emailError, setEmailError] = useState("")
+
   const handleNext = () => {
-    setStep((prev) => prev + 1)
+    if (step < totalSteps && !passwordError) {
+      setStep((prev) => prev + 1)
+    }
   }
+
   const handlePrev = () => {
-    setStep((prev) => prev - 1)
+    if (step > 1) {
+      setStep((prev) => prev - 1)
+    }
   }
+
+  const handleAddLink = () => {
+    setLinks([...links, { id: links.length + 1, value: "" }])
+  }
+
+  const handleLinkChange = (id: number, value: string) => {
+    setLinks(links.map(link => link.id === id ? { ...link, value } : link))
+  }
+
+  const handleRemoveLink = (id: number) => {
+    setLinks(links.filter(link => link.id !== id))
+  }
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPassword(e.target.value)
+    if (repeatPassword && e.target.value !== repeatPassword) {
+      setPasswordError("Passwords do not match")
+    } else {
+      setPasswordError("")
+    }
+  }
+
+  const handleRepeatPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setRepeatPassword(e.target.value)
+    if (password && e.target.value !== password) {
+      setPasswordError("Passwords do not match")
+    } else {
+      setPasswordError("")
+    }
+  }
+
   return (
     <div className="max-w-5xl mx-auto">
       <div className="mb-8">
@@ -38,114 +86,143 @@ export default function Register() {
             </div>
           ))}
         </div>
-      </div>
-      {step === 1 && (
+        </div>
+        {step === 1 && (
         <div>
           <h2 className="text-2xl font-bold mb-2">Step 1: Personal Information</h2>
           <p className="text-gray-500 mb-4">Please provide your personal details.</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="firstName">First Name</Label>
-              <Input id="firstName" placeholder="Enter your first name" />
-            </div>
-            <div>
-              <Label htmlFor="lastName">Last Name</Label>
-              <Input id="lastName" placeholder="Enter your last name" />
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
             <div>
               <Label htmlFor="email">Email</Label>
               <Input id="email" type="email" placeholder="Enter your email" />
             </div>
             <div>
-              <Label htmlFor="phone">Phone</Label>
-              <Input id="phone" placeholder="Enter your phone number" />
+              <Label htmlFor="name">Name</Label>
+              <Input id="name" placeholder="Enter your name" />
             </div>
+            <div>
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="Enter your password"
+                value={password}
+                onChange={handlePasswordChange}
+              />
+            </div>
+            <div>
+            <Label htmlFor="repeat-password">Repeat Password</Label>
+            <Input
+              id="repeat-password"
+              type="password"
+              placeholder="Repeat your password"
+              value={repeatPassword}
+              onChange={handleRepeatPasswordChange}
+            />
+            {passwordError && <p className="text-red-500 text-sm mt-2">{passwordError}</p>}
+          </div>
           </div>
         </div>
       )}
       {step === 2 && (
         <div>
-          <h2 className="text-2xl font-bold mb-2">Step 2: Address</h2>
-          <p className="text-gray-500 mb-4">Please provide your mailing address.</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <h2 className="text-2xl font-bold mb-2">Step 2: Additional Information</h2>
+          <p className="text-gray-500 mb-4">Please provide additional details.</p>
+          <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
             <div>
-              <Label htmlFor="street">Street Address</Label>
-              <Input id="street" placeholder="Enter your street address" />
-            </div>
-            <div>
-              <Label htmlFor="city">City</Label>
-              <Input id="city" placeholder="Enter your city" />
-            </div>
-            <div>
-              <Label htmlFor="state">State/Province</Label>
-              <Input id="state" placeholder="Enter your state/province" />
-            </div>
-            <div>
-              <Label htmlFor="zip">Zip/Postal Code</Label>
-              <Input id="zip" placeholder="Enter your zip/postal code" />
-            </div>
-          </div>
-        </div>
-      )}
-      {step === 3 && (
-        <div>
-          <h2 className="text-2xl font-bold mb-2">Step 3: Employment</h2>
-          <p className="text-gray-500 mb-4">Please provide your employment details.</p>
-          <div className="grid grid-cols-1 gap-4">
-            <div>
-              <Label htmlFor="company">Company</Label>
-              <Input id="company" placeholder="Enter your company name" />
-            </div>
-            <div>
-              <Label htmlFor="jobTitle">Job Title</Label>
-              <Input id="jobTitle" placeholder="Enter your job title" />
-            </div>
-            <div>
-              <Label htmlFor="income">Annual Income</Label>
-              <Input id="income" type="number" placeholder="Enter your annual income" />
-            </div>
-          </div>
-        </div>
-      )}
-      {step === 4 && (
-        <div>
-          <h2 className="text-2xl font-bold mb-2">Step 4: Preferences</h2>
-          <p className="text-gray-500 mb-4">Please select your preferences.</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="interests">Interests</Label>
+              <Label htmlFor="sex">Sex</Label>
               <Select>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select your interests" />
+                  <SelectValue placeholder="Select your sex" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="sports">Sports</SelectItem>
-                  <SelectItem value="music">Music</SelectItem>
-                  <SelectItem value="travel">Travel</SelectItem>
-                  <SelectItem value="reading">Reading</SelectItem>
-                  <SelectItem value="cooking">Cooking</SelectItem>
+                  <SelectItem value="male">Male</SelectItem>
+                  <SelectItem value="female">Female</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="language">Language</Label>
+              <Select>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select your language" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="english">English</SelectItem>
+                  <SelectItem value="spanish">Spanish</SelectItem>
+                  <SelectItem value="french">French</SelectItem>
+                  <SelectItem value="german">German</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="travelStatus">Travel Status</Label>
+              <Select>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select your travel status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ready">Ready Now</SelectItem>
+                  <SelectItem value="notReady">Not Ready</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
         </div>
       )}
-      {step === 5 && (
+      {step === 3 && (
         <div>
-          <h2 className="text-2xl font-bold mb-2">Step 5: Review and Submit</h2>
-          <p className="text-gray-500 mb-4">Please review your information and submit the form.</p>
-          <div className="space-y-4" />
-          <Button type="submit">Submit</Button>
+          <h2 className="text-2xl font-bold mb-2">Step 3: Description and Hobbies</h2>
+          <p className="text-gray-500 mb-4">Please provide a description and your hobbies.</p>
+          <div className="grid grid-cols-1 gap-4">
+            <div>
+              <Label htmlFor="description">Description</Label>
+              <Textarea id="description" placeholder="Enter a description about yourself" />
+            </div>
+            <div>
+              <Label htmlFor="hobbies">Hobbies</Label>
+              <Textarea id="hobbies" placeholder="Enter your hobbies" />
+            </div>
+          </div>
+        </div>
+      )}
+      {step === 4 && (
+        <div>
+          <h2 className="text-2xl font-bold mb-2">Step 4: Links</h2>
+          <p className="text-gray-500 mb-4">Please provide your links.</p>
+          <div className="space-y-4">
+            {links.map(link => (
+              <div key={link.id}>
+                <Label htmlFor={`link-${link.id}`}>Link {link.id}</Label>
+                <div className="flex items-center">
+                  <Input
+                    id={`link-${link.id}`}
+                    placeholder="Enter a link"
+                    value={link.value}
+                    onChange={(e) => handleLinkChange(link.id, e.target.value)}
+                    className="flex-grow"
+                  />
+                  <Button variant="outline" size="icon" onClick={() => handleRemoveLink(link.id)} className="ml-2">
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+            <Button variant="link" onClick={handleAddLink}>Add Link</Button>
+          </div>
         </div>
       )}
       <div className="mt-8 flex justify-between">
-        {step > 1 && (
-          <Button variant="outline" onClick={handlePrev}>
-            Previous
-          </Button>
+        <Button variant="outline" onClick={handlePrev} disabled={step === 1}>
+          Previous
+        </Button>
+        {step < totalSteps ? (
+          <Button onClick={handleNext} disabled={!!passwordError}>Next</Button>
+        ) : (
+          <Button type="submit" disabled={!!passwordError}>Register</Button>
         )}
-        {step < totalSteps && <Button onClick={handleNext}>Next</Button>}
-        </div>
       </div>
+    </div>
   )
 }
