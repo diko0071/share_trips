@@ -173,16 +173,16 @@ export default function Register() {
       )}
       {step === 3 && (
         <div>
-          <h2 className="text-2xl font-bold mb-2">Step 3: Description and Hobbies</h2>
-          <p className="text-gray-500 mb-4">Please provide a description and your hobbies.</p>
+          <h2 className="text-2xl font-bold mb-2">Step 3: About you and co-liver preferences</h2>
+          <p className="text-gray-500 mb-4">Please add 3-5 senteces about yourself and your co-liver preferences</p>
           <div className="grid grid-cols-1 gap-4">
             <div>
-              <Label htmlFor="description">Description</Label>
-              <Textarea id="description" placeholder="Enter a description about yourself" />
+              <Label htmlFor="about">About you</Label>
+              <Textarea id="about" placeholder="Who are you? Write 3-5 senteces about yourself!" />
             </div>
             <div>
-              <Label htmlFor="hobbies">Hobbies</Label>
-              <Textarea id="hobbies" placeholder="Enter your hobbies" />
+              <Label htmlFor="preferences">Co-liver preferences</Label>
+              <Textarea id="preferences" placeholder="Why you would live to live with?" />
             </div>
           </div>
         </div>
