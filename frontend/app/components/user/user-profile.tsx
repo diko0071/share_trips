@@ -4,9 +4,14 @@ import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
 import React, { useEffect, useState } from "react"
+import { Badge } from "@/components/ui/badge"
 import {
     MessageSquareShare,
     BarChartHorizontal,
+    Linkedin,
+    Github,
+    Instagram,
+    Mail,
 } from "lucide-react"
 
 const initialListings = [
@@ -40,8 +45,36 @@ const initialListings = [
   },
 ]
 
+const userProfile = {
+  photo: "/dima.jpeg",
+  name: "Dmitry Korzhov",
+  description: "Software Engineer with a passion for developing innovative programs that expedite the efficiency and effectiveness of organizational success.",
+  socialLinks: {
+    twitter: "https://twitter.com/dmitry",
+    linkedin: "https://linkedin.com/in/dmitry",
+    github: "https://github.com/dmitry"
+  },
+  status: "Ready to travel"
+}
+
+function getSocialIcon(url: string) {
+  if (url.includes("x.com") || url.includes("twitter.com")) {
+    return <img src="/x.svg" className="h-3 w-3" alt="X Icon" />; 
+  } else if (url.includes("linkedin.com")) {
+    return <Linkedin className="h-4 w-4" />;
+  } else if (url.includes("github.com")) {
+    return <Github className="h-4 w-4" />;
+  } else if (url.includes("instagram.com")) {
+    return <Instagram className="h-4 w-4" />;
+  } else if (url.includes("mail.com")) {
+    return <Mail className="h-4 w-4" />;
+  }
+  return <MessageSquareShare className="h-4 w-4" />;
+}
+
 export default function UserProfile() {
   const [listings, setListings] = useState(initialListings.map(listing => ({ ...listing, isAvailable: false })))
+  
 
   useEffect(() => {
     setListings(listings.map(listing => ({
@@ -58,13 +91,26 @@ export default function UserProfile() {
             <CardContent>
               <div className="flex flex-col items-start mt-4">
                 <Avatar className="w-24 h-24 rounded-[10px]">
-                  <AvatarImage src="/dima.jpeg" />
+                  <AvatarImage src={userProfile.photo} />
                   <AvatarFallback>D</AvatarFallback>
-              </Avatar>
-                <h2 className="mt-4 text-xl font-semibold">Dmitry Korzhov</h2>
-                <Button variant="outline" className="mt-4">
-                  Edit Profile
-                </Button>
+                </Avatar>
+                <h2 className="mt-4 text-xl font-semibold">{userProfile.name}</h2>
+                <div className="mt-2 text-sm text-green-6000">
+                  <Badge variant="outline">{userProfile.status}</Badge>
+                </div>
+                <p className="mt-4 text-sm">{userProfile.description}</p>
+                <div className="mt-4 flex gap-4">
+                  {Object.entries(userProfile.socialLinks).map(([platform, url]) => (
+                    <Button
+                      key={platform}
+                      variant="link"
+                      className="inline-flex items-center"
+                    >
+                      {getSocialIcon(url)}
+                      <span className="ml-2">{platform.charAt(0).toUpperCase() + platform.slice(1)}</span>
+                    </Button>
+                  ))}
+                </div>
               </div>
             </CardContent>
           </Card>
