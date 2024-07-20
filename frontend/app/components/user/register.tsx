@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
@@ -18,12 +18,30 @@ export default function Register() {
   const [passwordError, setPasswordError] = useState("")
   const [email, setEmail] = useState("")
   const [emailError, setEmailError] = useState("")
+  const [name, setName] = useState("")
+  const [sex, setSex] = useState("")
+  const [language, setLanguage] = useState("")
+  const [travelStatus, setTravelStatus] = useState("")
+  const [about, setAbout] = useState("")
+  const [preferences, setPreferences] = useState("")
+  const [isNextDisabled, setIsNextDisabled] = useState(true);
+
+  const validateStep = (): boolean => {
+    if (step === 1) return !email || !name || !password || !repeatPassword || !!passwordError;
+    if (step === 2) return !sex || !language || !travelStatus;
+    if (step === 3) return !about || !preferences;
+    return false;
+  };
 
   const handleNext = () => {
-    if (step < totalSteps && !passwordError) {
-      setStep((prev) => prev + 1)
+    if (!validateStep() && step < totalSteps) {
+      setStep((prev) => prev + 1);
     }
-  }
+  };
+
+  useEffect(() => {
+    setIsNextDisabled(validateStep());
+  }, [email, name, password, repeatPassword, passwordError, sex, language, travelStatus, about, preferences, step]);
 
   const handlePrev = () => {
     if (step > 1) {
@@ -94,11 +112,11 @@ export default function Register() {
           <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
             <div>
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="Enter your email" />
+              <Input id="email" type="email" placeholder="Enter your email" value={email} onChange={(e) => setEmail(e.target.value)} />
             </div>
             <div>
               <Label htmlFor="name">Name</Label>
-              <Input id="name" placeholder="Enter your name" />
+              <Input id="name" placeholder="Enter your name" value={name} onChange={(e) => setName(e.target.value)} />
             </div>
             <div>
               <Label htmlFor="password">Password</Label>
@@ -131,7 +149,7 @@ export default function Register() {
           <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
             <div>
               <Label htmlFor="sex">Sex</Label>
-              <Select>
+              <Select value={sex} onValueChange={setSex}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select your sex" />
                 </SelectTrigger>
@@ -144,7 +162,7 @@ export default function Register() {
             </div>
             <div>
               <Label htmlFor="language">Language</Label>
-              <Select>
+              <Select value={language} onValueChange={setLanguage}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select your language" />
                 </SelectTrigger>
@@ -158,7 +176,7 @@ export default function Register() {
             </div>
             <div>
               <Label htmlFor="travelStatus">Travel Status</Label>
-              <Select>
+              <Select value={travelStatus} onValueChange={setTravelStatus}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select your travel status" />
                 </SelectTrigger>
@@ -178,11 +196,11 @@ export default function Register() {
           <div className="grid grid-cols-1 gap-4">
             <div>
               <Label htmlFor="about">About you</Label>
-              <Textarea id="about" placeholder="Who are you? Write 3-5 senteces about yourself!" />
+              <Textarea id="about" placeholder="Who are you? Write 3-5 senteces about yourself!" value={about} onChange={(e) => setAbout(e.target.value)} />
             </div>
             <div>
               <Label htmlFor="preferences">Co-liver preferences</Label>
-              <Textarea id="preferences" placeholder="Why you would live to live with?" />
+              <Textarea id="preferences" placeholder="Why you would live to live with?" value={preferences} onChange={(e) => setPreferences(e.target.value)} />
             </div>
           </div>
         </div>
@@ -213,12 +231,12 @@ export default function Register() {
           </div>
         </div>
       )}
-      <div className="mt-8 flex justify-between">
-        <Button variant="outline" onClick={handlePrev} disabled={step === 1}>
-          Previous
-        </Button>
-        {step < totalSteps ? (
-          <Button onClick={handleNext} disabled={!!passwordError}>Next</Button>
+    <div className="mt-8 flex justify-between">
+      <Button variant="outline" onClick={handlePrev} disabled={step === 1}>
+        Previous
+      </Button>
+      {step < totalSteps ? (
+        <Button onClick={handleNext} disabled={isNextDisabled}>Next</Button>
         ) : (
           <Button type="submit" disabled={!!passwordError}>Register</Button>
         )}

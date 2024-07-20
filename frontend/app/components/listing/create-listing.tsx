@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -8,12 +8,17 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 
+import ListingCard from "../elements/trip-card"; 
+
 export default function Component() {
   const [formData, setFormData] = useState({
     photo: '',
     title: '',
     description: '',
     status: 'draft',
+    country: '',
+    city: '',
+    month: '',
   });
 
   const handleChange = (e: any) => {
@@ -53,6 +58,18 @@ export default function Component() {
                 <Textarea id="description" rows={4} placeholder="Enter a description" value={formData.description} onChange={handleChange} />
               </div>
               <div className="grid gap-2">
+                <Label htmlFor="country">Country</Label>
+                <Input id="country" type="text" placeholder="Enter a country" value={formData.country} onChange={handleChange} />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="city">City</Label>
+                <Input id="city" type="text" placeholder="Enter a city" value={formData.city} onChange={handleChange} />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="month">Month</Label>
+                <Input id="month" type="text" placeholder="Enter a month" value={formData.month} onChange={handleChange} />
+              </div>
+              <div className="grid gap-2">
                 <Label htmlFor="status">Status</Label>
                 <Select onValueChange={handleStatusChange}>
                   <SelectTrigger>
@@ -65,39 +82,36 @@ export default function Component() {
                   </SelectContent>
                 </Select>
               </div>
-              <Button size="lg" className="w-full">
-                Publish
-              </Button>
             </form>
           </CardContent>
         </Card>
       </div>
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-6 max-h-screen">
         <Card>
           <CardHeader>
             <CardTitle>Preview</CardTitle>
           </CardHeader>
-          <CardContent className="grid gap-4">
-            <img
-              src={formData.photo || "/photo.png"}
+          <CardContent>
+            <ListingCard
+              id={1}
+              title={formData.title || "A Wonderful Blog Post"}
+              imgSrc={formData.photo || "/photo.png"}
               alt="Post Image"
-              width={800}
-              height={450}
-              className="aspect-video rounded-md object-cover"
+              showUser={true}
+              country={formData.country || "USA"}
+              city={formData.city || "New York"}
+              description={formData.description || "Lorem ipsum dolor sit amet, consectetur adipiscing elit."}
+              minBudget={1000}
+              url="#"
+              month={formData.month || "January"}
+              createdBy="John Doe"
             />
-            <div className="grid gap-2 max-w-full">
-              <h2 className="text-2xl font-bold">{formData.title || "A Wonderful Blog Post"}</h2>
-              <p className="text-muted-foreground">
-                {formData.description || "Lorem ipsum dolor sit amet, consectetur adipiscing elit."}
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className="text-sm">
-                {formData.status.charAt(0).toUpperCase() + formData.status.slice(1)}
-              </Badge>
-              <span className="text-sm text-muted-foreground">Updated 2 days ago</span>
-            </div>
           </CardContent>
+          <CardFooter>
+            <Button size="lg" className="w-full">
+              Publish
+            </Button>
+          </CardFooter>
         </Card>
       </div>
     </div>
