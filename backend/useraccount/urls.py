@@ -3,7 +3,7 @@ from dj_rest_auth.jwt_auth import get_refresh_view
 from dj_rest_auth.registration.views import RegisterView
 from dj_rest_auth.views import LoginView, LogoutView, UserDetailsView
 from rest_framework_simplejwt.views import TokenVerifyView
-from .views import CustomUserDetailsView
+from .views import CustomUserDetailsView, get_profile, edit_profile
 
 urlpatterns = [
     path('register/', RegisterView.as_view(), name='rest_register'),
@@ -13,4 +13,6 @@ urlpatterns = [
     path('user/', UserDetailsView.as_view(), name='rest_user_details'),
     path('user/data/', CustomUserDetailsView.as_view(), name='user_data'),
     path('user/data/update/', CustomUserDetailsView.as_view(), name='user_update'),
+    path('user/profile/', get_profile, name='user_profile'),
+    path('user/profile/edit/', edit_profile, name='user_profile_edit'),
 ]

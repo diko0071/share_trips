@@ -79,6 +79,7 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.account',
     'useraccount',
+    'trip',
 ]
 
 MIDDLEWARE = [
@@ -175,6 +176,11 @@ REST_AUTH = {
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
+
+
+AZURE_CONTAINER = os.environ.get("AZURE_CONTAINER")
+AZURE_ACCOUNT_NAME = os.environ.get("AZURE_ACCOUNT_NAME")
+AZURE_ACCOUNT_KEY = os.environ.get("AZURE_ACCOUNT_KEY")
 
 LANGUAGE_CODE = "en-us"
 
