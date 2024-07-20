@@ -23,7 +23,7 @@ export default function RootLayout({
       <body className={`${inter.className}`}>
       <PopupProvider>
         <MenuBar />
-        <main className="mt-8 grid w-full h-full px-4 md:px-6 py-5">
+        <main className="mt-4 grid w-full h-full px-4 md:px-6 py-5">
             {children}           
         <Toaster />
        </main>
