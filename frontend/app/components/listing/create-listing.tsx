@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge"
 
 import ListingCard from "../elements/trip-card"; 
 
-export default function Component() {
+export default function CreateListing() {
   const [formData, setFormData] = useState({
     photo: '',
     title: '',
