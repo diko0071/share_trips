@@ -1,14 +1,16 @@
 from django.shortcuts import render
 from rest_framework.response import Response
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.permissions import IsAuthenticated
 from .models import Trip
 from .serializers import TripDetailSerializer
+from .services import fetch_airbnb_page
 from rest_framework.permissions import AllowAny
 
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@authentication_classes([])
+@permission_classes([])
 def get_trip_list(request):
     trips = Trip.objects.all()
     serializer = TripDetailSerializer(trips, many=True)
@@ -45,6 +47,15 @@ def delete_trip(request, pk):
     trip.delete()
     return Response('Trip was deleted')
 
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def parse_airbnb_url(request):
+    url = request.data.get('url')
+    if not url:
+        return Response({'error': 'URL is required'}, status=400)
+    soup = fetch_airbnb_page(url)
+    return Response({'content': str(soup)})
 
 
 

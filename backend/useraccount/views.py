@@ -15,15 +15,6 @@ class CustomUserDetailsView(UserDetailsView):
 
     def update(self, request, *args, **kwargs):
         return super().update(request, *args, **kwargs)
-    
-@api_view(['PUT'])
-@permission_classes([IsAuthenticated])
-def edit_profile(request):
-    user = User.objects.get(id=request.user.id)
-    serializer = UserDetailSerializer(instance=user, data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-    return Response(serializer.data)
 
 @api_view(['GET'])
 @permission_classes([AllowAny])

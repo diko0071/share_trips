@@ -21,3 +21,4 @@ psycopg[c]==3.1.18
 pillow==10.2.0
 azure-core==1.30.2
 azure-storage-blob==12.20.0
+beautifulsoup4==4.12.3

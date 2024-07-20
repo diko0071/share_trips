@@ -9,92 +9,64 @@ import { Calendar as CalendarIcon } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { format } from "date-fns"
 import ListingCard from "../elements/trip-card"
+import ApiService from "../../services/apiService";
 
-const initialListings = [
-  {
-    id: 1,
-    title: "Fun New York City Trip",
-    imgSrc: "/photo.png",
-    alt: "Apartment 1",
-    dateRange: "May 1 - May 7",
-    country: "USA",
-    city: "New York",
-    description: "You should join me on a trip to New York City because it offers a unique blend of culture, history, and excitement. We’ll explore iconic landmarks like the Statue of Liberty and Times Square, providing unforgettable experiences. Our journey will include diverse culinary adventures, from famous New York pizza to exquisite fine dining. Together, we’ll discover hidden gems and local secrets that only the most passionate travelers find. This trip promises not only sightseeing but also an opportunity to create lasting memories and deepen our friendship.",
-    minBudget: 100,
-    url: "https://example.com/listing/1",
-    month: "May",
-    isFlexible: true,
-    createdBy: "John Doe"
-  },
-  {
-    id: 2,
-    title: "Modern Loft in Uptown",
-    imgSrc: "/photo2.png",
-    alt: "Apartment 2",
-    dateRange: "Jun 15 - Jun 22",
-    country: "USA",
-    city: "Chicago",
-    description: "A modern loft in the vibrant uptown area.",
-    minBudget: 150,
-    url: "https://example.com/listing/2",
-    month: "June",
-    isFlexible: false,
-    createdBy: "Jane Smith"
-  },
-  {
-    id: 3,
-    title: "Beachfront Condo in Miami",
-    imgSrc: "/photo3.png",
-    alt: "Apartment 3",
-    dateRange: "Jul 1 - Jul 8",
-    country: "USA",
-    city: "Miami",
-    description: "A beautiful beachfront condo with stunning views.",
-    minBudget: 200,
-    url: "https://example.com/listing/3",
-    month: "July",
-    isFlexible: true,
-    createdBy: "Alice Johnson"
-  },
-  {
-    id: 4,
-    title: "Rustic Cabin in the Woods",
-    imgSrc: "/photo4.png",
-    alt: "Apartment 4",
-    dateRange: "Aug 10 - Aug 17",
-    country: "USA",
-    city: "Denver",
-    description: "A rustic cabin surrounded by nature.",
-    minBudget: 120,
-    url: "https://example.com/listing/4",
-    month: "August",
-    isFlexible: false,
-    createdBy: "Bob Brown"
-  },
-]
+interface Listing {
+  id: number;
+  title: string;
+  imgSrc: string;
+  alt: string;
+  dateRange: string;
+  country: string;
+  city: string;
+  description: string;
+  minBudget: number;
+  url: string | null;
+  month: string;
+  isFlexible: boolean;
+  created_by_name: string;
+  isAvailable: boolean;
+}
+
 
 export default function Listings() {
-  const [listings, setListings] = useState(initialListings.map(listing => ({ ...listing, isAvailable: false })))
-  const [startDate, setStartDate] = useState<Date | null>(null)
-  const [endDate, setEndDate] = useState<Date | null>(null)
+  const [listings, setListings] = useState<Listing[]>([])
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null)
   const [selectedCity, setSelectedCity] = useState<string | null>(null)
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null)
 
   useEffect(() => {
-    setListings(listings.map(listing => ({
-      ...listing,
-      isAvailable: Math.random() > 0.5
-    })))
-  }, [])
+    async function fetchListings() {
+      try {
+        const response = await ApiService.get('/api/trip/')
+        console.log("API response:", response)
+        if (Array.isArray(response)) {
+          const data = response.map((listing: any) => ({
+            id: listing.id,
+            title: listing.name,
+            imgSrc: listing.image1,
+            alt: listing.name,
+            country: listing.country,
+            city: listing.city,
+            description: listing.description,
+            minBudget: parseFloat(listing.budget),
+            url: listing.url,
+            month: listing.month.charAt(0).toUpperCase() + listing.month.slice(1),
+            isFlexible: listing.is_flexible,
+            created_by_name: listing.created_by_name,
+          }))
+          console.log("Mapped data:", data)
+          setListings(data as Listing[])
+        } else {
+          console.error("No data in response")
+        }
+      } catch (error) {
+        console.error("Error fetching listings:", error)
+      }
+    }
 
-  const filteredListings = listings.filter(listing => {
-    return (
-      (!selectedCountry || listing.country === selectedCountry) &&
-      (!selectedCity || listing.city === selectedCity) &&
-      (!selectedMonth || listing.month === selectedMonth)
-    )
-  })
+    fetchListings()
+  }, [])
 
   const FilterBar = (
     <Card>
@@ -120,6 +92,7 @@ export default function Listings() {
               <SelectItem value="Chicago">Chicago</SelectItem>
               <SelectItem value="Miami">Miami</SelectItem>
               <SelectItem value="Denver">Denver</SelectItem>
+              <SelectItem value="Cancun">Cancun</SelectItem>
             </SelectContent>
           </Select>
           <Select onValueChange={setSelectedMonth}>
@@ -131,12 +104,21 @@ export default function Listings() {
               <SelectItem value="June">June</SelectItem>
               <SelectItem value="July">July</SelectItem>
               <SelectItem value="August">August</SelectItem>
+              <SelectItem value="September">September</SelectItem>
             </SelectContent>
           </Select>
         </div>
       </CardContent>
     </Card>
   )
+
+  const filteredListings: Listing[] = listings.filter((listing: Listing) => {
+    return (
+      (!selectedCountry || listing.country === selectedCountry) &&
+      (!selectedCity || listing.city === selectedCity) &&
+      (!selectedMonth || listing.month === selectedMonth)
+    )
+  })
 
   return (
     <main className="w-full">
@@ -152,23 +134,27 @@ export default function Listings() {
         </div>
       </div>
       <section className="grid grid-cols-1 gap-8 mt-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-        {listings.map((listing) => (
-          <ListingCard
-            key={listing.id}
-            id={listing.id}
-            title={listing.title}
-            imgSrc={listing.imgSrc}
-            alt={listing.alt}
-            showUser={true}
-            country={listing.country}
-            city={listing.city}
-            description={listing.description}
-            minBudget={listing.minBudget}
-            url={listing.url}
-            month={listing.month}
-            createdBy={listing.createdBy}
-          />
-        ))}
+        {listings.length > 0 ? (
+          listings.map((listing) => (
+            <ListingCard
+              key={listing.id}
+              id={listing.id}
+              title={listing.title}
+              imgSrc={listing.imgSrc}
+              alt={listing.alt}
+              showUser={true}
+              country={listing.country}
+              city={listing.city}
+              description={listing.description}
+              minBudget={listing.minBudget}
+              url={listing.url || ''}
+              month={listing.month}
+              createdBy={listing.created_by_name}
+            />
+          ))
+        ) : (
+          <p>No listings available</p>
+        )}
       </section>
     </main>
   )

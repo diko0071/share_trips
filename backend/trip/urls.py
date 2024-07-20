@@ -7,4 +7,5 @@ urlpatterns = [
     path('trip/create/', create_trip, name='trip_create'),
     path('trip/<int:pk>/update/', update_trip, name='trip_update'),
     path('trip/<int:pk>/delete/', delete_trip, name='trip_delete'),
+    path('trip/parse/', parse_airbnb_url, name='parse_airbnb_url'),
 ]

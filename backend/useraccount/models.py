@@ -7,24 +7,20 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, UserM
 
 
 class CustomUserManager(UserManager):
-    def _create_user(self, email, name, password, photo, **extra_fields):
+    def _create_user(self, email, name, password, **extra_fields):
         if not email:
             raise ValueError('You have not provided a valid email address')
-        if not photo:
-            raise ValueError('You have not provided a valid photo')
-        if not name:
-            raise ValueError('You have not provided a valid name')
         email = self.normalize_email(email)
-        user = self.model(email=email, name=name, photo=photo, **extra_fields)
+        user = self.model(email=email, name=name, **extra_fields)
         user.set_password(password)
         user.save(using=self.db)
         
         return user
     
-    def create_user(self, name=None, email=None, password=None, photo=None, **extra_fields):
+    def create_user(self, name=None, email=None, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', False)
         extra_fields.setdefault('is_superuser', False)
-        return self._create_user(email, name, password, photo, **extra_fields)
+        return self._create_user(email, name, password, **extra_fields)
     
     def create_superuser(self, name=None, email=None, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
@@ -70,4 +66,4 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     USERNAME_FIELD = 'email'
     EMAIL_FILED = 'email'
-    REQUIRED_FIELDS = ['name', 'photo']
+    REQUIRED_FIELDS = ['name']
