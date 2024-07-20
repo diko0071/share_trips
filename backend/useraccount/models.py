@@ -7,20 +7,24 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, UserM
 
 
 class CustomUserManager(UserManager):
-    def _create_user(self, email, name, password, **extra_fields):
+    def _create_user(self, email, name, password, photo, **extra_fields):
         if not email:
             raise ValueError('You have not provided a valid email address')
+        if not photo:
+            raise ValueError('You have not provided a valid photo')
+        if not name:
+            raise ValueError('You have not provided a valid name')
         email = self.normalize_email(email)
-        user = self.model(email=email, name=name, **extra_fields)
+        user = self.model(email=email, name=name, photo=photo, **extra_fields)
         user.set_password(password)
         user.save(using=self.db)
         
         return user
     
-    def create_user(self, name=None, email=None, password=None, **extra_fields):
+    def create_user(self, name=None, email=None, password=None, photo=None, **extra_fields):
         extra_fields.setdefault('is_staff', False)
         extra_fields.setdefault('is_superuser', False)
-        return self._create_user(email, name, password, **extra_fields)
+        return self._create_user(email, name, password, photo, **extra_fields)
     
     def create_superuser(self, name=None, email=None, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
@@ -46,13 +50,15 @@ class TravelStatus(models.TextChoices):
 class User(AbstractBaseUser, PermissionsMixin):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(unique=True)
-    name = models.CharField(max_length=255, blank=True, null=True)
-    photo = models.ImageField(upload_to='images/', null=True, blank=True)
+    name = models.CharField(max_length=255)
+    photo = models.ImageField(upload_to='images/')
     about = models.TextField(null=True, blank=True)
     coliver_preferences = models.TextField(null=True, blank=True)
     language = models.CharField(max_length=255, choices=Language.choices, null=True, blank=True)
     social_media_links = models.JSONField(null=True, blank=True)
     travel_status = models.CharField(max_length=255, choices=TravelStatus.choices, null=True, blank=True)
+
+
     is_active = models.BooleanField(default=True)
     is_superuser = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
@@ -64,4 +70,4 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     USERNAME_FIELD = 'email'
     EMAIL_FILED = 'email'
-    REQUIRED_FIELDS = ['name',]
+    REQUIRED_FIELDS = ['name', 'photo']

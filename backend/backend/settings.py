@@ -111,6 +111,19 @@ TEMPLATES = [
     },
 ]
 
+STORAGES = {
+    "default": {
+        "BACKEND": "storages.backends.azure_storage.AzureStorage",
+        "OPTIONS": {
+            "timeout": 60,
+            "expiration_secs": 500,
+        },
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
+
 WSGI_APPLICATION = "backend.wsgi.application"
 ASGI_APPLICATION = 'backend.asgi.application'
 
