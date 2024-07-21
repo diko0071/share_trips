@@ -1,5 +1,5 @@
 'use client';
-import CreateListing from "../components/listing/create-listing";
+import CreateListing from "../components/trips/create-trip";
 
 const CreateListingPage = () => {
     return (

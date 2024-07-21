@@ -44,7 +44,7 @@ export function MenuBar() {
 
   const handleButtonClick = () => {
     if (token) {
-      router.push('/create-listing');
+      router.push('/create-trip');
     } else {
       openLoginForm();
     }

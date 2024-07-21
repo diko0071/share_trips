@@ -31,6 +31,10 @@ type TripDetail = {
   createdByPreferences: string;
 };
 
+type TripDetailProps = {
+  tripId: string;
+};
+
 type TripData = {
   id: number;
   title: string;
@@ -55,14 +59,16 @@ const USER_DETAILS = {
   contactName: "Dmitry Korzhov"
 };
 
-export default function TripDetail() {
+export default function TripDetail({ tripId }: TripDetailProps) {
   const [tripDetails, setTripDetails] = useState<TripDetail | null>(null);
   const [trips, setTrips] = useState<TripData[]>([]);
 
   useEffect(() => {
+    if (!tripId) return;
+
     async function fetchListingDetail() {
       try {
-        const response = await ApiService.get('/api/trip/1');
+        const response = await ApiService.get(`/api/trip/${tripId}`);
         if (response) {
           const data: TripDetail = {
             id: response.id,
@@ -90,7 +96,8 @@ export default function TripDetail() {
     }
 
     fetchListingDetail();
-  }, []);
+  }, [tripId]); 
+
 
   useEffect(() => {
     async function fetchTrips() {
@@ -140,7 +147,7 @@ export default function TripDetail() {
   return (
     <div>
       <div className="flex justify-between items-center mb-1">
-        <Link href="/listings">
+        <Link href="/trips">
           <Button variant="ghost" size="icon" className="flex items-center gap-2">
             <MoveLeft className="w-4 h-4" />
           </Button>

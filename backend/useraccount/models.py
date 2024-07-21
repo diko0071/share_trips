@@ -28,20 +28,20 @@ class CustomUserManager(UserManager):
         return self._create_user(email, name, password, **extra_fields)   
 
 class Language(models.TextChoices):
-    ENGLISH = 'en', 'English'
-    SPANISH = 'es', 'Spanish'
-    FRENCH = 'fr', 'French'
-    GERMAN = 'de', 'German'
-    ITALIAN = 'it', 'Italian'
-    JAPANESE = 'ja', 'Japanese'
-    CHINESE = 'zh', 'Chinese'
-    RUSSIAN = 'ru', 'Russian'
-    KOREAN = 'ko', 'Korean'
+    ENGLISH = 'English', 'English'
+    SPANISH = 'Spanish', 'Spanish'
+    FRENCH = 'French', 'French'
+    GERMAN = 'German', 'German'
+    ITALIAN = 'Italian', 'Italian'
+    JAPANESE = 'Japanese', 'Japanese'
+    CHINESE = 'Chinese', 'Chinese'
+    RUSSIAN = 'Russian', 'Russian'
+    KOREAN = 'Korean', 'Korean'
 
 class TravelStatus(models.TextChoices):
-    READY_TO_TRAVEL = 'ready_to_travel', 'Ready to travel'
-    NOT_READY_TO_TRAVEL = 'not_ready_to_travel', 'Not ready to travel'
-    WILL_BE_SOON = 'will_be_soon', 'Will be soon'
+    READY_TO_TRAVEL = 'Ready to travel', 'Ready to travel'
+    NOT_READY_TO_TRAVEL = 'Not ready to travel', 'Not ready to travel'
+    WILL_BE_SOON = 'Will be ready soon', 'Will be ready soon'
 
 class User(AbstractBaseUser, PermissionsMixin):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

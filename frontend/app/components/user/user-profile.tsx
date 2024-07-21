@@ -109,7 +109,6 @@ interface UserProfile {
 }
 
 
-
 function getSocialIcon(url: string) {
   if (url.includes("x.com") || url.includes("twitter.com")) {
     return <img src="/x.svg" className="h-3 w-3" alt="X Icon" />; 

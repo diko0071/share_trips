@@ -1,5 +1,5 @@
 'use client';
-import Listings from "../components/listing/listings";
+import Listings from "../components/trips/trips";
 
 const ListingsPage = () => {
     return (

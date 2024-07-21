@@ -8,10 +8,10 @@ import { cn } from "@/lib/utils"
 import { Calendar as CalendarIcon } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { format } from "date-fns"
-import ListingCard from "../elements/trip-card"
+import TripCard from "../elements/trip-card"
 import ApiService from "../../services/apiService";
 
-interface Listing {
+interface Trips {
   id: number;
   title: string;
   imgSrc: string;
@@ -29,8 +29,8 @@ interface Listing {
 }
 
 
-export default function Listings() {
-  const [listings, setListings] = useState<Listing[]>([])
+export default function Trips() {
+  const [trips, setTrips] = useState<Trips[]>([])
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null)
   const [selectedCity, setSelectedCity] = useState<string | null>(null)
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null)
@@ -56,7 +56,7 @@ export default function Listings() {
             created_by_name: listing.created_by_name,
           }))
           console.log("Mapped data:", data)
-          setListings(data as Listing[])
+          setTrips(data as Trips[])
         } else {
           console.error("No data in response")
         }
@@ -112,11 +112,11 @@ export default function Listings() {
     </Card>
   )
 
-  const filteredListings: Listing[] = listings.filter((listing: Listing) => {
+  const filteredListings: Trips[] = trips.filter((trip: Trips) => {
     return (
-      (!selectedCountry || listing.country === selectedCountry) &&
-      (!selectedCity || listing.city === selectedCity) &&
-      (!selectedMonth || listing.month === selectedMonth)
+      (!selectedCountry || trip.country === selectedCountry) &&
+      (!selectedCity || trip.city === selectedCity) &&
+      (!selectedMonth || trip.month === selectedMonth)
     )
   })
 
@@ -134,22 +134,22 @@ export default function Listings() {
         </div>
       </div>
       <section className="grid grid-cols-1 gap-8 mt-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-        {listings.length > 0 ? (
-          listings.map((listing) => (
-            <ListingCard
-              key={listing.id}
-              id={listing.id}
-              title={listing.title}
-              imgSrc={listing.imgSrc}
-              alt={listing.alt}
+        {trips.length > 0 ? (
+          trips.map((trip) => (
+            <TripCard
+              key={trip.id}
+              id={trip.id}
+              title={trip.title}
+              imgSrc={trip.imgSrc}
+              alt={trip.alt}
               showUser={true}
-              country={listing.country}
-              city={listing.city}
-              description={listing.description}
-              minBudget={listing.minBudget}
-              url={listing.url || ''}
-              month={listing.month}
-              createdBy={listing.created_by_name}
+              country={trip.country}
+              city={trip.city}
+              description={trip.description}
+              minBudget={trip.minBudget}
+              url={trip.url || ''}
+              month={trip.month}
+              createdBy={trip.created_by_name}
             />
           ))
         ) : (

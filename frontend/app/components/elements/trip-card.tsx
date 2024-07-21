@@ -3,8 +3,9 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { CalendarDays, MapPin, CreditCard } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import Link from "next/link"
 
-interface ListingCardProps {
+interface TripCardProps {
   id: number
   title: string
   imgSrc: string
@@ -19,10 +20,10 @@ interface ListingCardProps {
   createdBy: string
 }
 
-export default function ListingCard({
+export default function TripCard({
     id, title, imgSrc, alt, showUser,
     country, city, description, minBudget, url, month, createdBy
-  }: ListingCardProps) {
+  }: TripCardProps) {
 
     const truncatedDescription = description.length > 87 
     ? description.substring(0, 87) + "..." 
@@ -56,9 +57,11 @@ export default function ListingCard({
             {truncatedDescription}
           </p>
           <div className="flex items-center justify-between">
-            <Button variant="ghost" size="sm">
-              <a href={url}>View</a>
-            </Button>
+          <Link href={`/trip/${id}`}>
+              <Button variant="ghost" size="sm">
+                View
+              </Button>
+            </Link>
             {showUser && (
                 <Button variant="link" size="sm" className="flex items-center gap-2">
                 <Avatar className="w-5 h-5">

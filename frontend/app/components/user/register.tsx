@@ -18,7 +18,7 @@ export default function Register() {
   const [refuseBackStepOne, setRefuseBackStepOne] = useState(false);
   const router = useRouter();
   const totalSteps = 4
-  const [links, setLinks] = useState([{ id: 1, value: "" }])
+  const [links, setLinks] = useState([{ id: 1, value: "", platform: "" }]);
   const [password, setPassword] = useState("")
   const [repeatPassword, setRepeatPassword] = useState("")
   const [passwordError, setPasswordError] = useState("")
@@ -90,8 +90,8 @@ export default function Register() {
   const UpdateUserData = async () => {
     setIsLoading(true);
     try {
-      const formattedLinks = links.reduce((acc: Record<number, string>, link) => {
-        acc[link.id] = link.value;
+      const formattedLinks = links.reduce((acc: Record<string, string>, link) => {
+        acc[link.platform] = link.value;
         return acc;
       }, {});
   
@@ -108,7 +108,8 @@ export default function Register() {
       formData.append('social_media_links', JSON.stringify(formattedLinks));
   
       const response = await ApiService.put_form('/api/user/data/update/', formData);
-  
+      
+      console.log(response);
   
       if (response.status === 200) {
         router.push('/');
@@ -132,8 +133,12 @@ export default function Register() {
     }
   }
 
+  const handleLinkPlatformChange = (id: number, value: string) => {
+    setLinks(links.map(link => link.id === id ? { ...link, platform: value } : link))
+  }
+
   const handleAddLink = () => {
-    setLinks([...links, { id: links.length + 1, value: "" }])
+    setLinks([...links, { id: links.length + 1, value: "", platform: "" }])
   }
 
   const handleLinkChange = (id: number, value: string) => {
@@ -266,10 +271,15 @@ export default function Register() {
                   <SelectValue placeholder="Select your language" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="en">English</SelectItem>
-                  <SelectItem value="es">Spanish</SelectItem>
-                  <SelectItem value="fr">French</SelectItem>
-                  <SelectItem value="de">German</SelectItem>
+                  <SelectItem value="English">English</SelectItem>
+                  <SelectItem value="Spanish">Spanish</SelectItem>
+                  <SelectItem value="French">French</SelectItem>
+                  <SelectItem value="German">German</SelectItem>
+                  <SelectItem value="Italian">Italian</SelectItem>
+                  <SelectItem value="Japanese">Japanese</SelectItem>
+                  <SelectItem value="Chinese">Chinese</SelectItem>
+                  <SelectItem value="Russian">Russian</SelectItem>
+                  <SelectItem value="Korean">Korean</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -280,8 +290,9 @@ export default function Register() {
                   <SelectValue placeholder="Select your travel status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="ready_to_travel">Ready To Travel</SelectItem>
-                  <SelectItem value="not_ready_to_travel">Not Ready To Travel</SelectItem>
+                  <SelectItem value="Ready to travel">Ready to travel</SelectItem>
+                  <SelectItem value="Not ready to travel">Not ready to travel</SelectItem>
+                  <SelectItem value="Will be ready soon">Will be ready soon</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -310,9 +321,23 @@ export default function Register() {
           <p className="text-gray-500 mb-4">Please provide your links.</p>
           <div className="space-y-4">
             {links.map(link => (
-              <div key={link.id}>
-                <Label htmlFor={`link-${link.id}`}>Link {link.id}</Label>
-                <div className="flex items-center">
+              <div key={link.id} className="flex items-center space-x-4">
+                <div className="flex-1">
+                  <Select value={link.platform} onValueChange={(value) => handleLinkPlatformChange(link.id, value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a platform" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Github">Github</SelectItem>
+                      <SelectItem value="LinkedIn">LinkedIn</SelectItem>
+                      <SelectItem value="Facebook">Facebook</SelectItem>
+                      <SelectItem value="Twitter">Twitter</SelectItem>
+                      <SelectItem value="Instagram">Instagram</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex-1">
                   <Input
                     id={`link-${link.id}`}
                     placeholder="Enter a link"
@@ -320,10 +345,10 @@ export default function Register() {
                     onChange={(e) => handleLinkChange(link.id, e.target.value)}
                     className="flex-grow"
                   />
-                  <Button variant="outline" size="icon" onClick={() => handleRemoveLink(link.id)} className="ml-2">
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
                 </div>
+                <Button variant="outline" size="icon" onClick={() => handleRemoveLink(link.id)} className="ml-2 flex items-center justify-center">
+                  <Trash2 className="w-4 h-4" />
+                </Button>
               </div>
             ))}
             <Button variant="link" onClick={handleAddLink}>Add Link</Button>

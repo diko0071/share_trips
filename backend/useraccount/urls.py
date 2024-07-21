@@ -13,5 +13,5 @@ urlpatterns = [
     path('user/', UserDetailsView.as_view(), name='rest_user_details'),
     path('user/data/', CustomUserDetailsView.as_view(), name='user_data'),
     path('user/data/update/', CustomUserDetailsView.as_view(), name='user_update'),
-    path('user/data/get/', get_profile, name='get_profile'),
+    path('user/data/get/<uuid:pk>/', get_profile, name='get_profile'),
 ]
