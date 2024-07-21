@@ -26,6 +26,7 @@ interface Trips {
   isFlexible: boolean;
   created_by_name: string;
   isAvailable: boolean;
+  created_by_username: string;
 }
 
 
@@ -54,6 +55,7 @@ export default function Trips() {
             month: listing.month.charAt(0).toUpperCase() + listing.month.slice(1),
             isFlexible: listing.is_flexible,
             created_by_name: listing.created_by_name,
+            created_by_username: listing.created_by_username
           }))
           console.log("Mapped data:", data)
           setTrips(data as Trips[])
@@ -150,6 +152,7 @@ export default function Trips() {
               url={trip.url || ''}
               month={trip.month}
               createdBy={trip.created_by_name}
+              createdByUsername={trip.created_by_username}
             />
           ))
         ) : (

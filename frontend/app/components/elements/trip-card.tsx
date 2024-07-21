@@ -18,11 +18,12 @@ interface TripCardProps {
   url: string
   month: string
   createdBy: string
+  createdByUsername: string
 }
 
 export default function TripCard({
     id, title, imgSrc, alt, showUser,
-    country, city, description, minBudget, url, month, createdBy
+    country, city, description, minBudget, url, month, createdBy, createdByUsername
   }: TripCardProps) {
 
     const truncatedDescription = description.length > 87 
@@ -63,13 +64,15 @@ export default function TripCard({
               </Button>
             </Link>
             {showUser && (
-                <Button variant="link" size="sm" className="flex items-center gap-2">
+              <Link href={`/profile/${createdByUsername}`}>
+              <Button variant="link" size="sm" className="flex items-center gap-2">
                 <Avatar className="w-5 h-5">
                   <AvatarImage src="/dima.jpeg" />
                   <AvatarFallback>{createdBy.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <p className="text-xs font-medium">by {createdBy}</p>
-                </Button>
+              </Button>
+            </Link>
             )}
           </div>
         </div>

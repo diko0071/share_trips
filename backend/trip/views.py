@@ -17,7 +17,8 @@ def get_trip_list(request):
     return Response(serializer.data)
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@authentication_classes([])
+@permission_classes([])
 def get_trip_detail(request, pk):
     trip = Trip.objects.get(id=pk)
     serializer = TripDetailSerializer(trip)

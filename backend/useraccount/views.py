@@ -19,7 +19,7 @@ class CustomUserDetailsView(UserDetailsView):
 @api_view(['GET'])
 @authentication_classes([])
 @permission_classes([])
-def get_profile(request, pk):
-    user = User.objects.get(pk=pk)
+def get_profile(request, username):
+    user = User.objects.get(username=username)
     serializer = UserDetailSerializer(user, many=False)
     return Response(serializer.data)

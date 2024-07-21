@@ -9,7 +9,7 @@ class TripDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Trip
         fields = '__all__'
-        extra_fields = ['created_by_name', 'user_coliver_preferences', 'photo']
+        extra_fields = ['created_by_name', 'user_coliver_preferences', 'photo', 'created_by_username', 'created_by_user_id']
 
     def get_created_by_name(self, obj):
         return obj.created_by.name
@@ -19,10 +19,18 @@ class TripDetailSerializer(serializers.ModelSerializer):
 
     def get_photo(self, obj):
         return obj.created_by.photo.url
+    
+    def get_username(self, obj):
+        return obj.created_by.username
+    
+    def get_user_id(self, obj):
+        return obj.created_by.id
 
     def to_representation(self, instance):
         ret = super().to_representation(instance)
         ret['created_by_name'] = self.get_created_by_name(instance)
         ret['user_coliver_preferences'] = self.get_user_coliver_preferences(instance)
         ret['photo'] = self.get_photo(instance)
+        ret['created_by_username'] = self.get_username(instance)
+        ret['created_by_user_id'] = self.get_user_id(instance)
         return ret

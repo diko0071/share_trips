@@ -29,6 +29,8 @@ type TripDetail = {
   createdBy: string;
   createdByPhoto: string;
   createdByPreferences: string;
+  created_by_user_id: number;
+  created_by_username: string;
 };
 
 type TripDetailProps = {
@@ -50,6 +52,8 @@ type TripData = {
   isFlexible: boolean;
   created_by_name: string;
   isAvailable: boolean;
+  created_by_user_id: number;
+  created_by_username: string;
 }
 
 const USER_DETAILS = {
@@ -85,6 +89,8 @@ export default function TripDetail({ tripId }: TripDetailProps) {
             createdBy: response.created_by_name,
             createdByPhoto: response.photo,
             createdByPreferences: response.user_coliver_preferences,
+            created_by_user_id: response.created_by_user_id,
+            created_by_username: response.created_by_username,
           };
           setTripDetails(data);
         } else {
@@ -117,6 +123,7 @@ export default function TripDetail({ tripId }: TripDetailProps) {
             month: listing.month.charAt(0).toUpperCase() + listing.month.slice(1),
             isFlexible: listing.is_flexible,
             created_by_name: listing.created_by_name,
+            created_by_username: listing.created_by_username
           }))
           setTrips(data as TripData[])
         } else {
@@ -207,13 +214,15 @@ export default function TripDetail({ tripId }: TripDetailProps) {
                       <Button variant="outline">
                         Open Contacts
                       </Button>
-                      <Button variant="link" size="sm" className="flex items-center gap-2">
-                        <Avatar className="w-5 h-5">
-                          <AvatarImage src={tripDetails?.createdByPhoto} />
-                          <AvatarFallback>D</AvatarFallback>
-                        </Avatar>
-                        <p className="text-xs font-medium">{tripDetails?.createdBy}</p>
-                      </Button>
+                      <Link href={`/profile/${tripDetails?.created_by_username}`}>
+                        <Button variant="link" size="sm" className="flex items-center gap-2">
+                          <Avatar className="w-5 h-5">
+                            <AvatarImage src={tripDetails?.createdByPhoto} />
+                            <AvatarFallback>D</AvatarFallback>
+                          </Avatar>
+                          <p className="text-xs font-medium">{tripDetails?.createdBy}</p>
+                        </Button>
+                      </Link>
                     </div>
                   </div>
                 </div>
@@ -241,6 +250,7 @@ export default function TripDetail({ tripId }: TripDetailProps) {
             url={trip.url || ""}
             month={trip.month}
             createdBy={trip.created_by_name}
+            createdByUsername={trip.created_by_username}
           />
         ))}
         </div>

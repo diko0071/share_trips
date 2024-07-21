@@ -53,6 +53,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     language = models.CharField(max_length=255, choices=Language.choices, null=True, blank=True)
     social_media_links = models.JSONField(null=True, blank=True)
     travel_status = models.CharField(max_length=255, choices=TravelStatus.choices, null=True, blank=True)
+    username = models.CharField(max_length=255, unique=True)
 
 
     is_active = models.BooleanField(default=True)
@@ -67,3 +68,14 @@ class User(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = 'email'
     EMAIL_FILED = 'email'
     REQUIRED_FIELDS = ['name']
+
+    def save(self, *args, **kwargs):
+        if not self.username:
+            base_username = ''.join(self.name.split()).lower()
+            username = base_username
+            counter = 1
+            while User.objects.filter(username=username).exists():
+                username = f"{base_username}{counter}"
+                counter += 1
+            self.username = username
+        super().save(*args, **kwargs)

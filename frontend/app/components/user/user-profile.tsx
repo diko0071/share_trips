@@ -32,68 +32,13 @@ const initialListings = [
     url: "https://example.com/listing/1",
     month: "May",
     isFlexible: true,
-    createdBy: "John Doe"
-  },
-  {
-    id: 2,
-    title: "Modern Loft in Uptown",
-    imgSrc: "/photo2.png",
-    alt: "Apartment 2",
-    dateRange: "Jun 15 - Jun 22",
-    country: "USA",
-    city: "Chicago",
-    description: "A modern loft in the vibrant uptown area.",
-    minBudget: 150,
-    url: "https://example.com/listing/2",
-    month: "June",
-    isFlexible: false,
-    createdBy: "Jane Smith"
-  },
-  {
-    id: 3,
-    title: "Beachfront Condo in Miami",
-    imgSrc: "/photo3.png",
-    alt: "Apartment 3",
-    dateRange: "Jul 1 - Jul 8",
-    country: "USA",
-    city: "Miami",
-    description: "A beautiful beachfront condo with stunning views.",
-    minBudget: 200,
-    url: "https://example.com/listing/3",
-    month: "July",
-    isFlexible: true,
-    createdBy: "Alice Johnson"
-  },
-  {
-    id: 4,
-    title: "Rustic Cabin in the Woods",
-    imgSrc: "/photo4.png",
-    alt: "Apartment 4",
-    dateRange: "Aug 10 - Aug 17",
-    country: "USA",
-    city: "Denver",
-    description: "A rustic cabin surrounded by nature.",
-    minBudget: 120,
-    url: "https://example.com/listing/4",
-    month: "August",
-    isFlexible: false,
-    createdBy: "Bob Brown"
+    createdBy: "John Doe",
+    createdByUsername: "DmitryKorzhov"
   },
 ]
 
-const userProfile = {
-  photo: "/dima.jpeg",
-  name: "Dmitry Korzhov",
-  language: "English",
-  description: "Software Engineer with a passion for developing innovative programs that expedite the efficiency and effectiveness of organizational success.",
-  coLiversPreferences: "Looking for a non-smoker, pet-friendly co-liver who values cleanliness and enjoys a quiet living environment. Prefer someone who is respectful of shared spaces and has a similar lifestyle.",
-  socialLinks: {
-    twitter: "https://twitter.com/dmitry",
-    linkedin: "https://linkedin.com/in/dmitry",
-    github: "https://github.com/dmitry",
-    email: "dmitry@gmail.com"
-  },
-  status: "Ready to travel"
+interface UserProfileProps {
+  userId: string;
 }
 
 interface UserProfile {
@@ -124,7 +69,7 @@ function getSocialIcon(url: string) {
   return <MessageSquareShare className="h-4 w-4" />;
 }
 
-export default function UserProfile() {
+export default function UserProfile({ userId }: UserProfileProps) {
   const [listings, setListings] = useState(initialListings.map(listing => ({ ...listing, isAvailable: false })))
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   
@@ -138,7 +83,7 @@ export default function UserProfile() {
   useEffect(() => {
     async function fetchProfileData() {
       try {
-        const response = await ApiService.get('/api/user/data/');
+        const response = await ApiService.get(`/api/user/data/get/${userId}/`);
         if (response) {
           const profileData: UserProfile = {
             name: response.name,
@@ -161,7 +106,7 @@ export default function UserProfile() {
     }
 
     fetchProfileData();
-  }, []);
+  }, [userId]);
 
   if (!userProfile) {
     return <div>Loading...</div>;
@@ -241,6 +186,7 @@ export default function UserProfile() {
                         month={listing.month}
                         createdBy={listing.createdBy}
                         showUser={false}
+                        createdByUsername={listing.createdByUsername}
                       />
                     ))}
                   </div>
