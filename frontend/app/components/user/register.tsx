@@ -1,47 +1,130 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
+import { useRouter } from 'next/navigation';
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-
+import { getAccessToken } from "../../lib/actions";
+import ApiService from "../../services/apiService";
+import { handleLogin } from "../../lib/actions";
+import { LoaderCircle } from "lucide-react";
 import {
   Trash2
 } from "lucide-react"
 
 export default function Register() {
   const [step, setStep] = useState(1)
+  const [refuseBackStepOne, setRefuseBackStepOne] = useState(false);
+  const router = useRouter();
   const totalSteps = 4
   const [links, setLinks] = useState([{ id: 1, value: "" }])
   const [password, setPassword] = useState("")
   const [repeatPassword, setRepeatPassword] = useState("")
   const [passwordError, setPasswordError] = useState("")
   const [email, setEmail] = useState("")
-  const [emailError, setEmailError] = useState("")
   const [name, setName] = useState("")
   const [sex, setSex] = useState("")
   const [language, setLanguage] = useState("")
   const [travelStatus, setTravelStatus] = useState("")
   const [about, setAbout] = useState("")
-  const [preferences, setPreferences] = useState("")
+  const [coliverPreferences, setColiverPreferences] = useState("")
+  const [photo, setPhoto] = useState<File | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [isNextDisabled, setIsNextDisabled] = useState(true);
+  const [errors, setErrors] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const token = getAccessToken();
+    if (token !== null) {
+      setStep(2);
+      setRefuseBackStepOne(true);
+    }
+  }, []);
 
   const validateStep = (): boolean => {
-    if (step === 1) return !email || !name || !password || !repeatPassword || !!passwordError;
-    if (step === 2) return !sex || !language || !travelStatus;
-    if (step === 3) return !about || !preferences;
+    if (step === 1) return !email || !password || !repeatPassword || !!passwordError;
+    if (step === 2) {
+      return !name || !photo || !language || !travelStatus;
+    }
+    if (step === 3) return !about || !coliverPreferences;
     return false;
   };
 
-  const handleNext = () => {
-    if (!validateStep() && step < totalSteps) {
+  const handleNext = async () => {
+    if (step === 1) {
+      setIsLoading(true);
+      try {
+        await HandleRegister();
+        setStep((prev) => prev + 1);
+      } catch (error) {
+        console.error('Registration failed:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    } else if (!validateStep() && step < totalSteps) {
       setStep((prev) => prev + 1);
+    }
+  };
+
+  const HandleRegister = async () => {
+    const formData = {
+      email: email,
+      password1: password,
+      password2: repeatPassword
+    };
+
+    const response = await ApiService.post('/api/register/', JSON.stringify(formData));
+
+    if (response.access) {
+      await handleLogin(response.user.pk, response.access, response.refresh);
+      setRefuseBackStepOne(true);
+    } else {
+      const tmpErrors: string[] = Object.values(response).map((error: any) => error);
+      setErrors(tmpErrors);
+      throw new Error('Registration failed');
+    }
+  };
+
+  const UpdateUserData = async () => {
+    setIsLoading(true);
+    try {
+      const formattedLinks = links.reduce((acc: Record<number, string>, link) => {
+        acc[link.id] = link.value;
+        return acc;
+      }, {});
+  
+      const formData = new FormData();
+      formData.append('email', email);
+      formData.append('name', name);
+      formData.append('language', language);
+      formData.append('travel_status', travelStatus);
+      formData.append('about', about);
+      formData.append('coliver_preferences', coliverPreferences);
+      if (photo) {
+        formData.append('photo', photo);
+      }
+      formData.append('social_media_links', JSON.stringify(formattedLinks));
+  
+      const response = await ApiService.put_form('/api/user/data/update/', formData);
+  
+  
+      if (response.status === 200) {
+        router.push('/');
+      } else {
+        throw new Error('Failed to update user data');
+      }
+    } catch (error) {
+      setErrors(['Failed to update user data. Please try again.']);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   useEffect(() => {
     setIsNextDisabled(validateStep());
-  }, [email, name, password, repeatPassword, passwordError, sex, language, travelStatus, about, preferences, step]);
+  }, [email, name, password, repeatPassword, passwordError, language, travelStatus, about, coliverPreferences, step, photo, links]);
 
   const handlePrev = () => {
     if (step > 1) {
@@ -62,23 +145,37 @@ export default function Register() {
   }
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPassword(e.target.value)
-    if (repeatPassword && e.target.value !== repeatPassword) {
-      setPasswordError("Passwords do not match")
+    const newPassword = e.target.value;
+    setPassword(newPassword);
+
+    if (repeatPassword && newPassword !== repeatPassword) {
+      setPasswordError("Passwords do not match");
+    } else if (newPassword.length < 8) {
+      setPasswordError("This password is too short. It must contain at least 8 characters.");
+    } else if (/^\d+$/.test(newPassword)) {
+      setPasswordError("This password is entirely numeric.");
+    } else if (["12345678", "password", "qwerty"].includes(newPassword)) {
+      setPasswordError("This password is too common.");
     } else {
-      setPasswordError("")
+      setPasswordError("");
     }
   }
 
   const handleRepeatPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setRepeatPassword(e.target.value)
-    if (password && e.target.value !== password) {
-      setPasswordError("Passwords do not match")
+    const newRepeatPassword = e.target.value;
+    setRepeatPassword(newRepeatPassword);
+
+    if (password && newRepeatPassword !== password) {
+      setPasswordError("Passwords do not match");
     } else {
-      setPasswordError("")
+      setPasswordError("");
     }
   }
-
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setPhoto(e.target.files[0])
+    }
+  }
   return (
     <div className="max-w-5xl mx-auto">
       <div className="mb-8">
@@ -115,10 +212,6 @@ export default function Register() {
               <Input id="email" type="email" placeholder="Enter your email" value={email} onChange={(e) => setEmail(e.target.value)} />
             </div>
             <div>
-              <Label htmlFor="name">Name</Label>
-              <Input id="name" placeholder="Enter your name" value={name} onChange={(e) => setName(e.target.value)} />
-            </div>
-            <div>
               <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
@@ -147,19 +240,25 @@ export default function Register() {
           <h2 className="text-2xl font-bold mb-2">Step 2: Additional Information</h2>
           <p className="text-gray-500 mb-4">Please provide additional details.</p>
           <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
-            <div>
-              <Label htmlFor="sex">Sex</Label>
-              <Select value={sex} onValueChange={setSex}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select your sex" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="male">Male</SelectItem>
-                  <SelectItem value="female">Female</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
+          <div>
+              <Label htmlFor="name">Name</Label>
+              <Input id="name" placeholder="Enter your name" value={name} onChange={(e) => setName(e.target.value)} />
             </div>
+            <div>
+          <Label htmlFor="photo">Photo</Label>
+          <div className="relative">
+            <Input
+              type="file"
+              id="photo"
+              onChange={handlePhotoChange}
+              accept="image/*"
+              className="opacity-0 absolute inset-0 w-full h-full cursor-pointer"
+            />
+            <div className="border rounded-md p-2 text-sm">
+              {photo ? `Image name: ${photo.name}` : "Choose a file..."}
+            </div>
+          </div>
+        </div>
             <div>
               <Label htmlFor="language">Language</Label>
               <Select value={language} onValueChange={setLanguage}>
@@ -167,10 +266,10 @@ export default function Register() {
                   <SelectValue placeholder="Select your language" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="english">English</SelectItem>
-                  <SelectItem value="spanish">Spanish</SelectItem>
-                  <SelectItem value="french">French</SelectItem>
-                  <SelectItem value="german">German</SelectItem>
+                  <SelectItem value="en">English</SelectItem>
+                  <SelectItem value="es">Spanish</SelectItem>
+                  <SelectItem value="fr">French</SelectItem>
+                  <SelectItem value="de">German</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -181,8 +280,8 @@ export default function Register() {
                   <SelectValue placeholder="Select your travel status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="ready">Ready Now</SelectItem>
-                  <SelectItem value="notReady">Not Ready</SelectItem>
+                  <SelectItem value="ready_to_travel">Ready To Travel</SelectItem>
+                  <SelectItem value="not_ready_to_travel">Not Ready To Travel</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -200,7 +299,7 @@ export default function Register() {
             </div>
             <div>
               <Label htmlFor="preferences">Co-liver preferences</Label>
-              <Textarea id="preferences" placeholder="Why you would live to live with?" value={preferences} onChange={(e) => setPreferences(e.target.value)} />
+              <Textarea id="preferences" placeholder="Why you would live to live with?" value={coliverPreferences} onChange={(e) => setColiverPreferences(e.target.value)} />
             </div>
           </div>
         </div>
@@ -231,16 +330,29 @@ export default function Register() {
           </div>
         </div>
       )}
-    <div className="mt-8 flex justify-between">
-      <Button variant="outline" onClick={handlePrev} disabled={step === 1}>
-        Previous
-      </Button>
-      {step < totalSteps ? (
-        <Button onClick={handleNext} disabled={isNextDisabled}>Next</Button>
-        ) : (
-          <Button type="submit" disabled={!!passwordError}>Register</Button>
-        )}
-      </div>
-    </div>
-  )
+          <div className="mt-8 flex justify-between">
+            <Button variant="outline" onClick={handlePrev} disabled={step === 1 || step === 2 || isLoading}>
+              Previous
+            </Button>
+            {step < totalSteps ? (
+              <Button onClick={handleNext} disabled={isNextDisabled || isLoading}>
+                {isLoading ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : null}
+                Next
+              </Button>
+            ) : (
+              <Button onClick={UpdateUserData} disabled={isNextDisabled || isLoading}>
+                {isLoading ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : null}
+                Register
+              </Button>
+            )}
+          </div>
+          {errors.length > 0 && (
+            <div className="mt-4 text-red-500">
+              {errors.map((error, index) => (
+                <p key={index}>{error}</p>
+              ))}
+            </div>
+          )}
+          </div>
+  );
 }

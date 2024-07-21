@@ -1,7 +1,9 @@
 'use client'
 import Link from "next/link"
 import { CircleUser, Menu, Package2, Search } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { getAccessToken } from "../../lib/actions";
 
 import { Button } from "@/components/ui/button"
 import {
@@ -27,8 +29,26 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { usePopup } from "../user/popup-context"
 
 export function MenuBar() {
+  const router = useRouter();
+  const [token, setToken] = useState<string | null>(null);
 
   const { openLoginForm } = usePopup();
+
+  useEffect(() => {
+    const fetchToken = async () => {
+      const accessToken = await getAccessToken();
+      setToken(accessToken);
+    };
+    fetchToken();
+  }, [token]);
+
+  const handleButtonClick = () => {
+    if (token) {
+      router.push('/create-listing');
+    } else {
+      openLoginForm();
+    }
+  };
 
   return (
     <header className="sticky top-0 z-50 flex h-16 items-center gap-4 border-b bg-white px-4 md:px-6">
@@ -103,7 +123,7 @@ export function MenuBar() {
         <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
           <div className="ml-auto flex-1 sm:flex-initial">
             <div className="relative">
-              <Button variant="outline" onClick={openLoginForm}>
+              <Button variant="outline" onClick={handleButtonClick}>
                 Add Trip
               </Button>
             </div>

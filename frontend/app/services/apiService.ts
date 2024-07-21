@@ -98,6 +98,27 @@ const ApiService = {
             });
         });
     },
+    put_form: async function (url: string, data: any): Promise<any> {
+        const token = await getAccessToken();
+    
+        return new Promise((resolve, reject) => {
+            fetch(`${process.env.NEXT_PUBLIC_API_URL}${url}`, {
+                method: 'PUT',
+                body: data,
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(async response => {
+                const json = await response.json();
+                resolve({ status: response.status, data: json });
+            })
+            .catch((error) => {
+                console.error('API PUT Error:', error);
+                reject(error);
+            });
+        });
+    },
     delete: async function (url: string): Promise<any> {
 
         const token = await getAccessToken();

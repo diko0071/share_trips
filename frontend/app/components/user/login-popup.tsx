@@ -16,7 +16,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { usePopup } from "./popup-context";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { getRefreshToken, handleRefresh } from "../../lib/actions";
 import ApiService from "../../services/apiService";
 import { handleLogin } from "../../lib/actions";
 
@@ -41,7 +40,7 @@ export function LoginForm() {
         handleLogin(response.user.pk, response.access, response.refresh).then(() => {
             setIsLoading(false);
             closeLoginForm();
-            router.push('/');
+            window.location.href = '/';
           });
       } else {
         setError(response.non_field_errors);
