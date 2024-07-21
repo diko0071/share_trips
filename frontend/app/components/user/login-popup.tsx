@@ -28,26 +28,6 @@ export function LoginForm() {
     const [error, setError] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(false);
 
-
-    useEffect(() => {
-      async function checkAndRefreshToken() {
-        const refreshToken = await getRefreshToken();
-        if (refreshToken) {
-          handleRefresh()
-            .then(newAccessToken => {
-              if (newAccessToken) {
-                router.push('/');
-              }
-            })
-            .catch(error => {
-              console.error("Error refreshing token:", error);
-            });
-        }
-      }
-    
-      checkAndRefreshToken();
-    }, [router]);
-
     const submitLogin = async () => {
       setIsLoading(true);
       setError([]);

@@ -4,72 +4,49 @@ import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from "@/components/ui/card" 
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
-import ListingCard from "../elements/trip-card" 
 import { useEffect, useState } from "react";
 import { toast } from "sonner"
+import TripCard from "../elements/trip-card"
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card"
+import ApiService from "../../services/apiService";
 
-const initialListings = [
-  {
-    id: 5,
-    title: "Charming Cottage in the Countryside",
-    imgSrc: "/photo2.png",
-    alt: "Apartment 5",
-    dateRange: "Sep 5 - Sep 12",
-    country: "USA",
-    city: "Nashville",
-    description: "A charming cottage in the peaceful countryside.",
-    minBudget: 130,
-    url: "https://example.com/listing/5",
-    month: "September",
-    isFlexible: true,
-    createdBy: "Charlie Green"
-  },
-  {
-    id: 7,
-    title: "Cozy Apartment in Downtown",
-    imgSrc: "/photo3.png",
-    alt: "Apartment 7",
-    dateRange: "Nov 10 - Nov 17",
-    country: "USA",
-    city: "New York",
-    description: "A cozy apartment in the bustling downtown area.",
-    minBudget: 180,
-    url: "https://example.com/listing/7",
-    month: "November",
-    isFlexible: true,
-    createdBy: "Eve Adams"
-  },
-  {
-    id: 8,
-    title: "Penthouse Suite with City View",
-    imgSrc: "/photo.png",
-    alt: "Apartment 8",
-    dateRange: "Dec 20 - Dec 27",
-    country: "USA",
-    city: "Seattle",
-    description: "A penthouse suite with a stunning city view.",
-    minBudget: 250,
-    url: "https://example.com/listing/8",
-    month: "December",
-    isFlexible: false,
-    createdBy: "Frank White"
-  },
-]
-
-
-const TRIP_DETAILS = {
-  title: "Explore the Wonders of Italy",
-  location: "Italy, Milan",
-  date: "June, 2024",
-  description: `Join us on an unforgettable journey through the historic cities and breathtaking landscapes of Italy. From
-  the canals of Venice to the rolling hills of Tuscany, this trip will immerse you in the rich culture and
-  stunning beauty of this remarkable country.`
+type TripDetail = {
+  id: number;
+  title: string;
+  imgSrc: string;
+  alt: string;
+  country: string;
+  city: string;
+  description: string;
+  minBudget: number;
+  url: string | null;
+  month: string;
+  isFlexible: boolean;
+  createdBy: string;
+  createdByPhoto: string;
+  createdByPreferences: string;
 };
+
+type TripData = {
+  id: number;
+  title: string;
+  imgSrc: string;
+  alt: string;
+  dateRange: string;
+  country: string;
+  city: string;
+  description: string;
+  minBudget: number;
+  url: string | null;
+  month: string;
+  isFlexible: boolean;
+  created_by_name: string;
+  isAvailable: boolean;
+}
 
 const USER_DETAILS = {
   preferencesTitle: "Co-Liver's preferences",
@@ -78,15 +55,72 @@ const USER_DETAILS = {
   contactName: "Dmitry Korzhov"
 };
 
-
-export default function Component() {
-  const [listings, setListings] = useState(initialListings);
+export default function TripDetail() {
+  const [tripDetails, setTripDetails] = useState<TripDetail | null>(null);
+  const [trips, setTrips] = useState<TripData[]>([]);
 
   useEffect(() => {
-    setListings(listings.map(listing => ({
-      ...listing,
-      isAvailable: Math.random() > 0.5
-    })))
+    async function fetchListingDetail() {
+      try {
+        const response = await ApiService.get('/api/trip/1');
+        if (response) {
+          const data: TripDetail = {
+            id: response.id,
+            title: response.name,
+            imgSrc: response.image1,
+            alt: response.name,
+            country: response.country,
+            city: response.city,
+            description: response.description,
+            minBudget: parseFloat(response.budget),
+            url: response.url,
+            month: response.month.charAt(0).toUpperCase() + response.month.slice(1),
+            isFlexible: response.is_flexible,
+            createdBy: response.created_by_name,
+            createdByPhoto: response.photo,
+            createdByPreferences: response.user_coliver_preferences,
+          };
+          setTripDetails(data);
+        } else {
+          console.error("No data in response");
+        }
+      } catch (error) {
+        console.error("Error fetching listings:", error);
+      }
+    }
+
+    fetchListingDetail();
+  }, []);
+
+  useEffect(() => {
+    async function fetchTrips() {
+      try {
+        const response = await ApiService.get('/api/trip/')
+        if (Array.isArray(response)) {
+          const data = response.map((listing: any) => ({
+            id: listing.id,
+            title: listing.name,
+            imgSrc: listing.image1,
+            alt: listing.name,
+            country: listing.country,
+            city: listing.city,
+            description: listing.description,
+            minBudget: parseFloat(listing.budget),
+            url: listing.url,
+            month: listing.month.charAt(0).toUpperCase() + listing.month.slice(1),
+            isFlexible: listing.is_flexible,
+            created_by_name: listing.created_by_name,
+          }))
+          setTrips(data as TripData[])
+        } else {
+          console.error("No data in response")
+        }
+      } catch (error) {
+        console.error("Error fetching listings:", error)
+      }
+    }
+
+    fetchTrips()
   }, [])
 
   const handleShareClick = () => {
@@ -106,7 +140,7 @@ export default function Component() {
   return (
     <div>
       <div className="flex justify-between items-center mb-1">
-      <Link href="/listings">
+        <Link href="/listings">
           <Button variant="ghost" size="icon" className="flex items-center gap-2">
             <MoveLeft className="w-4 h-4" />
           </Button>
@@ -118,8 +152,8 @@ export default function Component() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div className="flex flex-col items-start">
           <img
-            src="/photo2.png"
-            alt="Trip Image"
+            src={tripDetails?.imgSrc || "/photo2.png"}
+            alt={tripDetails?.alt || "Trip Image"}
             width={600}
             height={400}
             className="rounded-lg object-cover w-full aspect-[3/2]"
@@ -128,17 +162,17 @@ export default function Component() {
         <div>
           <div className="grid gap-2">
             <div>
-              <h1 className="text-3xl font-bold tracking-tighter mb-4">{TRIP_DETAILS.title}</h1>
+              <h1 className="text-3xl font-bold tracking-tighter mb-4">{tripDetails?.title}</h1>
               <div className="flex gap-2">
                 <Badge variant="outline" className="mb-4">
-                  {TRIP_DETAILS.location}
+                  {tripDetails?.country}, {tripDetails?.city}
                 </Badge>
                 <Badge variant="outline" className="mb-4">
-                  {TRIP_DETAILS.date}
+                  {tripDetails?.month}
                 </Badge>
               </div>
               <p className="text-muted-foreground">
-                {TRIP_DETAILS.description}
+                {tripDetails?.description}
               </p>
             </div>
             <div className="flex gap-4">
@@ -149,7 +183,7 @@ export default function Component() {
                   <div className="space-y-4">
                     <h3 className="text-base font-semibold">{USER_DETAILS.preferencesTitle}</h3>
                     <p className="text-muted-foreground text-sm">
-                      {USER_DETAILS.preferencesDescription}
+                      {tripDetails?.createdByPreferences}
                     </p>
                     <p className="text-muted-foreground text-sm">
                       <HoverCard>
@@ -157,7 +191,7 @@ export default function Component() {
                           <CircleHelp className="inline w-4 h-4 mr-1.5" />
                         </HoverCardTrigger>
                         <HoverCardContent>
-                          <p>The number that {USER_DETAILS.contactName} is ready to pay for the trip.</p>
+                          <p>The number that {tripDetails?.createdBy} is ready to pay for the trip.</p>
                         </HoverCardContent>
                       </HoverCard>
                       Available Budget: <b>{USER_DETAILS.splitOption}</b>
@@ -168,38 +202,38 @@ export default function Component() {
                       </Button>
                       <Button variant="link" size="sm" className="flex items-center gap-2">
                         <Avatar className="w-5 h-5">
-                          <AvatarImage src="/dima.jpeg" />
+                          <AvatarImage src={tripDetails?.createdByPhoto} />
                           <AvatarFallback>D</AvatarFallback>
                         </Avatar>
-                        <p className="text-xs font-medium">{USER_DETAILS.contactName}</p>
+                        <p className="text-xs font-medium">{tripDetails?.createdBy}</p>
                       </Button>
                     </div>
                   </div>
                 </div>
               </div>
             </Card>
-          </div>
+            </div>
         </div>
       </div>
       <div className="mt-8">
         <h2 className="text-2xl font-bold tracking-tighter">Other trips you might like</h2>
         <div className="border-t border-gray-200 my-3"></div>
-        <div className="flex flex-col md:flex-row gap-6 mt-4">
-        {listings.map((listing) => (
-          <ListingCard
-            key={listing.id}
-            id={listing.id}
-            title={listing.title}
-            imgSrc={listing.imgSrc}
-            alt={listing.alt}
+        <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-3 gap-6 mt-4">
+        {trips.map((trip) => (
+          <TripCard
+            key={trip.id}
+            id={trip.id}
+            title={trip.title}
+            imgSrc={trip.imgSrc}
+            alt={trip.alt}
             showUser={true}
-            country={listing.country}
-            city={listing.city}
-            description={listing.description}
-            minBudget={listing.minBudget}
-            url={listing.url}
-            month={listing.month}
-            createdBy={listing.createdBy}
+            country={trip.country}
+            city={trip.city}
+            description={trip.description}
+            minBudget={trip.minBudget}
+            url={trip.url || ""}
+            month={trip.month}
+            createdBy={trip.created_by_name}
           />
         ))}
         </div>
