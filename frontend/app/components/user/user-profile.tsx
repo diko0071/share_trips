@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import ListingCard from "../elements/trip-card"
 import ListingCardExample from "../elements/trip-card-blur-example"
 import ApiService from "../../services/apiService";
+import { getUserId } from "../../lib/actions"
 import {
     MessageSquareShare,
     BarChartHorizontal,
@@ -72,7 +73,17 @@ function getSocialIcon(url: string) {
 export default function UserProfile({ userId }: UserProfileProps) {
   const [listings, setListings] = useState(initialListings.map(listing => ({ ...listing, isAvailable: false })))
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchCurrentUserId() {
+      const id = await getUserId();
+      setCurrentUserId(id);
+    }
+
+    fetchCurrentUserId();
+  }, []);
+
   useEffect(() => {
     setListings(listings.map(listing => ({
       ...listing,
@@ -125,9 +136,11 @@ export default function UserProfile({ userId }: UserProfileProps) {
                     <AvatarImage src={userProfile.photo} />
                     <AvatarFallback>D</AvatarFallback>
                   </Avatar>
-                  <Button variant="ghost" size="icon" className="ml-auto">
-                    <Pencil className="w-4 h-4" />
-                  </Button>
+                  {currentUserId === userProfile.id && (
+                    <Button variant="ghost" size="icon" className="ml-auto">
+                      <Pencil className="w-4 h-4" />
+                    </Button>
+                  )}
                 </div>
                 <h2 className="mt-4 text-xl font-semibold">{userProfile.name}</h2>
                 <div className="mt-2 text-sm text-green-6000">

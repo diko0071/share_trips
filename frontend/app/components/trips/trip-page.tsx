@@ -1,4 +1,4 @@
-import { CalendarDays, DollarSign, User, MapPin, Mail, Share, CircleHelp, MoveLeft} from "lucide-react"
+import { CalendarDays, DollarSign, User, MapPin, Mail, Share, CircleHelp, MoveLeft, Pencil } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from "@/components/ui/card" 
@@ -7,6 +7,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { useEffect, useState } from "react";
 import { toast } from "sonner"
 import TripCard from "../elements/trip-card"
+import { getUserId } from "../../lib/actions"
 import {
   HoverCard,
   HoverCardContent,
@@ -29,7 +30,7 @@ type TripDetail = {
   createdBy: string;
   createdByPhoto: string;
   createdByPreferences: string;
-  created_by_user_id: number;
+  created_by_user_id: string;
   created_by_username: string;
 };
 
@@ -52,7 +53,7 @@ type TripData = {
   isFlexible: boolean;
   created_by_name: string;
   isAvailable: boolean;
-  created_by_user_id: number;
+  created_by_user_id: string;
   created_by_username: string;
 }
 
@@ -66,6 +67,7 @@ const USER_DETAILS = {
 export default function TripDetail({ tripId }: TripDetailProps) {
   const [tripDetails, setTripDetails] = useState<TripDetail | null>(null);
   const [trips, setTrips] = useState<TripData[]>([]);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!tripId) return;
@@ -137,6 +139,15 @@ export default function TripDetail({ tripId }: TripDetailProps) {
     fetchTrips()
   }, [])
 
+  useEffect(() => {
+    async function fetchCurrentUserId() {
+      const id = await getUserId();
+      setCurrentUserId(id);
+    }
+
+    fetchCurrentUserId();
+  }, []);
+
   const handleShareClick = () => {
     const url = window.location.href;
     navigator.clipboard.writeText(url).then(() => {
@@ -159,9 +170,16 @@ export default function TripDetail({ tripId }: TripDetailProps) {
             <MoveLeft className="w-4 h-4" />
           </Button>
         </Link>
-        <Button variant="ghost" size="icon" className="flex items-center gap-2" onClick={handleShareClick}>
-          <Share className="w-4 h-4" />
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="icon" className="flex items-center gap-2" onClick={handleShareClick}>
+            <Share className="w-4 h-4" />
+          </Button>
+          {tripDetails?.created_by_user_id === currentUserId && (
+            <Button variant="ghost" size="icon" className="flex items-center gap-2">
+              <Pencil className="w-4 h-4" />
+            </Button>
+          )}
+        </div>
       </div>
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div className="flex flex-col items-start">
