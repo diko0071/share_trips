@@ -1,4 +1,4 @@
-import { CalendarDays, DollarSign, User, MapPin, Mail, Share, CircleHelp, MoveLeft, Pencil } from "lucide-react"
+import { CalendarDays, DollarSign, User, MapPin, Mail, Share, CircleHelp, MoveLeft, Pencil, Settings, LoaderCircle } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from "@/components/ui/card" 
@@ -7,13 +7,40 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { useEffect, useState } from "react";
 import { toast } from "sonner"
 import TripCard from "../elements/trip-card"
-import { getUserId } from "../../lib/actions"
+import { getUserId, getAccessToken } from "../../lib/actions"
+import { Input } from "@/components/ui/input"
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card"
 import ApiService from "../../services/apiService";
+import { Textarea } from "@/components/ui/textarea"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuPortal,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 type TripDetail = {
   id: number;
@@ -68,6 +95,44 @@ export default function TripDetail({ tripId }: TripDetailProps) {
   const [tripDetails, setTripDetails] = useState<TripDetail | null>(null);
   const [trips, setTrips] = useState<TripData[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState({ save: false, delete: false });
+  const [token, setToken] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedTrip, setEditedTrip] = useState<TripDetail | null>(null);
+  const [errorMessages, setErrorMessages] = useState<{ [key: string]: string[] }>({});
+
+  const months = [
+    { value: 'january', label: 'January' },
+    { value: 'february', label: 'February' },
+    { value: 'march', label: 'March' },
+    { value: 'april', label: 'April' },
+    { value: 'may', label: 'May' },
+    { value: 'june', label: 'June' },
+    { value: 'july', label: 'July' },
+    { value: 'august', label: 'August' },
+    { value: 'september', label: 'September' },
+    { value: 'october', label: 'October' },
+    { value: 'november', label: 'November' },
+    { value: 'december', label: 'December' }
+  ];
+
+  useEffect(() => {
+    async function fetchCurrentUserId() {
+      const id = await getUserId();
+      setCurrentUserId(id);
+    }
+
+    async function fetchToken() {
+      const accessToken = await getAccessToken();
+      setToken(accessToken);
+    }
+
+    fetchCurrentUserId();
+    fetchToken();
+  }, []);
+
+  const handleDeleteClick = () => {
+  };
 
   useEffect(() => {
     if (!tripId) return;
@@ -139,15 +204,6 @@ export default function TripDetail({ tripId }: TripDetailProps) {
     fetchTrips()
   }, [])
 
-  useEffect(() => {
-    async function fetchCurrentUserId() {
-      const id = await getUserId();
-      setCurrentUserId(id);
-    }
-
-    fetchCurrentUserId();
-  }, []);
-
   const handleShareClick = () => {
     const url = window.location.href;
     navigator.clipboard.writeText(url).then(() => {
@@ -162,6 +218,69 @@ export default function TripDetail({ tripId }: TripDetailProps) {
     });
   };
 
+  const handleEditClick = () => {
+    setIsEditing(true);
+    setEditedTrip(tripDetails);
+  };
+
+  const handleSaveClick = () => {
+    if (editedTrip) {
+      setIsLoading(prevState => ({ ...prevState, save: true }));
+      ApiService.put(`/api/trip/${editedTrip.id}/update/`, JSON.stringify({
+        name: editedTrip.title,
+        description: editedTrip.description,
+        country: editedTrip.country,
+        city: editedTrip.city,
+        month: editedTrip.month.toLowerCase(),
+        imgSrc: editedTrip.imgSrc
+      }))
+        .then(data => {
+          setTripDetails(prevDetails => ({
+            ...prevDetails,
+            ...data
+          }));
+          setIsEditing(false);
+          toast("Trip details updated successfully");
+        })
+        .catch(error => {
+          console.error('Failed to update trip details:', error);
+          try {
+            const errorData = JSON.parse(error.message);
+            setErrorMessages(errorData);
+          } catch (e) {
+            toast("Failed to update trip details");
+          }
+        })
+        .finally(() => {
+          setIsLoading(prevState => ({ ...prevState, save: false }));
+        });
+    }
+  };
+
+  const handleCancelClick = () => {
+    setIsEditing(false);
+    setEditedTrip(tripDetails);
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    if (editedTrip) {
+      setEditedTrip({
+        ...editedTrip,
+        [e.target.name]: e.target.value,
+      });
+    }
+  };
+
+  const handleMonthChange = (value: string) => {
+    if (editedTrip) {
+      setEditedTrip({
+        ...editedTrip,
+        month: value,
+      });
+    }
+  };
+
+
   return (
     <div>
       <div className="flex justify-between items-center mb-1">
@@ -174,13 +293,27 @@ export default function TripDetail({ tripId }: TripDetailProps) {
           <Button variant="ghost" size="icon" className="flex items-center gap-2" onClick={handleShareClick}>
             <Share className="w-4 h-4" />
           </Button>
-          {tripDetails?.created_by_user_id === currentUserId && (
-            <Button variant="ghost" size="icon" className="flex items-center gap-2">
-              <Pencil className="w-4 h-4" />
-            </Button>
-          )}
-        </div>
-      </div>
+          {tripDetails?.created_by_user_id === currentUserId && token && (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="flex items-center gap-2">
+                                    <Settings className="w-4 h-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent className="w-48">
+                                <DropdownMenuGroup>
+                                    <DropdownMenuItem onClick={handleEditClick}>
+                                        Edit
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={handleDeleteClick}>
+                                        Delete
+                                    </DropdownMenuItem>
+                                </DropdownMenuGroup>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    )}
+                </div>
+            </div>
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div className="flex flex-col items-start">
           <img
@@ -192,7 +325,53 @@ export default function TripDetail({ tripId }: TripDetailProps) {
           />
         </div>
         <div>
-          <div className="grid gap-2">
+        <div className="grid gap-2">
+        <div>
+          {isEditing ? (
+            <div>
+              <Input
+                type="text"
+                name="title"
+                value={editedTrip?.title || ""}
+                onChange={handleChange}
+                className="mb-4"
+              />
+              <div className="flex gap-2">
+                <Input
+                  type="text"
+                  name="country"
+                  value={editedTrip?.country || ""}
+                  onChange={handleChange}
+                  className="mb-4"
+                />
+                <Input
+                  type="text"
+                  name="city"
+                  value={editedTrip?.city || ""}
+                  onChange={handleChange}
+                  className="mb-4"
+                />
+                <Select onValueChange={handleMonthChange} value={editedTrip?.month.toLowerCase() || ""}>
+                  <SelectTrigger className="mb-4">
+                    <SelectValue placeholder="Select a month" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {months.map(month => (
+                      <SelectItem key={month.value} value={month.value}>
+                        {month.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <Textarea
+                name="description"
+                value={editedTrip?.description || ""}
+                onChange={handleChange}
+                className="mb-4"
+              />
+            </div>
+          ) : (
             <div>
               <h1 className="text-3xl font-bold tracking-tighter mb-4">{tripDetails?.title}</h1>
               <div className="flex gap-2">
@@ -207,6 +386,8 @@ export default function TripDetail({ tripId }: TripDetailProps) {
                 {tripDetails?.description}
               </p>
             </div>
+          )}
+        </div>
             <div className="flex gap-4">
             </div>
             <Card className="flex items-center p-4 gap-4">
@@ -241,11 +422,17 @@ export default function TripDetail({ tripId }: TripDetailProps) {
                           <p className="text-xs font-medium">{tripDetails?.createdBy}</p>
                         </Button>
                       </Link>
-                    </div>
+                      </div>
                   </div>
                 </div>
               </div>
             </Card>
+            {isEditing && (
+                <div className="flex gap-2 mt-4">
+                  <Button onClick={handleSaveClick}>Save</Button>
+                  <Button variant="outline" onClick={handleCancelClick}>Cancel</Button>
+                </div>
+              )}
             </div>
         </div>
       </div>

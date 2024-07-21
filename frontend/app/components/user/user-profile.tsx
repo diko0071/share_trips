@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import ListingCard from "../elements/trip-card"
 import ListingCardExample from "../elements/trip-card-blur-example"
 import ApiService from "../../services/apiService";
-import { getUserId } from "../../lib/actions"
+import { getUserId, getAccessToken } from "../../lib/actions"
 import {
     MessageSquareShare,
     BarChartHorizontal,
@@ -74,6 +74,8 @@ export default function UserProfile({ userId }: UserProfileProps) {
   const [listings, setListings] = useState(initialListings.map(listing => ({ ...listing, isAvailable: false })))
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+
 
   useEffect(() => {
     async function fetchCurrentUserId() {
@@ -81,7 +83,13 @@ export default function UserProfile({ userId }: UserProfileProps) {
       setCurrentUserId(id);
     }
 
+    async function fetchToken() {
+      const accessToken = await getAccessToken();
+      setToken(accessToken);
+    }
+
     fetchCurrentUserId();
+    fetchToken();
   }, []);
 
   useEffect(() => {
@@ -136,7 +144,7 @@ export default function UserProfile({ userId }: UserProfileProps) {
                     <AvatarImage src={userProfile.photo} />
                     <AvatarFallback>D</AvatarFallback>
                   </Avatar>
-                  {currentUserId === userProfile.id && (
+                  {currentUserId === userProfile.id && token && (
                     <Button variant="ghost" size="icon" className="ml-auto">
                       <Pencil className="w-4 h-4" />
                     </Button>

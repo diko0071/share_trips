@@ -6,6 +6,8 @@ from .models import Trip
 from .serializers import TripDetailSerializer
 from .services import fetch_airbnb_page
 from rest_framework.permissions import AllowAny
+from django.shortcuts import get_object_or_404
+from rest_framework import status
 
 
 @api_view(['GET'])
@@ -35,11 +37,15 @@ def create_trip(request):
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def update_trip(request, pk):
-    trip = Trip.objects.get(id=pk)
-    serializer = TripDetailSerializer(instance=trip, data=request.data)
+    trip = get_object_or_404(Trip, pk=pk, created_by=request.user)
+    data = request.data.copy()
+    data['created_by'] = request.user.pk
+    serializer = TripDetailSerializer(trip, data=data)
     if serializer.is_valid():
         serializer.save()
-    return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    else:
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
