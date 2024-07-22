@@ -73,6 +73,28 @@ const ApiService = {
             });
         });
     },
+    post_auth_form: async function (url: string, data: FormData): Promise<any> {
+        const token = await getAccessToken();
+
+        return new Promise((resolve, reject) => {
+            fetch(`${process.env.NEXT_PUBLIC_API_URL}${url}`, {
+                method: 'POST',
+                body: data,
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => response.json())
+            .then((json) => {
+                console.log('json', json);
+                resolve(json);
+            })
+            .catch((error) => {
+                console.error('API POST Auth Error:', error);
+                reject(error);
+            });
+        });
+    },
     put: async function (url: string, data: any): Promise<any> {
 
         const token = await getAccessToken();

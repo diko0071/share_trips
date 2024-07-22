@@ -106,6 +106,7 @@ export default function UserProfile({ userId }: UserProfileProps) {
     async function fetchTrips() {
       try {
         const response = await ApiService.get(`/api/trip/user/${userId}/`);
+        console.log("API response:", response);
         if (Array.isArray(response)) {
           const data = response.map((listing: any) => ({
             id: listing.id,
@@ -122,6 +123,7 @@ export default function UserProfile({ userId }: UserProfileProps) {
             createdBy: listing.created_by_name,
             createdByUsername: listing.created_by_username,
           }));
+          console.log("Mapped data:", data);
           setTrips(data);
         } else {
           console.error("No data in response");
@@ -154,6 +156,7 @@ export default function UserProfile({ userId }: UserProfileProps) {
     async function fetchProfileData() {
       try {
         const response = await ApiService.get(`/api/user/data/get/${userId}/`);
+        
         if (response) {
           const profileData: UserProfile = {
             name: response.name,

@@ -1,12 +1,12 @@
 'use client';
-import CreateListing from "../components/trips/create-trip";
+import CreateTrip from "../components/trips/create-trip";
 
-const CreateListingPage = () => {
+const CreateTripPage = () => {
     return (
         <div>
-            <CreateListing />
+            <CreateTrip />
         </div>
     )
 }
 
-export default CreateListingPage
+export default CreateTripPage

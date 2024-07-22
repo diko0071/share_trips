@@ -32,7 +32,9 @@ def create_trip(request):
     serializer = TripDetailSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save()
-    return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    else:
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
@@ -62,7 +64,6 @@ def get_trip_list_by_user(request, pk):
     trips = Trip.objects.filter(created_by__username=pk)
     serializer = TripDetailSerializer(trips, many=True)
     return Response(serializer.data)
-
 
 
 @api_view(['POST'])

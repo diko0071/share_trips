@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner"
 import TripCard from "../elements/trip-card"
 import { getUserId, getAccessToken } from "../../lib/actions"
+import { useRouter } from 'next/navigation';
 import { Input } from "@/components/ui/input"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import {
@@ -100,6 +101,7 @@ export default function TripDetail({ tripId }: TripDetailProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedTrip, setEditedTrip] = useState<TripDetail | null>(null);
   const [errorMessages, setErrorMessages] = useState<{ [key: string]: string[] }>({});
+  const router = useRouter();
 
   const months = [
     { value: 'january', label: 'January' },
@@ -131,8 +133,26 @@ export default function TripDetail({ tripId }: TripDetailProps) {
     fetchToken();
   }, []);
 
-  const handleDeleteClick = () => {
-  };
+  const handleDeleteClick = async () => {
+    if (!tripDetails) return;
+
+    setIsLoading(prevState => ({ ...prevState, delete: true }));
+    try {
+        await ApiService.delete(`/api/trip/${tripDetails.id}/delete/`);
+        toast("Trip deleted successfully", {
+          action: {
+            label: "Close",
+            onClick: () => toast.dismiss(),
+          },
+        });
+        router.push('/trips');
+    } catch (error) {
+        console.error('Failed to delete trip:', error);
+        toast("Failed to delete trip");
+    } finally {
+        setIsLoading(prevState => ({ ...prevState, delete: false }));
+    }
+};
 
   useEffect(() => {
     if (!tripId) return;
@@ -177,32 +197,35 @@ export default function TripDetail({ tripId }: TripDetailProps) {
       try {
         const response = await ApiService.get('/api/trip/')
         if (Array.isArray(response)) {
-          const data = response.map((listing: any) => ({
-            id: listing.id,
-            title: listing.name,
-            imgSrc: listing.image1,
-            alt: listing.name,
-            country: listing.country,
-            city: listing.city,
-            description: listing.description,
-            minBudget: parseFloat(listing.budget),
-            url: listing.url,
-            month: listing.month.charAt(0).toUpperCase() + listing.month.slice(1),
-            isFlexible: listing.is_flexible,
-            created_by_name: listing.created_by_name,
-            created_by_username: listing.created_by_username
-          }))
-          setTrips(data as TripData[])
+          const data = response
+            .filter((listing: any) => listing.id !== parseInt(tripId))
+            .slice(0, 3)
+            .map((listing: any) => ({
+              id: listing.id,
+              title: listing.name,
+              imgSrc: listing.image1,
+              alt: listing.name,
+              country: listing.country,
+              city: listing.city,
+              description: listing.description,
+              minBudget: parseFloat(listing.budget),
+              url: listing.url,
+              month: listing.month.charAt(0).toUpperCase() + listing.month.slice(1),
+              isFlexible: listing.is_flexible,
+              created_by_name: listing.created_by_name,
+              created_by_username: listing.created_by_username
+            }));
+          setTrips(data as TripData[]);
         } else {
-          console.error("No data in response")
+          console.error("No data in response");
         }
       } catch (error) {
-        console.error("Error fetching listings:", error)
+        console.error("Error fetching listings:", error);
       }
     }
 
-    fetchTrips()
-  }, [])
+    fetchTrips();
+  }, [tripId]);
 
   const handleShareClick = () => {
     const url = window.location.href;
