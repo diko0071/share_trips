@@ -7,14 +7,18 @@ from .models import User
 from .serializers import UserDetailSerializer
 from dj_rest_auth.views import UserDetailsView
 from rest_framework.permissions import AllowAny
-from django.core.files.storage import default_storage
-from django.core.files.base import ContentFile
+from rest_framework import status
 
 class CustomUserDetailsView(UserDetailsView):
     serializer_class = UserDetailSerializer
 
     def update(self, request, *args, **kwargs):
-        return super().update(request, *args, **kwargs)
+        try:
+            response = super().update(request, *args, **kwargs)
+            return response
+        except Exception as e:
+            print(e)
+            return Response({"detail": f"An error occurred while updating user details: {e}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['GET'])
 @authentication_classes([])

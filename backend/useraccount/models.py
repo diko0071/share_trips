@@ -47,7 +47,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(unique=True)
     name = models.CharField(max_length=255)
-    photo = models.ImageField(upload_to='images/')
+    photo = models.ImageField(upload_to='images/', null=True, blank=True)
     about = models.TextField(null=True, blank=True)
     coliver_preferences = models.TextField(null=True, blank=True)
     language = models.CharField(max_length=255, choices=Language.choices, null=True, blank=True)
