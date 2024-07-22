@@ -55,6 +55,16 @@ def delete_trip(request, pk):
     return Response('Trip was deleted')
 
 
+@api_view(['GET'])
+@authentication_classes([])
+@permission_classes([])
+def get_trip_list_by_user(request, pk):
+    trips = Trip.objects.filter(created_by__username=pk)
+    serializer = TripDetailSerializer(trips, many=True)
+    return Response(serializer.data)
+
+
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def parse_airbnb_url(request):

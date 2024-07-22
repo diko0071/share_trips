@@ -25,25 +25,6 @@ import {
     LoaderCircle
 } from "lucide-react"
 
-const initialListings = [
-  {
-    id: 1,
-    title: "Cozy Studio in Downtown",
-    imgSrc: "/photo.png",
-    alt: "Apartment 1",
-    dateRange: "May 1 - May 7",
-    country: "USA",
-    city: "New York",
-    description: "A cozy studio in the heart of downtown.",
-    minBudget: 100,
-    url: "https://example.com/listing/1",
-    month: "May",
-    isFlexible: true,
-    createdBy: "John Doe",
-    createdByUsername: "DmitryKorzhov"
-  },
-]
-
 interface UserProfileProps {
   userId: string;
 }
@@ -61,6 +42,21 @@ interface UserProfile {
   username: string;
 }
 
+interface Trips {
+  id: number;
+  title: string;
+  imgSrc: string;
+  alt: string;
+  country: string;
+  city: string;
+  description: string;
+  minBudget: number;
+  url: string;
+  month: string;
+  isFlexible: boolean;
+  createdBy: string;
+  createdByUsername: string;
+}
 
 function getSocialIcon(url: string) {
   if (url.includes("x.com") || url.includes("twitter.com")) {
@@ -96,7 +92,7 @@ const travelStatuses = [
 ];
 
 export default function UserProfile({ userId }: UserProfileProps) {
-  const [listings, setListings] = useState(initialListings.map(listing => ({ ...listing, isAvailable: false })))
+  const [trips, setTrips] = useState<Trips[]>([]);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
@@ -104,6 +100,39 @@ export default function UserProfile({ userId }: UserProfileProps) {
   const [editedUser, setEditedUser] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessages, setErrorMessages] = useState<{ [key: string]: string[] }>({});
+
+
+  useEffect(() => {
+    async function fetchTrips() {
+      try {
+        const response = await ApiService.get(`/api/trip/user/${userId}/`);
+        if (Array.isArray(response)) {
+          const data = response.map((listing: any) => ({
+            id: listing.id,
+            title: listing.name,
+            imgSrc: listing.image1,
+            alt: listing.name,
+            country: listing.country,
+            city: listing.city,
+            description: listing.description,
+            minBudget: parseFloat(listing.budget),
+            url: listing.url,
+            month: listing.month.charAt(0).toUpperCase() + listing.month.slice(1),
+            isFlexible: listing.is_flexible,
+            createdBy: listing.created_by_name,
+            createdByUsername: listing.created_by_username,
+          }));
+          setTrips(data);
+        } else {
+          console.error("No data in response");
+        }
+      } catch (error) {
+        console.error("Error fetching trips:", error);
+      }
+    }
+
+    fetchTrips();
+  }, [userId]);
 
 
   useEffect(() => {
@@ -120,13 +149,6 @@ export default function UserProfile({ userId }: UserProfileProps) {
     fetchCurrentUserId();
     fetchToken();
   }, []);
-
-  useEffect(() => {
-    setListings(listings.map(listing => ({
-      ...listing,
-      isAvailable: Math.random() > 0.5
-    })))
-  }, [])
 
   useEffect(() => {
     async function fetchProfileData() {
@@ -426,7 +448,7 @@ export default function UserProfile({ userId }: UserProfileProps) {
           </Card>
         </div>           
           <div className="w-full lg:w-3/4">
-            {listings.length === 0 ? (
+            {trips.length === 0 ? (
               <div className="flex justify-center items-start h-full">
                 <ListingCardExample />
               </div>
@@ -438,22 +460,22 @@ export default function UserProfile({ userId }: UserProfileProps) {
                 </TabsList>
                 <TabsContent value="active">
                   <div className="grid grid-cols-1 gap-8 md:grid-cols-1 lg:grid-cols-1">
-                    {listings.map((listing) => (
+                    {trips.map((trip) => (
                       <ListingCard 
-                        key={listing.id} 
-                        id={listing.id}
-                        title={listing.title}
-                        imgSrc={listing.imgSrc}
-                        alt={listing.alt}
-                        country={listing.country}
-                        city={listing.city}
-                        description={listing.description}
-                        minBudget={listing.minBudget}
-                        url={listing.url}
-                        month={listing.month}
-                        createdBy={listing.createdBy}
+                        key={trip.id} 
+                        id={trip.id}
+                        title={trip.title}
+                        imgSrc={trip.imgSrc}
+                        alt={trip.alt}
+                        country={trip.country}
+                        city={trip.city}
+                        description={trip.description}
+                        minBudget={trip.minBudget}
+                        url={trip.url}
+                        month={trip.month}
+                        createdBy={trip.createdBy}
                         showUser={false}
-                        createdByUsername={listing.createdByUsername}
+                        createdByUsername={trip.createdByUsername}
                       />
                     ))}
                   </div>
