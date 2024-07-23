@@ -9,6 +9,9 @@ import { getAccessToken } from "../../lib/actions";
 import ApiService from "../../services/apiService";
 import { handleLogin } from "../../lib/actions";
 import { LoaderCircle } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox"
+import { DndProvider, useDrag, useDrop } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 import {
   Trash2
 } from "lucide-react"
@@ -34,13 +37,19 @@ export default function Register() {
   const [isNextDisabled, setIsNextDisabled] = useState(true);
   const [errors, setErrors] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [AccessToken, setAccessToken] = useState<string | null>(null);
+  
 
   useEffect(() => {
-    const token = getAccessToken();
-    if (token !== null) {
-      setStep(2);
-      setRefuseBackStepOne(true);
+    async function fetchTokenAndSetStep() {
+      const accessToken = await getAccessToken();
+      setAccessToken(accessToken);
+      if (accessToken !== null) {
+        setStep(2);
+        setRefuseBackStepOne(true);
+      }
     }
+    fetchTokenAndSetStep();
   }, []);
 
   const validateStep = (): boolean => {
@@ -181,6 +190,7 @@ export default function Register() {
       setPhoto(e.target.files[0])
     }
   }
+
   return (
     <div className="max-w-5xl mx-auto">
       <div className="mb-8">

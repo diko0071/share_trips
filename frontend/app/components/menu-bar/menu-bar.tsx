@@ -3,7 +3,7 @@ import Link from "next/link"
 import { CircleUser, Menu, Package2, Search } from "lucide-react"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { getAccessToken } from "../../lib/actions";
+import { getAccessToken, resetAuthCookies } from "../../lib/actions";
 
 import { Button } from "@/components/ui/button"
 import {
@@ -31,6 +31,11 @@ import { usePopup } from "../user/popup-context"
 export function MenuBar() {
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
+
+  const handleLogout = () => {
+    resetAuthCookies();
+    window.location.href = '/';
+  };
 
   const { openLoginForm } = usePopup();
 
@@ -67,16 +72,10 @@ export function MenuBar() {
             About
           </Link>
           <Link
-            href="#"
+            href="/trips"
             className="text-muted-foreground transition-colors hover:text-foreground"
           >
             Trips
-          </Link>
-          <Link
-            href="#"
-            className="text-muted-foreground transition-colors hover:text-foreground"
-          >
-            People
           </Link>
         </nav>
         <Sheet>
@@ -111,12 +110,6 @@ export function MenuBar() {
               >
                 Trips
               </Link>
-              <Link
-                href="#"
-                className="text-muted-foreground hover:text-foreground"
-              >
-                People
-              </Link>
             </nav>
           </SheetContent>
         </Sheet>
@@ -129,22 +122,31 @@ export function MenuBar() {
             </div>
           </div>
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="secondary" size="icon" className="rounded-full">
-                <CircleUser className="h-5 w-5" />
-                <span className="sr-only">Toggle user menu</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+        <DropdownMenuTrigger asChild>
+          <Button variant="secondary" size="icon" className="rounded-full">
+            <CircleUser className="h-5 w-5" />
+            <span className="sr-only">Toggle user menu</span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          {token ? (
+            <>
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Settings</DropdownMenuItem>
+              <DropdownMenuItem>Profile</DropdownMenuItem>
               <DropdownMenuItem>Support</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Logout</DropdownMenuItem>
-            </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-    </header>
-  )
+              <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
+            </>
+          ) : (
+            <>
+              <DropdownMenuItem onClick={openLoginForm}>Login</DropdownMenuItem>
+              <DropdownMenuItem>Support</DropdownMenuItem>
+            </>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  </header>
+)
 }

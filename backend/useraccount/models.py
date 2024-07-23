@@ -53,7 +53,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     language = models.CharField(max_length=255, choices=Language.choices, null=True, blank=True)
     social_media_links = models.JSONField(null=True, blank=True)
     travel_status = models.CharField(max_length=255, choices=TravelStatus.choices, null=True, blank=True)
-    username = models.CharField(max_length=255, unique=True)
+    username = models.CharField(max_length=255, unique=True, null=True, blank=True)
 
 
     is_active = models.BooleanField(default=True)

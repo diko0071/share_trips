@@ -7,7 +7,7 @@ export async function middleware(request: NextRequest) {
   const userId = await getUserId();
   const token = await getAccessToken();
 
-  if ((pathname === '/login' || pathname === '/register') && token && userId) {
+  if ((pathname === '/login' || pathname === '') && token && userId) {
     const redirectUrl = new URL('/', request.url);
     return NextResponse.redirect(redirectUrl);
   }
@@ -21,6 +21,6 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/register', '/create-trip'],
+  matcher: ['/create-trip'],
 };
 
