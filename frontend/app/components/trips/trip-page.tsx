@@ -307,7 +307,7 @@ export default function TripDetail({ tripId }: TripDetailProps) {
   return (
     <div>
       <div className="flex justify-between items-center mb-1">
-        <Link href="/trips">
+        <Link href="/">
           <Button variant="ghost" size="icon" className="flex items-center gap-2">
             <MoveLeft className="w-4 h-4" />
           </Button>

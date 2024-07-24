@@ -3,7 +3,7 @@ import Link from "next/link"
 import { CircleUser, Menu, Package2, Search } from "lucide-react"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { getAccessToken, resetAuthCookies } from "../../lib/actions";
+import { getAccessToken, getUserId, resetAuthCookies } from "../../lib/actions";
 
 import { Button } from "@/components/ui/button"
 import {
@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { LoginForm } from "../user/login-popup"
+import ApiService from "../../services/apiService";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,9 +29,17 @@ import { Input } from "@/components/ui/input"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { usePopup } from "../user/popup-context"
 
+interface UserProfile {
+  photo: string;
+  id: string;
+  username: string;
+}
+
 export function MenuBar() {
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
   const handleLogout = () => {
     resetAuthCookies();
@@ -43,36 +52,64 @@ export function MenuBar() {
     const fetchToken = async () => {
       const accessToken = await getAccessToken();
       setToken(accessToken);
+      const userId = await getUserId();
+      setUserId(userId);
     };
     fetchToken();
-  }, [token]);
+  }, [token, userId]);
 
   const handleButtonClick = () => {
     if (token) {
       router.push('/create-trip');
     } else {
-      openLoginForm();
+      openLoginForm('/create-trip');
     }
   };
+  
+  useEffect(() => {
+    async function fetchProfileData() {
+      try {
+        const response = await ApiService.get(`/api/user/data/`);
+        
+        if (response) {
+          const profileData: UserProfile = {
+            photo: response.photo,
+            id: response.id,
+            username: response.username,
+          };
+          setUserProfile(profileData);
+        } else {
+          console.error("No data in response");
+        }
+      } catch (error) {
+        console.error("Error fetching profile data:", error);
+      }
+    }
+  
+    if (token) {
+      fetchProfileData();
+    }
+  }, [userId, token]);
+
 
   return (
     <header className="sticky top-0 z-50 flex h-16 items-center gap-4 border-b bg-white px-4 md:px-6">
       <nav className="hidden flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6">
         <Link
-            href="#"
+            href="/"
             className="flex items-center gap-2 text-lg font-semibold md:text-base"
           >
             <Package2 className="h-6 w-6" />
             <span className="sr-only">Acme Inc</span>
           </Link>
           <Link
-            href="#"
+            href="/about"
             className="text-muted-foreground transition-colors hover:text-foreground"
           >
             About
           </Link>
           <Link
-            href="/trips"
+            href="/"
             className="text-muted-foreground transition-colors hover:text-foreground"
           >
             Trips
@@ -92,20 +129,20 @@ export function MenuBar() {
           <SheetContent side="left">
             <nav className="grid gap-6 text-lg font-medium">
               <Link
-                href="#"
+                href="/"
                 className="flex items-center gap-2 text-lg font-semibold"
               >
                 <Package2 className="h-6 w-6" />
                 <span className="sr-only">Acme Inc</span>
               </Link>
               <Link
-                href="#"
+                href="/about"
                 className="text-muted-foreground hover:text-foreground"
               >
                 About
               </Link>
               <Link
-                href="#"
+                href="/"
                 className="text-muted-foreground hover:text-foreground"
               >
                 Trips
@@ -122,25 +159,31 @@ export function MenuBar() {
             </div>
           </div>
           <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="secondary" size="icon" className="rounded-full">
-            <CircleUser className="h-5 w-5" />
-            <span className="sr-only">Toggle user menu</span>
-          </Button>
+          <DropdownMenuTrigger asChild>
+            <Button variant="secondary" size="icon" className="rounded-full">
+              {token && userProfile?.photo ? (
+                <img src={userProfile.photo} alt="User Photo" className="h-8 w-8 rounded-full" />
+              ) : (
+                <CircleUser className="h-8 w-8" />
+              )}
+              <span className="sr-only">Toggle user menu</span>
+            </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           {token ? (
             <>
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Profile</DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => router.push(`/profile/${userProfile?.username}`)}>
+                Profile
+              </DropdownMenuItem>
               <DropdownMenuItem>Support</DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
             </>
           ) : (
             <>
-              <DropdownMenuItem onClick={openLoginForm}>Login</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => openLoginForm('/')}>Login</DropdownMenuItem>
               <DropdownMenuItem>Support</DropdownMenuItem>
             </>
           )}

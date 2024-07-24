@@ -20,7 +20,7 @@ import ApiService from "../../services/apiService";
 import { handleLogin } from "../../lib/actions";
 
 export function LoginForm() {
-    const { isLoginFormOpen, closeLoginForm } = usePopup();
+    const { isLoginFormOpen, closeLoginForm, redirectUrl } = usePopup();
     const router = useRouter();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -40,7 +40,7 @@ export function LoginForm() {
         handleLogin(response.user.pk, response.access, response.refresh).then(() => {
             setIsLoading(false);
             closeLoginForm();
-            window.location.href = '/';
+            window.location.href = redirectUrl;
           });
       } else {
         setError(response.non_field_errors);
