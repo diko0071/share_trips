@@ -29,7 +29,7 @@ export default function RootLayout({
         <Toaster />
        </main>
        <LoginForm />
-       <div className="mt-4 grid w-full h-full py-5">
+       <div className="mt-4 grid w-full h-full">
        <Footer />
        </div>
        </PopupProvider>

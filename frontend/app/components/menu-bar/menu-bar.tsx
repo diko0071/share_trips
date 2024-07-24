@@ -1,6 +1,6 @@
 'use client'
 import Link from "next/link"
-import { CircleUser, Menu, Package2, Search } from "lucide-react"
+import { CircleUser, Menu, Package2, Search, Handshake } from "lucide-react"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { getAccessToken, getUserId, resetAuthCookies } from "../../lib/actions";
@@ -99,8 +99,8 @@ export function MenuBar() {
             href="/"
             className="flex items-center gap-2 text-lg font-semibold md:text-base"
           >
-            <Package2 className="h-6 w-6" />
-            <span className="sr-only">Acme Inc</span>
+            <Handshake className="h-6 w-6" />
+            <span className="sr-only">Trip Sharing</span>
           </Link>
           <Link
             href="/about"
