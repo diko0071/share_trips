@@ -26,10 +26,6 @@ export default function TripCard({
     country, city, description, minBudget, url, month, createdBy, createdByUsername
   }: TripCardProps) {
 
-    const truncatedDescription = description.length > 87 
-    ? description.substring(0, 87) + "..." 
-    : description;
-
     return (
         <Card className="w-full rounded-lg shadow-lg overflow-hidden">
         <div className="relative">
@@ -54,8 +50,8 @@ export default function TripCard({
           <div className="flex items-center mb-2">
             <h4 className="text-lg font-semibold">{title}</h4>
           </div>
-          <p className="text-muted-foreground text-sm mb-4">
-            {truncatedDescription}
+          <p className="text-muted-foreground text-sm mb-4 line-clamp-1">
+            {description}
           </p>
           <div className="flex items-center justify-between">
           <Link href={`/trip/${id}`}>
