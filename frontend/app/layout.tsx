@@ -5,6 +5,7 @@ import { Toaster } from "sonner";
 import { MenuBar } from "./components/menu-bar/menu-bar";
 import { PopupProvider } from "./components/user/popup-context";
 import { LoginForm } from "./components/user/login-popup";
+import Footer from "./components/footer/footer";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -28,6 +29,9 @@ export default function RootLayout({
         <Toaster />
        </main>
        <LoginForm />
+       <div className="mt-4 grid w-full h-full py-5">
+       <Footer />
+       </div>
        </PopupProvider>
       </body>
     </html>

@@ -2,18 +2,18 @@ from django.db import models
 from useraccount.models import User
 
 class Month(models.TextChoices):
-    JANUARY = 'january', 'January'
-    FEBRUARY = 'february', 'February'
-    MARCH = 'march', 'March'
-    APRIL = 'april', 'April'
-    MAY = 'may', 'May'
-    JUNE = 'june', 'June'
-    JULY = 'july', 'July'
-    AUGUST = 'august', 'August'
-    SEPTEMBER = 'september', 'September'
-    OCTOBER = 'october', 'October'
-    NOVEMBER = 'november', 'November'
-    DECEMBER = 'december', 'December'
+    JANUARY = 'January', 'January'      
+    FEBRUARY = 'February', 'February' 
+    MARCH = 'March', 'March' 
+    APRIL = 'April', 'April'
+    MAY = 'May', 'May'
+    JUNE = 'June', 'June'
+    JULY = 'July', 'July'
+    AUGUST = 'August', 'August'
+    SEPTEMBER = 'September', 'September'
+    OCTOBER = 'October', 'October'
+    NOVEMBER = 'November', 'November'
+    DECEMBER = 'December', 'December'
 
     def __str__(self):
         return self.name
