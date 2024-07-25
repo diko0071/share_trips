@@ -12,6 +12,7 @@ import { getUserId, getAccessToken } from "../../lib/actions"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { Checkbox } from "@/components/ui/checkbox"
 import { toast } from "sonner"
 import {
     MessageSquareShare,
@@ -25,6 +26,12 @@ import {
     LoaderCircle
 } from "lucide-react"
 
+
+interface SocialMediaLink {
+  value: string;
+  isPreferable: boolean;
+}
+
 interface UserProfileProps {
   userId: string;
 }
@@ -37,7 +44,7 @@ interface UserProfile {
   about: string;
   coliver_preferences: string;
   language: string;
-  social_media_links: Record<string, string>;
+  social_media_links: Record<string, SocialMediaLink>;
   travel_status: string;
   username: string;
 }
@@ -56,6 +63,7 @@ interface Trips {
   isFlexible: boolean;
   createdBy: string;
   createdByUsername: string;
+  photo: string;
 }
 
 function getSocialIcon(url: string) {
@@ -122,6 +130,7 @@ export default function UserProfile({ userId }: UserProfileProps) {
             isFlexible: listing.is_flexible,
             createdBy: listing.created_by_name,
             createdByUsername: listing.created_by_username,
+            photo: listing.photo
           }));
           console.log("Mapped data:", data);
           setTrips(data);
@@ -196,11 +205,11 @@ export default function UserProfile({ userId }: UserProfileProps) {
     if (editedUser) {
       setIsLoading(true);
       try {
-        const formattedLinks = Object.entries(editedUser.social_media_links).reduce((acc: Record<string, string>, [platform, link]) => {
+        const formattedLinks = Object.entries(editedUser.social_media_links).reduce((acc: Record<string, SocialMediaLink>, [platform, link]) => {
           acc[platform] = link;
           return acc;
         }, {});
-
+  
         const formData = new FormData();
         formData.append('name', editedUser.name);
         formData.append('language', editedUser.language);
@@ -209,7 +218,7 @@ export default function UserProfile({ userId }: UserProfileProps) {
         formData.append('coliver_preferences', editedUser.coliver_preferences);
         formData.append('social_media_links', JSON.stringify(formattedLinks));
         formData.append('username', editedUser.username);
-
+  
         formData.forEach((value, key) => {
           console.log(`${key}: ${value}`);
         });
@@ -259,25 +268,30 @@ export default function UserProfile({ userId }: UserProfileProps) {
     }
   };
 
-  const handleLinkPlatformChange = (id: string, value: string) => {
+  const handleLinkPlatformChange = (oldPlatform: string, newPlatform: string) => {
     if (editedUser) {
+      const updatedLinks = { ...editedUser.social_media_links };
+      const linkData = updatedLinks[oldPlatform];
+      delete updatedLinks[oldPlatform];
+      updatedLinks[newPlatform] = linkData;
+  
       setEditedUser({
         ...editedUser,
-        social_media_links: {
-          ...editedUser.social_media_links,
-          [id]: value,
-        },
+        social_media_links: updatedLinks,
       });
     }
   };
 
-  const handleLinkChange = (platform: string, value: string) => {
+  const handleLinkChange = (platform: string, field: 'value' | 'isPreferable', value: string | boolean) => {
     if (editedUser) {
       setEditedUser({
         ...editedUser,
         social_media_links: {
           ...editedUser.social_media_links,
-          [platform]: value,
+          [platform]: {
+            ...editedUser.social_media_links[platform],
+            [field]: value,
+          },
         },
       });
     }
@@ -289,7 +303,7 @@ export default function UserProfile({ userId }: UserProfileProps) {
         ...editedUser,
         social_media_links: {
           ...editedUser.social_media_links,
-          [`new-${Date.now()}`]: '',
+          [`new-${Date.now()}`]: { value: '', isPreferable: false },
         },
       });
     }
@@ -375,48 +389,55 @@ export default function UserProfile({ userId }: UserProfileProps) {
                     </Select>
                     <h3 className="mt-6 text-lg font-semibold">Contacts</h3>
                     <div className="mt-2 flex flex-col gap-3 w-full">
-                    {editedUser?.social_media_links && Object.entries(editedUser.social_media_links).map(([platform, link]) => (
-                          <div key={platform} className="flex items-center gap-2 w-full">
-                            <div className="flex-grow">
-                              <Select value={platform} onValueChange={(value) => handleLinkPlatformChange(platform, value)}>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select a platform" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="Github">Github</SelectItem>
-                                  <SelectItem value="LinkedIn">LinkedIn</SelectItem>
-                                  <SelectItem value="Facebook">Facebook</SelectItem>
-                                  <SelectItem value="Twitter">Twitter</SelectItem>
-                                  <SelectItem value="Instagram">Instagram</SelectItem>
-                                  <SelectItem value="Google">Google</SelectItem>
-                                  <SelectItem value="Other">Other</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <div className="flex-grow">
-                              <Input
-                                id={`link-${platform}`}
-                                placeholder="Enter a link"
-                                value={link}
-                                onChange={(e) => handleLinkChange(platform, e.target.value)}
-                                className="w-full"
-                              />
-                            </div>
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              onClick={() => handleRemoveLink(platform)}
-                              className="ml-2 flex items-center justify-center min-w-[40px] h-10"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
+                      {editedUser?.social_media_links && Object.entries(editedUser.social_media_links).map(([platform, link]) => (
+                        <div key={platform} className="flex items-center gap-2 w-full">
+                          <div className="flex items-center space-x-2">
+                            <Checkbox
+                              id={`preferable-${platform}`}
+                              checked={link.isPreferable}
+                              onCheckedChange={(checked) => handleLinkChange(platform, 'isPreferable', checked as boolean)}
+                            />
                           </div>
-                        ))}
+                          <div className="flex-grow">
+                            <Select value={platform} onValueChange={(value) => handleLinkPlatformChange(platform, value)}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select a platform" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Github">Github</SelectItem>
+                                <SelectItem value="LinkedIn">LinkedIn</SelectItem>
+                                <SelectItem value="Facebook">Facebook</SelectItem>
+                                <SelectItem value="Twitter">Twitter</SelectItem>
+                                <SelectItem value="Instagram">Instagram</SelectItem>
+                                <SelectItem value="Google">Google</SelectItem>
+                                <SelectItem value="Other">Other</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="flex-grow">
+                            <Input
+                              id={`link-${platform}`}
+                              placeholder="Enter a link"
+                              value={link.value}
+                              onChange={(e) => handleLinkChange(platform, 'value', e.target.value)}
+                              className="w-full"
+                            />
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => handleRemoveLink(platform)}
+                            className="ml-2 flex items-center justify-center min-w-[40px] h-10"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      ))}
                       <Button variant="link" className="justify-start" onClick={handleAddLink}>Add Link</Button>
                     </div>
                     <div className="flex gap-2 mt-4">
                       <Button onClick={handleSaveClick} disabled={isLoading}>
-                      {isLoading ? <LoaderCircle className="animate-spin w-4 h-4" /> : "Save"}
+                        {isLoading ? <LoaderCircle className="animate-spin w-4 h-4" /> : "Save"}
                       </Button>
                       <Button variant="outline" onClick={handleCancelClick} disabled={isLoading}>Cancel</Button>
                     </div>
@@ -435,8 +456,8 @@ export default function UserProfile({ userId }: UserProfileProps) {
                     <p className="mt-2 text-sm">{userProfile.coliver_preferences}</p>
                     <h3 className="mt-6 text-lg font-semibold">Contacts</h3>
                     <div className="mt-2 flex gap-4">
-                    {userProfile.social_media_links && Object.entries(userProfile.social_media_links).map(([platform, url]) => (
-                        <a key={platform} href={url} target="_blank" rel="noopener noreferrer">
+                      {userProfile.social_media_links && Object.entries(userProfile.social_media_links).map(([platform, link]) => (
+                        <a key={platform} href={link.value} target="_blank" rel="noopener noreferrer">
                           <Button variant="link" className="inline-flex items-center">
                             {getSocialIcon(platform)}
                             <span className="ml-2">{platform}</span>
@@ -449,8 +470,8 @@ export default function UserProfile({ userId }: UserProfileProps) {
               </div>
             </CardContent>
           </Card>
-        </div>           
-          <div className="w-full lg:w-3/4">
+        </div>
+        <div className="w-full lg:w-3/4">
             {trips.length === 0 ? (
               <div className="flex justify-center items-start h-full">
                 <ListingCardExample />
@@ -479,6 +500,7 @@ export default function UserProfile({ userId }: UserProfileProps) {
                         createdBy={trip.createdBy}
                         showUser={false}
                         createdByUsername={trip.createdByUsername}
+                        photo={trip.photo}
                       />
                     ))}
                   </div>

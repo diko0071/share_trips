@@ -21,7 +21,7 @@ export default function Register() {
   const [refuseBackStepOne, setRefuseBackStepOne] = useState(false);
   const router = useRouter();
   const totalSteps = 4
-  const [links, setLinks] = useState([{ id: 1, value: "", platform: "" }]);
+  const [links, setLinks] = useState([{ id: 1, value: "", platform: "", isPreferable: false }]);
   const [password, setPassword] = useState("")
   const [repeatPassword, setRepeatPassword] = useState("")
   const [passwordError, setPasswordError] = useState("")
@@ -38,6 +38,10 @@ export default function Register() {
   const [errors, setErrors] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [AccessToken, setAccessToken] = useState<string | null>(null);
+
+  const handleLinkPreferableChange = (id: number, isPreferable: boolean) => {
+    setLinks(links.map(link => link.id === id ? { ...link, isPreferable } : link))
+  }
   
 
   useEffect(() => {
@@ -99,8 +103,8 @@ export default function Register() {
   const UpdateUserData = async () => {
     setIsLoading(true);
     try {
-      const formattedLinks = links.reduce((acc: Record<string, string>, link) => {
-        acc[link.platform] = link.value;
+      const formattedLinks = links.reduce((acc: Record<string, { value: string, isPreferable: number }>, link) => {
+        acc[link.platform] = { value: link.value, isPreferable: link.isPreferable ? 1 : 0 };
         return acc;
       }, {});
   
@@ -147,7 +151,7 @@ export default function Register() {
   }
 
   const handleAddLink = () => {
-    setLinks([...links, { id: links.length + 1, value: "", platform: "" }])
+    setLinks([...links, { id: links.length + 1, value: "", platform: "", isPreferable: false }])
   }
 
   const handleLinkChange = (id: number, value: string) => {
@@ -325,46 +329,51 @@ export default function Register() {
           </div>
         </div>
       )}
-      {step === 4 && (
-        <div>
-          <h2 className="text-2xl font-bold mb-2">Step 4: Links</h2>
-          <p className="text-gray-500 mb-4">Please provide your links.</p>
-          <div className="space-y-4">
-            {links.map(link => (
-              <div key={link.id} className="flex items-center space-x-4">
-                <div className="flex-1">
-                  <Select value={link.platform} onValueChange={(value) => handleLinkPlatformChange(link.id, value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a platform" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Github">Github</SelectItem>
-                      <SelectItem value="LinkedIn">LinkedIn</SelectItem>
-                      <SelectItem value="Facebook">Facebook</SelectItem>
-                      <SelectItem value="Twitter">Twitter</SelectItem>
-                      <SelectItem value="Instagram">Instagram</SelectItem>
-                      <SelectItem value="Other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="flex-1">
-                  <Input
-                    id={`link-${link.id}`}
-                    placeholder="Enter a link"
-                    value={link.value}
-                    onChange={(e) => handleLinkChange(link.id, e.target.value)}
-                    className="flex-grow"
-                  />
-                </div>
-                <Button variant="outline" size="icon" onClick={() => handleRemoveLink(link.id)} className="ml-2 flex items-center justify-center">
-                  <Trash2 className="w-4 h-4" />
-                </Button>
+          {step === 4 && (
+            <div>
+              <h2 className="text-2xl font-bold mb-2">Step 4: Links</h2>
+              <p className="text-gray-500 mb-4">Please provide your contacts and links. Mark the links that you want to use as primary way of contacting you.</p>
+              <div className="space-y-4">
+                {links.map(link => (
+                  <div key={link.id} className="flex items-center space-x-4">
+                    <Checkbox
+                      id={`preferable-${link.id}`}
+                      checked={link.isPreferable}
+                      onCheckedChange={(checked) => handleLinkPreferableChange(link.id, checked === true)}
+                    />
+                    <div className="flex-1">
+                      <Select value={link.platform} onValueChange={(value) => handleLinkPlatformChange(link.id, value)}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a platform" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Github">Github</SelectItem>
+                          <SelectItem value="LinkedIn">LinkedIn</SelectItem>
+                          <SelectItem value="Facebook">Facebook</SelectItem>
+                          <SelectItem value="Twitter">Twitter</SelectItem>
+                          <SelectItem value="Instagram">Instagram</SelectItem>
+                          <SelectItem value="Other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex-1">
+                      <Input
+                        id={`link-${link.id}`}
+                        placeholder="Enter a link"
+                        value={link.value}
+                        onChange={(e) => handleLinkChange(link.id, e.target.value)}
+                        className="flex-grow"
+                      />
+                    </div>
+                    <Button variant="outline" size="icon" onClick={() => handleRemoveLink(link.id)} className="ml-2 flex items-center justify-center">
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ))}
+                <Button variant="link" onClick={handleAddLink}>Add Link</Button>
               </div>
-            ))}
-            <Button variant="link" onClick={handleAddLink}>Add Link</Button>
-          </div>
-        </div>
-      )}
+            </div>
+          )}
           <div className="mt-8 flex justify-between">
             <Button variant="outline" onClick={handlePrev} disabled={step === 1 || step === 2 || isLoading}>
               Previous

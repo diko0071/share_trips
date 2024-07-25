@@ -86,6 +86,7 @@ type TripData = {
   created_by_user_id: string;
   created_by_username: string;
   status: string;
+  photo: string;
 }
 
 const USER_DETAILS = {
@@ -221,7 +222,8 @@ export default function TripDetail({ tripId }: TripDetailProps) {
               isFlexible: listing.is_flexible,
               created_by_name: listing.created_by_name,
               created_by_username: listing.created_by_username,
-              status: listing.status
+              status: listing.status,
+              photo: listing.photo
             }));
           setTrips(data as TripData[]);
         } else {
@@ -565,6 +567,7 @@ export default function TripDetail({ tripId }: TripDetailProps) {
             month={trip.month}
             createdBy={trip.created_by_name}
             createdByUsername={trip.created_by_username}
+            photo={trip.photo}
           />
         ))}
         </div>

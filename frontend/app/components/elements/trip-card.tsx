@@ -19,11 +19,12 @@ interface TripCardProps {
   month: string
   createdBy: string
   createdByUsername: string
+  photo: string
 }
 
 export default function TripCard({
     id, title, imgSrc, alt, showUser,
-    country, city, description, minBudget, url, month, createdBy, createdByUsername
+    country, city, description, minBudget, url, month, createdBy, createdByUsername, photo
   }: TripCardProps) {
 
     return (
@@ -63,7 +64,7 @@ export default function TripCard({
               <Link href={`/profile/${createdByUsername}`}>
               <Button variant="link" size="sm" className="flex items-center gap-2">
                 <Avatar className="w-5 h-5">
-                  <AvatarImage src="/dima.jpeg" />
+                  <AvatarImage src={photo} />
                   <AvatarFallback>{createdBy.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <p className="text-xs font-medium">by {createdBy}</p>
