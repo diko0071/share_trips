@@ -1,4 +1,4 @@
-import { CalendarDays, DollarSign, User, MapPin, Mail, Share, CircleHelp, MoveLeft, Pencil, Settings, LoaderCircle } from "lucide-react"
+import { CalendarDays, DollarSign, User, MapPin, Mail, Share, CircleHelp, MoveLeft, Pencil, Settings, LoaderCircle, Link as LinkIcon, Wallet } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from "@/components/ui/card" 
@@ -11,6 +11,7 @@ import { getUserId, getAccessToken } from "../../lib/actions"
 import { useRouter } from 'next/navigation';
 import { Input } from "@/components/ui/input"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { ContactsPopup } from "../elements/contacts-popup";
 import {
   HoverCard,
   HoverCardContent,
@@ -60,6 +61,7 @@ type TripDetail = {
   createdByPreferences: string;
   created_by_user_id: string;
   created_by_username: string;
+  status: string;
 };
 
 type TripDetailProps = {
@@ -83,6 +85,7 @@ type TripData = {
   isAvailable: boolean;
   created_by_user_id: string;
   created_by_username: string;
+  status: string;
 }
 
 const USER_DETAILS = {
@@ -102,20 +105,23 @@ export default function TripDetail({ tripId }: TripDetailProps) {
   const [editedTrip, setEditedTrip] = useState<TripDetail | null>(null);
   const [errorMessages, setErrorMessages] = useState<{ [key: string]: string[] }>({});
   const router = useRouter();
+  const [selectedMonth, setSelectedMonth] = useState(tripDetails?.month || "");
+  const [isContactsPopupOpen, setIsContactsPopupOpen] = useState(false);
 
   const months = [
-    { value: 'january', label: 'January' },
-    { value: 'february', label: 'February' },
-    { value: 'march', label: 'March' },
-    { value: 'april', label: 'April' },
-    { value: 'may', label: 'May' },
-    { value: 'june', label: 'June' },
-    { value: 'july', label: 'July' },
-    { value: 'august', label: 'August' },
-    { value: 'september', label: 'September' },
-    { value: 'october', label: 'October' },
-    { value: 'november', label: 'November' },
-    { value: 'december', label: 'December' }
+    { value: 'January', label: 'January' },
+    { value: 'February', label: 'February' },
+    { value: 'March', label: 'March' },
+    { value: 'April', label: 'April' },
+    { value: 'May', label: 'May' },
+    { value: 'June', label: 'June' },
+    { value: 'July', label: 'July' },
+    { value: 'August', label: 'August' },
+    { value: 'September', label: 'September' },
+    { value: 'October', label: 'October' },
+    { value: 'November', label: 'November' },
+    { value: 'December', label: 'December' },
+    { value: 'Flexible', label: 'Flexible' }
   ];
 
   useEffect(() => {
@@ -178,6 +184,7 @@ export default function TripDetail({ tripId }: TripDetailProps) {
             createdByPreferences: response.user_coliver_preferences,
             created_by_user_id: response.created_by_user_id,
             created_by_username: response.created_by_username,
+            status: response.status
           };
           setTripDetails(data);
         } else {
@@ -213,7 +220,8 @@ export default function TripDetail({ tripId }: TripDetailProps) {
               month: listing.month.charAt(0).toUpperCase() + listing.month.slice(1),
               isFlexible: listing.is_flexible,
               created_by_name: listing.created_by_name,
-              created_by_username: listing.created_by_username
+              created_by_username: listing.created_by_username,
+              status: listing.status
             }));
           setTrips(data as TripData[]);
         } else {
@@ -254,8 +262,10 @@ export default function TripDetail({ tripId }: TripDetailProps) {
         description: editedTrip.description,
         country: editedTrip.country,
         city: editedTrip.city,
-        month: editedTrip.month.toLowerCase(),
-        imgSrc: editedTrip.imgSrc
+        month: editedTrip.month,
+        imgSrc: editedTrip.imgSrc,
+        budget: editedTrip.minBudget,
+        url: editedTrip.url
       }))
         .then(data => {
           setTripDetails(prevDetails => ({
@@ -287,9 +297,10 @@ export default function TripDetail({ tripId }: TripDetailProps) {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     if (editedTrip) {
+      const value = e.target.name === 'minBudget' ? parseFloat(e.target.value) : e.target.value;
       setEditedTrip({
         ...editedTrip,
-        [e.target.name]: e.target.value,
+        [e.target.name]: value,
       });
     }
   };
@@ -300,6 +311,29 @@ export default function TripDetail({ tripId }: TripDetailProps) {
         ...editedTrip,
         month: value,
       });
+    }
+  };
+
+  const handleStatusChange = async (newStatus: 'Active' | 'Archived') => {
+    if (!tripDetails) return;
+  
+    try {
+      const response = await ApiService.put(`/api/trip/${tripDetails.id}/update/`, JSON.stringify({
+        status: newStatus,
+        description: tripDetails?.description,
+        name: tripDetails?.title
+      }));
+  
+      if (response) {
+        setTripDetails(prevDetails => ({
+          ...prevDetails!,
+          status: newStatus
+        }));
+        toast(`Trip status updated to ${newStatus}`);
+      }
+    } catch (error) {
+      console.error('Failed to update trip status:', error);
+      toast("Failed to update trip status");
     }
   };
 
@@ -318,23 +352,33 @@ export default function TripDetail({ tripId }: TripDetailProps) {
           </Button>
           {tripDetails?.created_by_user_id === currentUserId && token && (
                         <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="flex items-center gap-2">
-                                    <Settings className="w-4 h-4" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent className="w-48">
-                                <DropdownMenuGroup>
-                                    <DropdownMenuItem onClick={handleEditClick}>
-                                        Edit
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={handleDeleteClick}>
-                                        Delete
-                                    </DropdownMenuItem>
-                                </DropdownMenuGroup>
-                            </DropdownMenuContent>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="flex items-center gap-2">
+                              <Settings className="w-4 h-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent className="w-48">
+                            <DropdownMenuGroup>
+                              <DropdownMenuItem onClick={handleEditClick}>
+                                Edit
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={handleDeleteClick}>
+                                Delete
+                              </DropdownMenuItem>
+                              {tripDetails.status === 'Active' && (
+                                <DropdownMenuItem onClick={() => handleStatusChange('Archived')}>
+                                  Archive
+                                </DropdownMenuItem>
+                              )}
+                              {tripDetails.status === 'Archived' && (
+                                <DropdownMenuItem onClick={() => handleStatusChange('Active')}>
+                                  Make Active
+                                </DropdownMenuItem>
+                              )}
+                            </DropdownMenuGroup>
+                          </DropdownMenuContent>
                         </DropdownMenu>
-                    )}
+                      )}
                 </div>
             </div>
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -374,18 +418,24 @@ export default function TripDetail({ tripId }: TripDetailProps) {
                   onChange={handleChange}
                   className="mb-4"
                 />
-                <Select onValueChange={handleMonthChange} value={editedTrip?.month.toLowerCase() || ""}>
-                  <SelectTrigger className="mb-4">
-                    <SelectValue placeholder="Select a month" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {months.map(month => (
-                      <SelectItem key={month.value} value={month.value}>
-                        {month.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  <Select 
+                    onValueChange={(value) => {
+                      handleMonthChange(value);
+                      setSelectedMonth(value);
+                    }} 
+                    value={selectedMonth}
+                  >
+                    <SelectTrigger className="mb-4">
+                      <SelectValue placeholder="Select a month" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {months.map(month => (
+                        <SelectItem key={month.value} value={month.value}>
+                          {month.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
               </div>
               <Textarea
                 name="description"
@@ -414,49 +464,85 @@ export default function TripDetail({ tripId }: TripDetailProps) {
             <div className="flex gap-4">
             </div>
             <Card className="flex items-center p-4 gap-4">
-              <div className="flex-1">
-                <div className="flex justify-between items-center">
-                  <div className="space-y-4">
-                    <h3 className="text-base font-semibold">{USER_DETAILS.preferencesTitle}</h3>
-                    <p className="text-muted-foreground text-sm">
-                      {tripDetails?.createdByPreferences}
-                    </p>
-                    <p className="text-muted-foreground text-sm">
-                      <HoverCard>
-                        <HoverCardTrigger className="hover:cursor-pointer">
-                          <CircleHelp className="inline w-4 h-4 mr-1.5" />
-                        </HoverCardTrigger>
-                        <HoverCardContent>
-                          <p>The number that {tripDetails?.createdBy} is ready to pay for the trip.</p>
-                        </HoverCardContent>
-                      </HoverCard>
-                      Available Budget: <b>{USER_DETAILS.splitOption}</b>
-                    </p>
-                    <div className="flex gap-2">
-                      <Button variant="outline">
-                        Open Contacts
-                      </Button>
-                      <Link href={`/profile/${tripDetails?.created_by_username}`}>
-                        <Button variant="link" size="sm" className="flex items-center gap-2">
-                          <Avatar className="w-5 h-5">
-                            <AvatarImage src={tripDetails?.createdByPhoto} />
-                            <AvatarFallback>D</AvatarFallback>
-                          </Avatar>
-                          <p className="text-xs font-medium">{tripDetails?.createdBy}</p>
+                <div className="flex-1">
+                  <div className="flex justify-between items-center">
+                    <div className="space-y-4">
+                      <h3 className="text-base font-semibold">{USER_DETAILS.preferencesTitle}</h3>
+                      <p className="text-muted-foreground text-sm">
+                        {tripDetails?.createdByPreferences}
+                      </p>
+                      <p className="text-muted-foreground text-sm">
+                        <HoverCard>
+                          <HoverCardTrigger className="hover:cursor-pointer">
+                            <CircleHelp className="inline w-4 h-4 mr-1.5" />
+                          </HoverCardTrigger>
+                          <HoverCardContent>
+                            <p>The number that {tripDetails?.createdBy} is ready to pay for the trip.</p>
+                          </HoverCardContent>
+                        </HoverCard>
+                        Available Budget: 
+                        {isEditing ? (
+                          <Input
+                            type="number"
+                            name="minBudget"
+                            value={editedTrip?.minBudget || ""}
+                            onChange={handleChange}
+                            className="w-24 inline-block ml-2"
+                          />
+                        ) : (
+                          <b> {tripDetails?.minBudget}</b>
+                        )} per person
+                      </p>
+                      {isEditing ? (
+                          <Input
+                            type="url"
+                            name="url"
+                            value={editedTrip?.url || ""}
+                            onChange={handleChange}
+                            placeholder="Trip URL"
+                            className="w-full"
+                          />
+                        ) : tripDetails?.url && (
+                          <p className="flex items-center gap-2">
+                            <LinkIcon className="w-4 h-4 text-muted-foreground" />
+                            <a 
+                              href={tripDetails.url} 
+                              target="_blank" 
+                              rel="noopener noreferrer" 
+                              className="text-muted-foreground hover:underline flex items-center gap-1 text-sm"
+                            >
+                              Trip URL
+                            </a>
+                          </p>
+                        )}
+                      <div className="flex gap-2">
+                        <Button variant="outline" onClick={() => setIsContactsPopupOpen(true)}>
+                          Open Contacts
                         </Button>
-                      </Link>
+                        <Link href={`/profile/${tripDetails?.created_by_username}`}>
+                          <Button variant="link" size="sm" className="flex items-center gap-2">
+                            <Avatar className="w-5 h-5">
+                              <AvatarImage src={tripDetails?.createdByPhoto} />
+                              <AvatarFallback>D</AvatarFallback>
+                            </Avatar>
+                            <p className="text-xs font-medium">{tripDetails?.createdBy}</p>
+                          </Button>
+                        </Link>
                       </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </Card>
-            {isEditing && (
+              </Card>
+              {isEditing && (
                 <div className="flex gap-2 mt-4">
-                  <Button onClick={handleSaveClick}>Save</Button>
+                  <Button onClick={handleSaveClick} disabled={isLoading.save}>
+                    {isLoading.save ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : null}
+                    {isLoading.save ? 'Saving...' : 'Save'}
+                  </Button>
                   <Button variant="outline" onClick={handleCancelClick}>Cancel</Button>
-                </div>
-              )}
-            </div>
+                  </div>
+                )}
+            </div> 
         </div>
       </div>
       <div className="mt-8">
@@ -483,6 +569,11 @@ export default function TripDetail({ tripId }: TripDetailProps) {
         ))}
         </div>
       </div>
+      <ContactsPopup
+        isOpen={isContactsPopupOpen}
+        onClose={() => setIsContactsPopupOpen(false)}
+        username={tripDetails?.created_by_username || ''}
+      />
     </div>
   )
-}
+} 

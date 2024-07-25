@@ -110,13 +110,13 @@ export default function Trips() {
   const resetCountryFilter = () => {
     setSelectedCountry(null);
     setSelectedCity(null); 
-    setSelectedMonth(null); // Reset month when country is reset
+    setSelectedMonth(null); 
   };
 
 
   const resetCityFilter = () => {
     setSelectedCity(null);
-    setSelectedMonth(null); // Reset month when city is reset
+    setSelectedMonth(null); 
   };
   
   const resetMonthFilter = () => setSelectedMonth(null);

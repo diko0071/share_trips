@@ -14,9 +14,14 @@ class Month(models.TextChoices):
     OCTOBER = 'October', 'October'
     NOVEMBER = 'November', 'November'
     DECEMBER = 'December', 'December'
+    FLEXIBLE = 'Flexible', 'Flexible'
 
     def __str__(self):
         return self.name
+
+class Status(models.TextChoices):
+    ACTIVE = 'Active', 'Active'
+    ARCHIVED = 'Archived', 'Archived'
 
 class Trip(models.Model):
     name = models.CharField(max_length=255)
@@ -32,7 +37,7 @@ class Trip(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
-    is_flexible = models.BooleanField(default=False)
+    status = models.CharField(max_length=255, choices=Status.choices, default=Status.ACTIVE)
 
     def __str__(self):
         return self.name
