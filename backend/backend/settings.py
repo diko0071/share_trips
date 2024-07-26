@@ -74,6 +74,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "corsheaders",
+    'cacheops',
     'rest_framework_simplejwt',
     'rest_framework.authtoken',
     'allauth',
@@ -185,7 +186,15 @@ REST_AUTH = {
     "JWT_AUTH_HTTPONLY": False
 }
 
+CACHEOPS = {
+    'auth.user': {'ops': 'get', 'timeout': 60*15},  
+    'auth.*': {'ops': {'fetch', 'get'}, 'timeout': 60*60},  
+    'auth.permission': {'ops': 'all', 'timeout': 60*60},  
+    '*.*': {'timeout': 60*60},  
+    'some_app.*': None,  
+}
 
+CACHEOPS_REDIS = os.environ.get("REDIS_URL")
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
