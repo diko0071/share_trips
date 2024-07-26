@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
 import React, { useEffect, useState } from "react"
+import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge"
 import ListingCard from "../elements/trip-card"
 import ListingCardExample from "../elements/trip-card-blur-example"
@@ -13,6 +14,8 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
+import { DotsHorizontalIcon } from '@radix-ui/react-icons'
+import TripCard from "../elements/trip-card"
 import { toast } from "sonner"
 import {
     MessageSquareShare,
@@ -101,6 +104,7 @@ const travelStatuses = [
 ];
 
 export default function UserProfile({ userId }: UserProfileProps) {
+  const router = useRouter();
   const [trips, setTrips] = useState<Trips[]>([]);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -299,6 +303,88 @@ export default function UserProfile({ userId }: UserProfileProps) {
     }
   };
 
+  const handleDeleteClick = async (tripId: number) => {
+    try {
+        await ApiService.delete(`/api/trip/${tripId}/delete/`);
+        toast("Trip deleted successfully", {
+            action: {
+                label: "Close",
+                onClick: () => toast.dismiss(),
+            },
+        });
+        setTrips((prevTrips) => prevTrips.filter(trip => trip.id !== tripId));
+    } catch (error) {
+        console.error('Failed to delete trip:', error);
+        toast("Failed to delete trip");
+    }
+};
+
+const handleStatusChange = (tripId: number, newStatus: string, name: string, description: string) => {
+  setIsLoading(true);
+  ApiService.put(`/api/trip/${tripId}/update/`, JSON.stringify({
+    status: newStatus,
+    name: name,
+    description: description
+  }))
+    .then(data => {
+      setTrips(prevTrips => prevTrips.map(trip => 
+        trip.id === tripId ? { ...trip, status: newStatus } : trip
+      ));
+      toast("Trip status updated successfully");
+    })
+    .catch(error => {
+      console.error('Failed to update trip status:', error);
+      try {
+        const errorData = JSON.parse(error.message);
+        setErrorMessages(errorData);
+      } catch (e) {
+        toast("Failed to update trip status");
+      }
+    })
+    .finally(() => {
+      setIsLoading(false);
+    });
+};
+
+
+const getActions = (status: string, trip: Trips) => {
+  if (status === "Active") {
+    return [
+      {
+        label: "Edit",
+        onClick: () => {
+          router.push(`/trip/${trip.id}/`);
+        }
+      },
+      {
+        label: "Archive",
+        onClick: () => handleStatusChange(trip.id, "Archived", trip.title, trip.description)
+      },
+      {
+        label: "Delete",
+        onClick: () => handleDeleteClick(trip.id)
+      }
+    ];
+  } else {
+    return [
+      {
+        label: "Make Active",
+        onClick: () => handleStatusChange(trip.id, "Active", trip.title, trip.description)
+      },
+      {
+        label: "Edit",
+        onClick: () => {
+          router.push(`/trip/${trip.id}/`);
+        }
+      },
+      {
+        label: "Delete",
+        onClick: () => handleDeleteClick(trip.id)
+      }
+    ];
+  }
+};
+
   const handleAddLink = () => {
     if (editedUser) {
       setEditedUser({
@@ -479,58 +565,62 @@ export default function UserProfile({ userId }: UserProfileProps) {
                 <ListingCardExample />
               </div>
             ) : (
-<Tabs defaultValue="active" className="w-full">
-  <TabsList className="flex justify-end">
-    <TabsTrigger value="active">Active</TabsTrigger>
-    <TabsTrigger value="archived">Archived</TabsTrigger>
-  </TabsList>
-  <TabsContent value="active">
-    <div className="grid grid-cols-1 gap-8 md:grid-cols-1 lg:grid-cols-1">
-      {trips.filter(trip => trip.status === "Active").map((trip) => (
-        <ListingCard 
-          key={trip.id} 
-          id={trip.id}
-          title={trip.title}
-          imgSrc={trip.imgSrc}
-          alt={trip.alt}
-          country={trip.country}
-          city={trip.city}
-          description={trip.description}
-          minBudget={trip.minBudget}
-          url={trip.url}
-          month={trip.month}
-          createdBy={trip.createdBy}
-          showUser={false}
-          createdByUsername={trip.createdByUsername}
-          photo={trip.photo}
-        />
-      ))}
-    </div>
-  </TabsContent>
-  <TabsContent value="archived">
-    <div className="grid grid-cols-1 gap-8 md:grid-cols-1 lg:grid-cols-1">
-      {trips.filter(trip => trip.status === "Archived").map((trip) => (
-        <ListingCard 
-          key={trip.id} 
-          id={trip.id}
-          title={trip.title}
-          imgSrc={trip.imgSrc}
-          alt={trip.alt}
-          country={trip.country}
-          city={trip.city}
-          description={trip.description}
-          minBudget={trip.minBudget}
-          url={trip.url}
-          month={trip.month}
-          createdBy={trip.createdBy}
-          showUser={false}
-          createdByUsername={trip.createdByUsername}
-          photo={trip.photo}
-        />
-      ))}
-    </div>
-  </TabsContent>
-</Tabs>
+            <Tabs defaultValue="active" className="w-full">
+              <TabsList className="flex justify-end">
+                <TabsTrigger value="active">Active</TabsTrigger>
+                <TabsTrigger value="archived">Archived</TabsTrigger>
+              </TabsList>
+              <TabsContent value="active">
+                <div className="grid grid-cols-1 gap-8 md:grid-cols-1 lg:grid-cols-1">
+                  {trips.filter(trip => trip.status === "Active").map((trip) => (
+                    <TripCard 
+                      key={trip.id} 
+                      id={trip.id}
+                      title={trip.title}
+                      imgSrc={trip.imgSrc}
+                      alt={trip.alt}
+                      country={trip.country}
+                      city={trip.city}
+                      description={trip.description}
+                      minBudget={trip.minBudget}
+                      url={trip.url}
+                      month={trip.month}
+                      createdBy={trip.createdBy}
+                      showUser={false}
+                      createdByUsername={trip.createdByUsername}
+                      photo={trip.photo}
+                      actions={getActions(trip.status, trip)} // Pass trip object to getActions
+                      showDots={currentUserId === userProfile.id && token ? true : false}
+                    />
+                  ))}
+                </div>
+            </TabsContent>
+            <TabsContent value="archived">
+              <div className="grid grid-cols-1 gap-8 md:grid-cols-1 lg:grid-cols-1">
+                {trips.filter(trip => trip.status === "Archived").map((trip) => (
+                  <TripCard 
+                    key={trip.id} 
+                    id={trip.id}
+                    title={trip.title}
+                    imgSrc={trip.imgSrc}
+                    alt={trip.alt}
+                    country={trip.country}
+                    city={trip.city}
+                    description={trip.description}
+                    minBudget={trip.minBudget}
+                    url={trip.url}
+                    month={trip.month}
+                    createdBy={trip.createdBy}
+                    showUser={false}
+                    createdByUsername={trip.createdByUsername}
+                    photo={trip.photo}
+                    actions={getActions(trip.status, trip)}
+                    showDots={currentUserId === userProfile.id && token ? true : false}
+                  />
+                ))}
+              </div>
+            </TabsContent>
+          </Tabs>
             )}
           </div>
       </div>

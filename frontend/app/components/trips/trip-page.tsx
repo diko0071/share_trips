@@ -11,6 +11,7 @@ import { getUserId, getAccessToken } from "../../lib/actions"
 import { useRouter } from 'next/navigation';
 import { Input } from "@/components/ui/input"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { DotsHorizontalIcon } from '@radix-ui/react-icons'
 import { ContactsPopup } from "../elements/contacts-popup";
 import {
   HoverCard,
@@ -356,7 +357,7 @@ export default function TripDetail({ tripId }: TripDetailProps) {
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon" className="flex items-center gap-2">
-                              <Settings className="w-4 h-4" />
+                              <DotsHorizontalIcon className="w-4 h-4" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent className="w-48">

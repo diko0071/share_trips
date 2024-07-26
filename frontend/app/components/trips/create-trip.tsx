@@ -281,6 +281,7 @@ export default function CreateTrip() {
               month={formData.month || "January"}
               createdBy={userProfile?.name || "John Doe"}
               createdByUsername={userProfile?.username || "john.doe"}
+              photo={userProfile?.photo || "/photo.png"}
             />
           </CardContent>
           <CardFooter>

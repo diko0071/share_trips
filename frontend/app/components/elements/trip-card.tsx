@@ -1,9 +1,22 @@
 import { Card } from "@/components/ui/card"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { CalendarDays, MapPin, CreditCard } from "lucide-react"
+import { MapPin } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
+import { DotsHorizontalIcon } from '@radix-ui/react-icons'
+import { useState } from "react"
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu"
+
+interface Action {
+  label: string
+  onClick: () => void
+}
 
 interface TripCardProps {
   id: number
@@ -20,13 +33,14 @@ interface TripCardProps {
   createdBy: string
   createdByUsername: string
   photo: string
+  actions?: Action[]
+  showDots?: boolean;
 }
 
 export default function TripCard({
-    id, title, imgSrc, alt, showUser,
-    country, city, description, minBudget, url, month, createdBy, createdByUsername, photo
+    id, title, imgSrc, alt, showUser = true,
+    country, city, description, minBudget, url, month, createdBy, createdByUsername, photo, actions = [], showDots = false
   }: TripCardProps) {
-
     return (
         <Card className="w-full rounded-lg shadow-lg overflow-hidden">
         <div className="relative">
@@ -60,7 +74,7 @@ export default function TripCard({
                 View
               </Button>
             </Link>
-            {showUser && (
+            {showUser ? (
               <Link href={`/profile/${createdByUsername}`}>
               <Button variant="link" size="sm" className="flex items-center gap-2">
                 <Avatar className="w-5 h-5">
@@ -70,6 +84,23 @@ export default function TripCard({
                 <p className="text-xs font-medium">by {createdBy}</p>
               </Button>
             </Link>
+            ) : (
+              showDots && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="link" size="sm" className="flex items-center gap-2">
+                    <DotsHorizontalIcon className="w-4 h-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  {actions.map((action, index) => (
+                    <DropdownMenuItem key={index} onSelect={action.onClick}>
+                      {action.label}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+              )
             )}
           </div>
         </div>
