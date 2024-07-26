@@ -44,18 +44,27 @@ interface UserProfile {
 }
 
 const months = [
-  { value: 'january', label: 'January' },
-  { value: 'february', label: 'February' },
-  { value: 'march', label: 'March' },
-  { value: 'april', label: 'April' },
-  { value: 'may', label: 'May' },
-  { value: 'june', label: 'June' },
-  { value: 'july', label: 'July' },
-  { value: 'august', label: 'August' },
-  { value: 'september', label: 'September' },
-  { value: 'october', label: 'October' },
-  { value: 'november', label: 'November' },
-  { value: 'december', label: 'December' }
+  { value: 'Flexible', label: 'Flexible' },
+  { value: 'January', label: 'January' },
+  { value: 'February', label: 'February' },
+  { value: 'March', label: 'March' },
+  { value: 'April', label: 'April' },
+  { value: 'May', label: 'May' },
+  { value: 'June', label: 'June' },
+  { value: 'July', label: 'July' },
+  { value: 'August', label: 'August' },
+  { value: 'September', label: 'September' },
+  { value: 'October', label: 'October' },
+  { value: 'November', label: 'November' },
+  { value: 'December', label: 'December' },
+];
+
+const currencies = [
+  { value: 'USD', label: 'USD' },
+  { value: 'EUR', label: 'EUR' },
+  { value: 'GBP', label: 'GBP' },
+  { value: 'KZT', label: 'KZT' },
+  { value: 'RUB', label: 'RUB' },
 ];
 
 
@@ -67,7 +76,8 @@ export default function CreateTrip() {
     country: '',
     city: '',
     month: '',
-    cost: '',
+    budget: '',
+    currency: '',
     link: '',
     created_by: '',
   });
@@ -140,9 +150,10 @@ export default function CreateTrip() {
       formDataToSend.append('country', formData.country);
       formDataToSend.append('city', formData.city);
       formDataToSend.append('month', formData.month);
-      formDataToSend.append('cost', formData.cost);
+      formDataToSend.append('budget', formData.budget);
       formDataToSend.append('link', formData.link);
       formDataToSend.append('created_by', formData.created_by);
+      formDataToSend.append('currency', formData.currency);
       if (formData.image1) {
         formDataToSend.append('image1', formData.image1);
       }
@@ -175,6 +186,14 @@ export default function CreateTrip() {
       }));
     }
   };
+
+  const handleCurrencyChange = (value: string) => {
+    setFormData((prevData) => ({
+        ...prevData,
+        currency: value,
+    }));
+};
+
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -210,12 +229,29 @@ export default function CreateTrip() {
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="cost">How much you ready to pay?</Label>
-                <Input id="cost" type="text" placeholder="Enter a budget for this trip" value={formData.cost} onChange={handleChange} />
+                <div className="flex items-center gap-2">
+                  <Input id="budget" type="text" placeholder="Enter a budget" value={formData.budget} onChange={handleChange} />
+                <Select onValueChange={handleCurrencyChange}>
+                    <SelectTrigger>
+                        <SelectValue placeholder="Select a currency" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {currencies.map((currency) => (
+                            <SelectItem key={currency.value} value={currency.value}>{currency.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                  </Select>
+                </div>
               </div>
               <Tabs defaultValue="manual">
                 <TabsList>
-                  <TabsTrigger value="airbnb">From Airbnb</TabsTrigger>
                   <TabsTrigger value="manual">Manual</TabsTrigger>
+                  <div className="relative">
+                    <Badge className="absolute -top-2 -right-6 text-xs bg-red-500 z-10">soon</Badge>
+                    <TabsTrigger value="airbnb" disabled>
+                      From Airbnb
+                    </TabsTrigger>
+                  </div>
                 </TabsList>
                 <TabsContent value="airbnb" className='grid gap-5'>
                   <div className="grid gap-2">
@@ -268,20 +304,22 @@ export default function CreateTrip() {
           </CardHeader>
           <CardContent>
             <TripCard
+              lockview={true}
               id={1}
-              title={formData.name || "A Wonderful Blog Post"}
+              title={formData.name || "A Wonderful Trip Post"}
               imgSrc={formData.image1 ? URL.createObjectURL(formData.image1) : "/photo.png"}
               alt="Post Image"
               showUser={true}
-              country={formData.country || "USA"}
-              city={formData.city || "New York"}
-              description={formData.description || "Lorem ipsum dolor sit amet, consectetur adipiscing elit."}
+              country={formData.country || "Dream country"}
+              city={formData.city || "Dream city"}
+              description={formData.description || "This is a sample description for the trip card."}
               minBudget={1000}
               url={formData.link || "#"}
-              month={formData.month || "January"}
+              month={formData.month || "Anytime"}
               createdBy={userProfile?.name || "John Doe"}
               createdByUsername={userProfile?.username || "john.doe"}
               photo={userProfile?.photo || "/photo.png"}
+              blur={!formData.image1}
             />
           </CardContent>
           <CardFooter>

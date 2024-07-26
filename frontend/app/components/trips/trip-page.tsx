@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { DotsHorizontalIcon } from '@radix-ui/react-icons'
 import { ContactsPopup } from "../elements/contacts-popup";
+import { usePopup } from "../user/popup-context";
 import {
   HoverCard,
   HoverCardContent,
@@ -63,6 +64,7 @@ type TripDetail = {
   created_by_user_id: string;
   created_by_username: string;
   status: string;
+  currency: string;
 };
 
 type TripDetailProps = {
@@ -88,6 +90,7 @@ type TripData = {
   created_by_username: string;
   status: string;
   photo: string;
+  currency: string;
 }
 
 const USER_DETAILS = {
@@ -96,6 +99,14 @@ const USER_DETAILS = {
   splitOption: "$1000",
   contactName: "Dmitry Korzhov"
 };
+
+const currencies = [
+  { value: 'USD', label: 'USD' },
+  { value: 'EUR', label: 'EUR' },
+  { value: 'GBP', label: 'GBP' },
+  { value: 'KZT', label: 'KZT' },
+  { value: 'RUB', label: 'RUB' },
+];
 
 export default function TripDetail({ tripId }: TripDetailProps) {
   const [tripDetails, setTripDetails] = useState<TripDetail | null>(null);
@@ -109,6 +120,7 @@ export default function TripDetail({ tripId }: TripDetailProps) {
   const router = useRouter();
   const [selectedMonth, setSelectedMonth] = useState(tripDetails?.month || "");
   const [isContactsPopupOpen, setIsContactsPopupOpen] = useState(false);
+  const { openLoginForm } = usePopup();
 
   const months = [
     { value: 'January', label: 'January' },
@@ -141,6 +153,15 @@ export default function TripDetail({ tripId }: TripDetailProps) {
     fetchToken();
   }, []);
 
+  const handleOpenContacts = () => {
+    if (token) {
+        setIsContactsPopupOpen(true);
+    } else {
+        openLoginForm(`/trip/${tripId}`);
+    }
+};
+
+
   const handleDeleteClick = async () => {
     if (!tripDetails) return;
 
@@ -153,7 +174,7 @@ export default function TripDetail({ tripId }: TripDetailProps) {
             onClick: () => toast.dismiss(),
           },
         });
-        router.push('/trips');
+        router.push('/');
     } catch (error) {
         console.error('Failed to delete trip:', error);
         toast("Failed to delete trip");
@@ -178,6 +199,7 @@ export default function TripDetail({ tripId }: TripDetailProps) {
             city: response.city,
             description: response.description,
             minBudget: parseFloat(response.budget),
+            currency: response.currency,
             url: response.url,
             month: response.month.charAt(0).toUpperCase() + response.month.slice(1),
             isFlexible: response.is_flexible,
@@ -224,7 +246,8 @@ export default function TripDetail({ tripId }: TripDetailProps) {
               created_by_name: listing.created_by_name,
               created_by_username: listing.created_by_username,
               status: listing.status,
-              photo: listing.photo
+              photo: listing.photo,
+              currency: listing.currency
             }));
           setTrips(data as TripData[]);
         } else {
@@ -268,6 +291,7 @@ export default function TripDetail({ tripId }: TripDetailProps) {
         month: editedTrip.month,
         imgSrc: editedTrip.imgSrc,
         budget: editedTrip.minBudget,
+        currency: editedTrip.currency,
         url: editedTrip.url
       }))
         .then(data => {
@@ -298,7 +322,7 @@ export default function TripDetail({ tripId }: TripDetailProps) {
     setEditedTrip(tripDetails);
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | { target: { name: string, value: string } }) => {
     if (editedTrip) {
       const value = e.target.name === 'minBudget' ? parseFloat(e.target.value) : e.target.value;
       setEditedTrip({
@@ -429,7 +453,7 @@ export default function TripDetail({ tripId }: TripDetailProps) {
                     value={selectedMonth}
                   >
                     <SelectTrigger className="mb-4">
-                      <SelectValue placeholder="Select a month" />
+                      <SelectValue placeholder={editedTrip?.month} />
                     </SelectTrigger>
                     <SelectContent>
                       {months.map(month => (
@@ -458,9 +482,9 @@ export default function TripDetail({ tripId }: TripDetailProps) {
                   {tripDetails?.month}
                 </Badge>
               </div>
-              <p className="text-muted-foreground">
+              <div className="text-muted-foreground">
                 {tripDetails?.description}
-              </p>
+              </div>
             </div>
           )}
         </div>
@@ -471,31 +495,48 @@ export default function TripDetail({ tripId }: TripDetailProps) {
                   <div className="flex justify-between items-center">
                     <div className="space-y-4">
                       <h3 className="text-base font-semibold">{USER_DETAILS.preferencesTitle}</h3>
-                      <p className="text-muted-foreground text-sm">
+                      <div className="text-muted-foreground text-sm">
                         {tripDetails?.createdByPreferences}
-                      </p>
-                      <p className="text-muted-foreground text-sm">
+                      </div>
+                      <div className="text-muted-foreground text-sm">
                         <HoverCard>
                           <HoverCardTrigger className="hover:cursor-pointer">
                             <CircleHelp className="inline w-4 h-4 mr-1.5" />
                           </HoverCardTrigger>
                           <HoverCardContent>
-                            <p>The number that {tripDetails?.createdBy} is ready to pay for the trip.</p>
+                            The number that {tripDetails?.createdBy} is ready to pay for the trip.
                           </HoverCardContent>
                         </HoverCard>
                         Available Budget: 
                         {isEditing ? (
-                          <Input
-                            type="number"
-                            name="minBudget"
-                            value={editedTrip?.minBudget || ""}
-                            onChange={handleChange}
-                            className="w-24 inline-block ml-2"
-                          />
-                        ) : (
-                          <b> {tripDetails?.minBudget}</b>
-                        )} per person
-                      </p>
+                              <div className="flex items-center gap-2 mt-3">
+                                <Input
+                                  type="number"
+                                  name="minBudget"
+                                  value={editedTrip?.minBudget || ""}
+                                  onChange={handleChange}
+                                  className="w-24 inline-block ml-2"
+                                />
+                                <Select
+                                  onValueChange={(value) => handleChange({ target: { name: 'currency', value } })}
+                                  value={editedTrip?.currency || ""}
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select a currency" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {currencies.map((currency) => (
+                                      <SelectItem key={currency.value} value={currency.value}>
+                                        {currency.label}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            ) : (
+                              <b> {tripDetails?.minBudget} {tripDetails?.currency} per person</b>
+                              )}
+                      </div>
                       {isEditing ? (
                           <Input
                             type="url"
@@ -506,7 +547,7 @@ export default function TripDetail({ tripId }: TripDetailProps) {
                             className="w-full"
                           />
                         ) : tripDetails?.url && (
-                          <p className="flex items-center gap-2">
+                          <div className="flex items-center gap-2">
                             <LinkIcon className="w-4 h-4 text-muted-foreground" />
                             <a 
                               href={tripDetails.url} 
@@ -516,10 +557,10 @@ export default function TripDetail({ tripId }: TripDetailProps) {
                             >
                               Trip URL
                             </a>
-                          </p>
+                          </div>
                         )}
                       <div className="flex gap-2">
-                        <Button variant="outline" onClick={() => setIsContactsPopupOpen(true)}>
+                        <Button variant="outline" onClick={handleOpenContacts}>
                           Open Contacts
                         </Button>
                         <Link href={`/profile/${tripDetails?.created_by_username}`}>
@@ -528,7 +569,7 @@ export default function TripDetail({ tripId }: TripDetailProps) {
                               <AvatarImage src={tripDetails?.createdByPhoto} />
                               <AvatarFallback>D</AvatarFallback>
                             </Avatar>
-                            <p className="text-xs font-medium">{tripDetails?.createdBy}</p>
+                            <div className="text-xs font-medium">{tripDetails?.createdBy}</div>
                           </Button>
                         </Link>
                       </div>

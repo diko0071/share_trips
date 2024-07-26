@@ -26,6 +26,7 @@ interface Trips {
   created_by_name: string;
   created_by_username: string;
   photo: string;
+  created_at: string;
 }
 
 
@@ -58,8 +59,12 @@ export default function Trips() {
             isFlexible: listing.is_flexible,
             created_by_name: listing.created_by_name,
             created_by_username: listing.created_by_username,
-            photo: listing.photo
+            photo: listing.photo,
+            created_at: listing.created_at
           }))
+          
+          data.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+          
           setTrips(data as Trips[])
 
           const uniqueCountries = Array.from(new Set(data.map((trip: Trips) => trip.country)))

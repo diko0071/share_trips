@@ -347,11 +347,14 @@ export default function Register() {
                           <SelectValue placeholder="Select a platform" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="Github">Github</SelectItem>
-                          <SelectItem value="LinkedIn">LinkedIn</SelectItem>
-                          <SelectItem value="Facebook">Facebook</SelectItem>
-                          <SelectItem value="Twitter">Twitter</SelectItem>
-                          <SelectItem value="Instagram">Instagram</SelectItem>
+                                <SelectItem value="Github">Github</SelectItem>
+                                <SelectItem value="LinkedIn">LinkedIn</SelectItem>
+                                <SelectItem value="Facebook">Facebook</SelectItem>
+                                <SelectItem value="Twitter">Twitter</SelectItem>
+                                <SelectItem value="Instagram">Instagram</SelectItem>
+                                <SelectItem value="Email">Email</SelectItem>
+                                <SelectItem value="Discord">Discord</SelectItem>
+                                <SelectItem value="Phone">Phone</SelectItem>
                           <SelectItem value="Other">Other</SelectItem>
                         </SelectContent>
                       </Select>

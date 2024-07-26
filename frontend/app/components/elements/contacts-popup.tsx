@@ -61,16 +61,14 @@ export function ContactsPopup({ isOpen, onClose, username }: ContactsPopupProps)
         const userData = response;
         console.log("Raw user data:", userData);
   
-        // Преобразуем social_media_links в массив
         const socialMediaLinks = userData.social_media_links
           ? Object.entries(userData.social_media_links).map(([key, value]) => ({
               type: key,
-              value: (value as any).value as string, // Приведение типов
-              isPreferable: (value as any).isPreferable as boolean, // Приведение типов
+              value: (value as any).value as string,
+              isPreferable: (value as any).isPreferable as boolean,
             }))
           : [];
-  
-        // Преобразуем данные пользователя в формат контакта
+            
         const transformedContact = {
           id: userData.id || 'unknown',
           name: userData.name || 'Unknown',

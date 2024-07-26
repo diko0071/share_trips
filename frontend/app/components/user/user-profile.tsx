@@ -14,8 +14,9 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
-import { DotsHorizontalIcon } from '@radix-ui/react-icons'
+import { DotsHorizontalIcon, DiscordLogoIcon,  } from '@radix-ui/react-icons'
 import TripCard from "../elements/trip-card"
+import { usePopup } from "../user/popup-context";
 import { toast } from "sonner"
 import {
     MessageSquareShare,
@@ -26,7 +27,12 @@ import {
     Mail,
     Pencil,
     Trash2, 
-    LoaderCircle
+    LoaderCircle, 
+    LockOpen,
+    Lock,
+    Facebook,
+    Phone, 
+    BookUser
 } from "lucide-react"
 
 
@@ -70,19 +76,27 @@ interface Trips {
   status: string; 
 }
 
-function getSocialIcon(url: string) {
-  if (url.includes("x.com") || url.includes("twitter.com")) {
-    return <img src="/x.svg" className="h-3 w-3" alt="X Icon" />; 
-  } else if (url.includes("linkedin.com")) {
-    return <Linkedin className="h-4 w-4" />;
-  } else if (url.includes("github.com")) {
-    return <Github className="h-4 w-4" />;
-  } else if (url.includes("instagram.com")) {
-    return <Instagram className="h-4 w-4" />;
-  } else if (url.includes("@gmail.com")) {
-    return <Mail className="h-4 w-4" />;
+function getSocialIcon(platform: string) {
+  switch (platform.toLowerCase()) {
+    case "twitter":
+      return <img src="/x.svg" className="h-3 w-3" alt="X Icon" />;
+    case "linkedin":
+      return <Linkedin className="h-4 w-4" />;
+    case "github":
+      return <Github className="h-4 w-4" />;
+    case "instagram":
+      return <Instagram className="h-4 w-4" />;
+    case "email":
+      return <Mail className="h-4 w-4" />;
+    case "facebook":
+      return <Facebook className="h-4 w-4" />;
+    case "discord":
+      return <DiscordLogoIcon className="h-4 w-4" />;
+    case "phone":
+      return <Phone className="h-4 w-4" />;
+    default:
+      return <BookUser className="h-4 w-4" />;
   }
-  return <MessageSquareShare className="h-4 w-4" />;
 }
 
 const languages = [
@@ -113,6 +127,7 @@ export default function UserProfile({ userId }: UserProfileProps) {
   const [editedUser, setEditedUser] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessages, setErrorMessages] = useState<{ [key: string]: string[] }>({});
+  const { openLoginForm } = usePopup();
 
 
   useEffect(() => {
@@ -497,7 +512,9 @@ const getActions = (status: string, trip: Trips) => {
                                 <SelectItem value="Facebook">Facebook</SelectItem>
                                 <SelectItem value="Twitter">Twitter</SelectItem>
                                 <SelectItem value="Instagram">Instagram</SelectItem>
-                                <SelectItem value="Google">Google</SelectItem>
+                                <SelectItem value="Email">Email</SelectItem>
+                                <SelectItem value="Discord">Discord</SelectItem>
+                                <SelectItem value="Phone">Phone</SelectItem>
                                 <SelectItem value="Other">Other</SelectItem>
                               </SelectContent>
                             </Select>
@@ -543,16 +560,38 @@ const getActions = (status: string, trip: Trips) => {
                     <h3 className="mt-6 text-lg font-semibold">Co-livers Preferences</h3>
                     <p className="mt-2 text-sm">{userProfile.coliver_preferences}</p>
                     <h3 className="mt-6 text-lg font-semibold">Contacts</h3>
-                    <div className="mt-2 flex gap-4">
-                      {userProfile.social_media_links && Object.entries(userProfile.social_media_links).map(([platform, link]) => (
-                        <a key={platform} href={link.value} target="_blank" rel="noopener noreferrer">
-                          <Button variant="link" className="inline-flex items-center">
+                    {token ? (
+                      <div className="mt-2 flex gap-4">
+                        {userProfile.social_media_links && Object.entries(userProfile.social_media_links).map(([platform, link]) => (
+                          <a key={platform} href={link.value} target="_blank" rel="noopener noreferrer">
+                            <Button variant="link" className="inline-flex items-center">
+                              {getSocialIcon(platform)}
+                              <span className="ml-2">{platform}</span>
+                            </Button>
+                          </a>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center mt-2">
+                        <div className="mt-2 flex gap-4">
+                        {userProfile.social_media_links && Object.entries(userProfile.social_media_links).map(([platform]) => (
+                          <div key={platform} className="inline-flex items-center">
                             {getSocialIcon(platform)}
-                            <span className="ml-2">{platform}</span>
-                          </Button>
-                        </a>
-                      ))}
-                    </div>
+                            <span className="ml-2 blur-sm">********</span>                          
+                          </div>
+                        ))}
+                         <Button 
+                           variant="outline" 
+                           size='icon' 
+                           className="relative group" 
+                           onClick={() => openLoginForm(`/profile/${userProfile.username}`)}
+                         >
+                          <Lock className="w-4 h-4 group-hover:hidden" />
+                          <LockOpen className="w-4 h-4 hidden group-hover:block absolute" />
+                         </Button>
+                        </div>                
+                      </div>
+                    )}
                   </>
                 )}
               </div>
@@ -589,7 +628,7 @@ const getActions = (status: string, trip: Trips) => {
                       showUser={false}
                       createdByUsername={trip.createdByUsername}
                       photo={trip.photo}
-                      actions={getActions(trip.status, trip)} // Pass trip object to getActions
+                      actions={getActions(trip.status, trip)} 
                       showDots={currentUserId === userProfile.id && token ? true : false}
                     />
                   ))}

@@ -39,7 +39,7 @@ class Trip(models.Model):
     country = models.CharField(max_length=255, null=True, blank=True)
     city = models.CharField(max_length=255, null=True, blank=True)
     month = models.CharField(max_length=255, choices=Month.choices, null=True, blank=True)
-    budget = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    budget = models.IntegerField(null=True, blank=True)
     currency = models.CharField(max_length=255, choices=Currency.choices, null=True, blank=True)
     url = models.URLField(max_length=200, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
