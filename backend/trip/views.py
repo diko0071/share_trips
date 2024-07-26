@@ -14,7 +14,7 @@ from rest_framework import status
 @authentication_classes([])
 @permission_classes([])
 def get_trip_list(request):
-    trips = Trip.objects.all()
+    trips = Trip.objects.filter(status='Active')
     serializer = TripDetailSerializer(trips, many=True)
     return Response(serializer.data)
 

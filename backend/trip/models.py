@@ -23,6 +23,13 @@ class Status(models.TextChoices):
     ACTIVE = 'Active', 'Active'
     ARCHIVED = 'Archived', 'Archived'
 
+class Currency(models.TextChoices):
+    USD = 'USD', 'USD'
+    EUR = 'EUR', 'EUR'
+    GBP = 'GBP', 'GBP'
+    RUB = 'RUB', 'RUB'
+    KZT = 'KZT', 'KZT'
+
 class Trip(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField()
@@ -33,6 +40,7 @@ class Trip(models.Model):
     city = models.CharField(max_length=255, null=True, blank=True)
     month = models.CharField(max_length=255, choices=Month.choices, null=True, blank=True)
     budget = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    currency = models.CharField(max_length=255, choices=Currency.choices, null=True, blank=True)
     url = models.URLField(max_length=200, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

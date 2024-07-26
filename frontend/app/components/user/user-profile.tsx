@@ -64,6 +64,7 @@ interface Trips {
   createdBy: string;
   createdByUsername: string;
   photo: string;
+  status: string; 
 }
 
 function getSocialIcon(url: string) {
@@ -130,7 +131,8 @@ export default function UserProfile({ userId }: UserProfileProps) {
             isFlexible: listing.is_flexible,
             createdBy: listing.created_by_name,
             createdByUsername: listing.created_by_username,
-            photo: listing.photo
+            photo: listing.photo,
+            status: listing.status
           }));
           console.log("Mapped data:", data);
           setTrips(data);
@@ -477,35 +479,58 @@ export default function UserProfile({ userId }: UserProfileProps) {
                 <ListingCardExample />
               </div>
             ) : (
-              <Tabs defaultValue="active" className="w-full">
-                <TabsList className="flex justify-end">
-                  <TabsTrigger value="active">Active</TabsTrigger>
-                  <TabsTrigger value="archived">Archived</TabsTrigger>
-                </TabsList>
-                <TabsContent value="active">
-                  <div className="grid grid-cols-1 gap-8 md:grid-cols-1 lg:grid-cols-1">
-                    {trips.map((trip) => (
-                      <ListingCard 
-                        key={trip.id} 
-                        id={trip.id}
-                        title={trip.title}
-                        imgSrc={trip.imgSrc}
-                        alt={trip.alt}
-                        country={trip.country}
-                        city={trip.city}
-                        description={trip.description}
-                        minBudget={trip.minBudget}
-                        url={trip.url}
-                        month={trip.month}
-                        createdBy={trip.createdBy}
-                        showUser={false}
-                        createdByUsername={trip.createdByUsername}
-                        photo={trip.photo}
-                      />
-                    ))}
-                  </div>
-                </TabsContent>
-              </Tabs>
+<Tabs defaultValue="active" className="w-full">
+  <TabsList className="flex justify-end">
+    <TabsTrigger value="active">Active</TabsTrigger>
+    <TabsTrigger value="archived">Archived</TabsTrigger>
+  </TabsList>
+  <TabsContent value="active">
+    <div className="grid grid-cols-1 gap-8 md:grid-cols-1 lg:grid-cols-1">
+      {trips.filter(trip => trip.status === "Active").map((trip) => (
+        <ListingCard 
+          key={trip.id} 
+          id={trip.id}
+          title={trip.title}
+          imgSrc={trip.imgSrc}
+          alt={trip.alt}
+          country={trip.country}
+          city={trip.city}
+          description={trip.description}
+          minBudget={trip.minBudget}
+          url={trip.url}
+          month={trip.month}
+          createdBy={trip.createdBy}
+          showUser={false}
+          createdByUsername={trip.createdByUsername}
+          photo={trip.photo}
+        />
+      ))}
+    </div>
+  </TabsContent>
+  <TabsContent value="archived">
+    <div className="grid grid-cols-1 gap-8 md:grid-cols-1 lg:grid-cols-1">
+      {trips.filter(trip => trip.status === "Archived").map((trip) => (
+        <ListingCard 
+          key={trip.id} 
+          id={trip.id}
+          title={trip.title}
+          imgSrc={trip.imgSrc}
+          alt={trip.alt}
+          country={trip.country}
+          city={trip.city}
+          description={trip.description}
+          minBudget={trip.minBudget}
+          url={trip.url}
+          month={trip.month}
+          createdBy={trip.createdBy}
+          showUser={false}
+          createdByUsername={trip.createdByUsername}
+          photo={trip.photo}
+        />
+      ))}
+    </div>
+  </TabsContent>
+</Tabs>
             )}
           </div>
       </div>
