@@ -8,6 +8,8 @@ from .serializers import UserDetailSerializer
 from dj_rest_auth.views import UserDetailsView
 from rest_framework.permissions import AllowAny
 from rest_framework import status
+from cacheops import cached_view_as
+
 
 class CustomUserDetailsView(UserDetailsView):
     serializer_class = UserDetailSerializer
@@ -20,6 +22,7 @@ class CustomUserDetailsView(UserDetailsView):
             print(e)
             return Response({"detail": f"An error occurred while updating user details: {e}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+@cached_view_as(User, timeout=60*15)
 @api_view(['GET'])
 @authentication_classes([])
 @permission_classes([])
@@ -27,3 +30,4 @@ def get_profile(request, username):
     user = get_object_or_404(User, username=username)
     serializer = UserDetailSerializer(user, many=False)
     return Response(serializer.data)
+

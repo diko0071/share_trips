@@ -8,8 +8,10 @@ from .services import fetch_airbnb_page
 from rest_framework.permissions import AllowAny
 from django.shortcuts import get_object_or_404
 from rest_framework import status
+from cacheops import cached_view_as
 
 
+@cached_view_as(Trip, timeout=60*15)
 @api_view(['GET'])
 @authentication_classes([])
 @permission_classes([])
@@ -18,6 +20,8 @@ def get_trip_list(request):
     serializer = TripDetailSerializer(trips, many=True)
     return Response(serializer.data)
 
+
+@cached_view_as(Trip, timeout=60*15)
 @api_view(['GET'])
 @authentication_classes([])
 @permission_classes([])
@@ -56,7 +60,7 @@ def delete_trip(request, pk):
     trip.delete()
     return Response('Trip was deleted')
 
-
+@cached_view_as(Trip, timeout=60*15)
 @api_view(['GET'])
 @authentication_classes([])
 @permission_classes([])

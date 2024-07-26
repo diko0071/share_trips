@@ -72,6 +72,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    'django_redis',
     "rest_framework",
     "corsheaders",
     'cacheops',
@@ -188,9 +189,13 @@ REST_AUTH = {
 
 CACHEOPS = {
     'auth.user': {'ops': 'get', 'timeout': 60*15},  
+    
     'auth.*': {'ops': {'fetch', 'get'}, 'timeout': 60*60},  
+    
     'auth.permission': {'ops': 'all', 'timeout': 60*60},  
+    
     '*.*': {'timeout': 60*60},  
+    
     'some_app.*': None,  
 }
 
