@@ -13,7 +13,9 @@ import { useRouter } from 'next/navigation';
 import PromptWindow from '../elements/prompt_window';
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
 import { toast } from 'sonner';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
+import GalleryPopup from "../elements/gallery_popup"; 
 import {
   MessageSquareShare,
   BarChartHorizontal,
@@ -107,19 +109,34 @@ export default function CreateTrip() {
     });
   };
 
-  const animateField = (field: string, value: string) => {
+  const animateField = (field: string, value: any) => {
     let currentIndex = 0;
     const interval = setInterval(() => {
-      setFormData((prevData) => ({
-        ...prevData,
-        [field]: value ? value.slice(0, currentIndex + 1) : '',
-      }));
-      currentIndex++;
-      if (currentIndex === (value ? value.length : 0)) {
+      try {
+        setFormData((prevData) => ({
+          ...prevData,
+          [field]: typeof value === 'string' 
+            ? value.slice(0, currentIndex + 1) 
+            : value !== null && value !== undefined 
+              ? String(value) 
+              : '',
+        }));
+        currentIndex++;
+        if (currentIndex === (typeof value === 'string' ? value.length : String(value).length)) {
+          clearInterval(interval);
+        }
+      } catch (error) {
         clearInterval(interval);
+        toast.error(`Something went wrong while filling field ${field}...`, {
+          action: {
+            label: "Close",
+            onClick: () => toast.dismiss(),
+          },
+        });
       }
     }, 20);
   };
+  
 
 
   useEffect(() => {
@@ -264,6 +281,7 @@ export default function CreateTrip() {
         ...prevData,
         image1: file,
       }));
+      setSelectedImageName(file.name); 
     }
   };
 
@@ -274,6 +292,29 @@ export default function CreateTrip() {
     }));
 };
 
+
+const [isPopoverOpenPexels, setIsPopoverOpenPexels] = useState(false);
+const [pexelsPhotos, setPexelsPhotos] = useState([]);
+const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+const [searchQuery, setSearchQuery] = useState('');
+const [selectedImageName, setSelectedImageName] = useState<string | null>(null);
+
+const handleOpenGallery = () => {
+  setIsGalleryOpen(true);
+};
+
+const handleSelectImage = (imageUrl: string) => {
+  fetch(imageUrl)
+    .then(res => res.blob())
+    .then(blob => {
+      const file = new File([blob], "gallery_image.jpg", { type: "image/jpeg" });
+      setFormData(prevData => ({
+        ...prevData,
+        image1: file
+      }));
+      setSelectedImageName("gallery_image.jpg"); 
+    });
+};
 
 return (
   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -373,9 +414,41 @@ return (
                   </div>
                 </TabsContent>
                 <TabsContent value="manual" className='grid gap-5'>
+                <div className="grid gap-2">
+                  <Label htmlFor="image1">Photo</Label>
+                <div className="flex items-center gap-2">
+                <Input
+                    id="image1"
+                    type="file"
+                    onChange={handleFileChange}
+                    className={selectedImageName ? 'hidden' : ''} 
+                  />
+                   {selectedImageName && (
+            <div className="flex items-center gap-2 w-full">
+              <Input
+                type="text"
+                value={selectedImageName}
+                readOnly
+                className="flex-grow"
+              />
+                     <Button
+                      type="button"
+                      variant="outline"
+                        onClick={() => {
+                        setSelectedImageName(null);
+                        setFormData(prevData => ({ ...prevData, image1: null }));
+                    }}
+                        >
+                          Clear
+                        </Button>
+                      </div>
+                    )}
+                    <Button type="button" onClick={handleOpenGallery}>Open Gallery</Button>
+                  </div>
+                </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="image1">Photo</Label>
-                    <Input id="image1" type="file" onChange={handleFileChange} />
+                    <Label htmlFor="link">Link (optional)</Label>
+                    <Input id="link" type="text" placeholder="Enter a link" value={formData.link} onChange={handleChange} />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="country">Country</Label>
@@ -428,6 +501,12 @@ return (
           </CardFooter>
         </Card>
       </div>
+      <GalleryPopup 
+      isOpen={isGalleryOpen}
+      onClose={() => setIsGalleryOpen(false)}
+      onSelectImage={handleSelectImage}
+      defaultSearchQuery={formData.name} 
+    />
     </div>
   )
 }

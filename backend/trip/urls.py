@@ -10,4 +10,6 @@ urlpatterns = [
     path('trip/parse/', parse_airbnb_url, name='parse_airbnb_url'),
     path('trip/user/<str:pk>/', get_trip_list_by_user, name='trip_list_by_user'),
     path('trip/generate/', generate_trip_data, name='generate_trip_description'),
+    path('trip/image/search/', search_pexels_photos, name='search_pexels'),
+    path('trip/image/<int:photo_id>/', get_pexels_photo, name='get_pexels_photo'),
 ]

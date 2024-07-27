@@ -12,7 +12,8 @@ from cacheops import cached_view_as
 from .prompts import generate_trip_data_prompt
 from .services import openai_call
 import json
-
+from pexelsapi.pexels import Pexels
+import os
 
 @cached_view_as(Trip, timeout=60*15)
 @api_view(['GET'])
@@ -93,3 +94,17 @@ def generate_trip_data(request):
     response_json = json.loads(response)
     return Response(response_json)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def search_pexels_photos(request):
+    query = request.GET.get('query')
+    pexel = Pexels(os.getenv('PEXELS_API_KEY'))
+    search_photos = pexel.search_photos(query=query, orientation='', size='large', color='', locale='', page=1, per_page=20)
+    return Response(search_photos)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_pexels_photo(request, photo_id):
+    pexel = Pexels(os.getenv('PEXELS_API_KEY'))
+    get_photo = pexel.get_photo(photo_id=photo_id)
+    return Response(get_photo)
