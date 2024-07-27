@@ -10,6 +10,8 @@ import { Card, CardContent } from "@/components/ui/card"
 import { format } from "date-fns"
 import TripCard from "../elements/trip-card"
 import ApiService from "../../services/apiService";
+import { Skeleton } from "@/components/ui/skeleton"
+import SkeletonTripCard from "../elements/skeleton-trip-card"
 
 interface Trips {
   id: number;
@@ -37,11 +39,13 @@ export default function Trips() {
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null)
   const [countries, setCountries] = useState<string[]>([])
   const [cities, setCities] = useState<string[]>([])
-  const [months, setMonths] = useState<string[]>([])
+  const [months, setMonths] = useState<string[]>([])    
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     async function fetchListings() {
       try {
+        setIsLoading(true)
         const response = await ApiService.get('/api/trip/')
         console.log("API response:", response)
         if (Array.isArray(response)) {
@@ -81,6 +85,8 @@ export default function Trips() {
         }
       } catch (error) {
         console.error("Error fetching listings:", error)
+      } finally {
+        setIsLoading(false)
       }
     }
 
@@ -226,7 +232,13 @@ export default function Trips() {
             </div>
         </div>
         <section className="grid grid-cols-1 gap-8 mt-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-            {filteredListings.length > 0 ? (
+            {isLoading ? (
+                Array.from({ length: 6 }).map((_, index) => (
+                    <div key={index} className="space-y-4">
+                        <SkeletonTripCard />
+                    </div>
+                ))
+            ) : filteredListings.length > 0 ? (
                 filteredListings.map((trip) => (
                     <TripCard
                         key={trip.id}

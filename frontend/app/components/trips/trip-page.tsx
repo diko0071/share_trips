@@ -14,6 +14,8 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import { DotsHorizontalIcon } from '@radix-ui/react-icons'
 import { ContactsPopup } from "../elements/contacts-popup";
 import { usePopup } from "../user/popup-context";
+import SkeletonTripCard from "../elements/skeleton-trip-card";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   HoverCard,
   HoverCardContent,
@@ -121,6 +123,8 @@ export default function TripDetail({ tripId }: TripDetailProps) {
   const [selectedMonth, setSelectedMonth] = useState(tripDetails?.month || "");
   const [isContactsPopupOpen, setIsContactsPopupOpen] = useState(false);
   const { openLoginForm } = usePopup();
+  const [isLoadingTrips, setIsLoadingTrips] = useState(false);
+  const [isLoadingTripDetails, setIsLoadingTripDetails] = useState(false);
 
   const months = [
     { value: 'January', label: 'January' },
@@ -188,6 +192,7 @@ export default function TripDetail({ tripId }: TripDetailProps) {
 
     async function fetchListingDetail() {
       try {
+        setIsLoadingTripDetails(true);
         const response = await ApiService.get(`/api/trip/${tripId}`);
         if (response) {
           const data: TripDetail = {
@@ -216,6 +221,8 @@ export default function TripDetail({ tripId }: TripDetailProps) {
         }
       } catch (error) {
         console.error("Error fetching listings:", error);
+      } finally {
+        setIsLoadingTripDetails(false);
       }
     }
 
@@ -226,6 +233,7 @@ export default function TripDetail({ tripId }: TripDetailProps) {
   useEffect(() => {
     async function fetchTrips() {
       try {
+        setIsLoadingTrips(true);
         const response = await ApiService.get('/api/trip/')
         if (Array.isArray(response)) {
           const data = response
@@ -255,6 +263,8 @@ export default function TripDetail({ tripId }: TripDetailProps) {
         }
       } catch (error) {
         console.error("Error fetching listings:", error);
+      } finally {
+        setIsLoadingTrips(false);
       }
     }
 
@@ -410,13 +420,17 @@ export default function TripDetail({ tripId }: TripDetailProps) {
             </div>
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div className="flex flex-col items-start">
-          <img
-            src={tripDetails?.imgSrc || "/photo2.png"}
-            alt={tripDetails?.alt || "Trip Image"}
-            width={600}
-            height={400}
-            className="rounded-lg object-cover w-full aspect-[3/2]"
-          />
+          {isLoadingTripDetails ? (
+            <Skeleton className="w-full h-96 rounded-lg" />
+          ) : (
+            <img
+              src={tripDetails?.imgSrc || "/photo2.png"}
+              alt={tripDetails?.alt || "Trip Image"}
+              width={600}
+              height={400}
+              className="rounded-lg object-cover w-full aspect-[3/2]"
+            />
+          )}
         </div>
         <div>
         <div className="grid gap-2">
@@ -473,18 +487,32 @@ export default function TripDetail({ tripId }: TripDetailProps) {
             </div>
           ) : (
             <div>
-              <h1 className="text-3xl font-bold tracking-tighter mb-4">{tripDetails?.title}</h1>
+              {isLoadingTripDetails ? (
+                <Skeleton className="h-8 w-3/4 mb-4" />
+              ) : (
+                <h1 className="text-3xl font-bold tracking-tighter mb-4">{tripDetails?.title}</h1>
+              )}
               <div className="flex gap-2">
-                <Badge variant="outline" className="mb-4">
-                  {tripDetails?.country}, {tripDetails?.city}
-                </Badge>
-                <Badge variant="outline" className="mb-4">
-                  {tripDetails?.month}
-                </Badge>
+                {isLoadingTripDetails ? (
+                  <Skeleton className="h-6 w-1/4 mb-4" />
+                ) : (
+                  <>
+                    <Badge variant="outline" className="mb-4">
+                      {tripDetails?.country}, {tripDetails?.city}
+                    </Badge>
+                    <Badge variant="outline" className="mb-4">
+                      {tripDetails?.month}
+                    </Badge>
+                  </>
+                )}
               </div>
-              <div className="text-muted-foreground">
-                {tripDetails?.description}
-              </div>
+              {isLoadingTripDetails ? (
+                <Skeleton className="h-20 w-full" />
+              ) : (
+                <div className="text-muted-foreground">
+                  {tripDetails?.description}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -496,7 +524,11 @@ export default function TripDetail({ tripId }: TripDetailProps) {
                     <div className="space-y-4">
                       <h3 className="text-base font-semibold">{USER_DETAILS.preferencesTitle}</h3>
                       <div className="text-muted-foreground text-sm">
-                        {tripDetails?.createdByPreferences}
+                        {isLoadingTripDetails ? (
+                          <Skeleton className="h-4 w-3/4" />
+                        ) : (
+                          tripDetails?.createdByPreferences
+                        )}
                       </div>
                       <div className="text-muted-foreground text-sm">
                         <HoverCard>
@@ -534,8 +566,12 @@ export default function TripDetail({ tripId }: TripDetailProps) {
                                 </Select>
                               </div>
                             ) : (
-                              <b> {tripDetails?.minBudget} {tripDetails?.currency} per person</b>
-                              )}
+                              isLoadingTripDetails ? (
+                                <Skeleton className="h-4 w-1/4" />
+                              ) : (
+                                <b> {tripDetails?.minBudget} {tripDetails?.currency} per person</b>
+                              )
+                            )}
                       </div>
                       {isEditing ? (
                           <Input
@@ -593,7 +629,11 @@ export default function TripDetail({ tripId }: TripDetailProps) {
         <h2 className="text-2xl font-bold tracking-tighter">Other trips you might like</h2>
         <div className="border-t border-gray-200 my-3"></div>
         <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-3 gap-6 mt-4">
-        {trips.map((trip) => (
+        {isLoadingTrips ? (
+          Array.from({ length: 3 }).map((_, index) => (
+            <SkeletonTripCard key={index} />
+          ))
+        ) : trips.map((trip) => (
           <TripCard
             key={trip.id}
             id={trip.id}

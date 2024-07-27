@@ -117,12 +117,16 @@ STORAGES = {
     "default": {
         "BACKEND": "storages.backends.azure_storage.AzureStorage",
         "OPTIONS": {
-            "timeout": 60,
-            "expiration_secs": 500,
+            "expiration_secs": None,
+            "azure_ssl": True,
         },
     },
     "staticfiles": {
         "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        "OPTIONS": {
+            "timeout": None,
+            "azure_ssl": True,
+        },
     },
 }
 

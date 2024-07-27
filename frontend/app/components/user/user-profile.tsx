@@ -18,6 +18,8 @@ import { DotsHorizontalIcon, DiscordLogoIcon,  } from '@radix-ui/react-icons'
 import TripCard from "../elements/trip-card"
 import { usePopup } from "../user/popup-context";
 import { toast } from "sonner"
+import { Skeleton } from "@/components/ui/skeleton"
+import SkeletonTripCard from "../elements/skeleton-trip-card"
 import {
     MessageSquareShare,
     BarChartHorizontal,
@@ -128,10 +130,13 @@ export default function UserProfile({ userId }: UserProfileProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessages, setErrorMessages] = useState<{ [key: string]: string[] }>({});
   const { openLoginForm } = usePopup();
+  const [isLoadingTrips, setIsLoadingTrips] = useState(false);
+  const [ isLoadingProfile, setIsLoadingProfile] = useState(false);
 
 
   useEffect(() => {
     async function fetchTrips() {
+      setIsLoadingTrips(true);
       try {
         const response = await ApiService.get(`/api/trip/user/${userId}/`);
         console.log("API response:", response);
@@ -160,6 +165,8 @@ export default function UserProfile({ userId }: UserProfileProps) {
         }
       } catch (error) {
         console.error("Error fetching trips:", error);
+      } finally {
+        setIsLoadingTrips(false);
       }
     }
 
@@ -184,6 +191,7 @@ export default function UserProfile({ userId }: UserProfileProps) {
 
   useEffect(() => {
     async function fetchProfileData() {
+      setIsLoadingProfile(true);
       try {
         const response = await ApiService.get(`/api/user/data/get/${userId}/`);
         
@@ -206,15 +214,13 @@ export default function UserProfile({ userId }: UserProfileProps) {
         }
       } catch (error) {
         console.error("Error fetching profile data:", error);
+      } finally {
+        setIsLoadingProfile(false);
       }
     }
 
     fetchProfileData();
   }, [userId]);
-
-  if (!userProfile) {
-    return <div>Loading...</div>;
-  }
 
 
   const handleEditClick = () => {
@@ -422,188 +428,210 @@ const getActions = (status: string, trip: Trips) => {
       });
     }
   };
-
-  if (!userProfile) {
-    return <div>Loading...</div>;
-  }
-
-  return (
-    <div className="flex flex-col items-left justify-left min-h-screen">
-      <div className="flex flex-col lg:flex-row w-full max-w-full bg-white gap-10">
-        <div className="w-full lg:w-3/4">
-          <Card>
-            <CardContent>
-              <div className="flex flex-col items-start mt-4">
-                <div className="flex items-start w-full">
-                  <Avatar className="w-24 h-24 rounded-[10px]">
-                    <AvatarImage src={userProfile.photo} />
-                    <AvatarFallback>D</AvatarFallback>
-                  </Avatar>
-                  {currentUserId === userProfile.id && token && (
-                    <Button variant="ghost" size="icon" className="ml-auto" onClick={handleEditClick}>
-                      <Pencil className="w-4 h-4" />
-                    </Button>
+  
+    return (
+      <div className="flex flex-col items-left justify-left min-h-screen">
+        <div className="flex flex-col lg:flex-row w-full max-w-full bg-white gap-10">
+          <div className="w-full lg:w-3/4">
+            <Card>
+              <CardContent>
+                <div className="flex flex-col items-start mt-4">
+                  <div className="flex items-start w-full">
+                    <Avatar className="w-24 h-24 rounded-[10px]">
+                      <AvatarImage src={userProfile?.photo || ""} />
+                      <AvatarFallback>D</AvatarFallback>
+                    </Avatar>
+                    {currentUserId === userProfile?.id && token && (
+                      <Button variant="ghost" size="icon" className="ml-auto" onClick={handleEditClick}>
+                        <Pencil className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
+                  {isEditing ? (
+                    <>
+                      <Input
+                        type="text"
+                        name="name"
+                        value={editedUser?.name || ""}
+                        onChange={handleChange}
+                        className="mt-4"
+                      />
+                      <Textarea
+                        name="about"
+                        value={editedUser?.about || ""}
+                        onChange={handleChange}
+                        className="mt-2"
+                      />
+                      <Select onValueChange={(value) => handleSelectChange('language', value)} value={editedUser?.language || ""}>
+                        <SelectTrigger className="mt-2">
+                          <SelectValue placeholder="Select a language" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {languages.map(language => (
+                            <SelectItem key={language.value} value={language.value}>
+                              {language.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Textarea
+                        name="coliver_preferences"
+                        value={editedUser?.coliver_preferences || ""}
+                        onChange={handleChange}
+                        className="mt-2"
+                      />
+                      <Select onValueChange={(value) => handleSelectChange('travel_status', value)} value={editedUser?.travel_status || ""}>
+                        <SelectTrigger className="mt-2">
+                          <SelectValue placeholder="Select travel status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {travelStatuses.map(status => (
+                            <SelectItem key={status.value} value={status.value}>
+                              {status.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <h3 className="mt-6 text-lg font-semibold">Contacts</h3>
+                      <div className="mt-2 flex flex-col gap-3 w-full">
+                        {editedUser?.social_media_links && Object.entries(editedUser.social_media_links).map(([platform, link]) => (
+                          <div key={platform} className="flex items-center gap-2 w-full">
+                            <div className="flex items-center space-x-2">
+                              <Checkbox
+                                id={`preferable-${platform}`}
+                                checked={link.isPreferable}
+                                onCheckedChange={(checked) => handleLinkChange(platform, 'isPreferable', checked as boolean)}
+                              />
+                            </div>
+                            <div className="flex-grow">
+                              <Select value={platform} onValueChange={(value) => handleLinkPlatformChange(platform, value)}>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select a platform" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="Github">Github</SelectItem>
+                                  <SelectItem value="LinkedIn">LinkedIn</SelectItem>
+                                  <SelectItem value="Facebook">Facebook</SelectItem>
+                                  <SelectItem value="Twitter">Twitter</SelectItem>
+                                  <SelectItem value="Instagram">Instagram</SelectItem>
+                                  <SelectItem value="Email">Email</SelectItem>
+                                  <SelectItem value="Discord">Discord</SelectItem>
+                                  <SelectItem value="Phone">Phone</SelectItem>
+                                  <SelectItem value="Other">Other</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="flex-grow">
+                              <Input
+                                id={`link-${platform}`}
+                                placeholder="Enter a link"
+                                value={link.value}
+                                onChange={(e) => handleLinkChange(platform, 'value', e.target.value)}
+                                className="w-full"
+                              />
+                            </div>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => handleRemoveLink(platform)}
+                              className="ml-2 flex items-center justify-center min-w-[40px] h-10"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        ))}
+                        <Button variant="link" className="justify-start" onClick={handleAddLink}>Add Link</Button>
+                      </div>
+                      <div className="flex gap-2 mt-4">
+                        <Button onClick={handleSaveClick} disabled={isLoading}>
+                          {isLoading ? <LoaderCircle className="animate-spin w-4 h-4" /> : "Save"}
+                        </Button>
+                        <Button variant="outline" onClick={handleCancelClick} disabled={isLoading}>Cancel</Button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      {isLoadingProfile ? (
+                        <Skeleton className="w-full h-6 mt-4" />
+                      ) : (
+                        <h2 className="mt-4 text-xl font-semibold">{userProfile?.name || ""}</h2>
+                      )}
+                      <div className="mt-2 text-sm text-green-6000">
+                        {isLoadingProfile ? (
+                          <Skeleton className="w-24 h-6" />
+                        ) : (
+                          <Badge variant="outline">{userProfile?.travel_status || ""}</Badge>
+                        )}
+                      </div>
+                      <h3 className="mt-6 text-lg font-semibold">About</h3>
+                      {isLoadingProfile ? (
+                        <Skeleton className="w-full h-20 mt-2" />
+                      ) : (
+                        <p className="mt-2 text-sm">{userProfile?.about || ""}</p>
+                      )}
+                      <h3 className="mt-6 text-lg font-semibold">Language</h3>
+                      {isLoadingProfile ? (
+                        <Skeleton className="w-24 h-6 mt-2" />
+                      ) : (
+                        <Badge variant="outline" className="mt-2">{userProfile?.language || ""}</Badge>
+                      )}
+                      <h3 className="mt-6 text-lg font-semibold">Co-livers Preferences</h3>
+                      {isLoadingProfile ? (
+                        <Skeleton className="w-full h-20 mt-2" />
+                      ) : (
+                        <p className="mt-2 text-sm">{userProfile?.coliver_preferences || ""}</p>
+                      )}
+                      <h3 className="mt-6 text-lg font-semibold">Contacts</h3>
+                      {token ? (
+                        <div className="mt-2 flex gap-4">
+                          {userProfile?.social_media_links && Object.entries(userProfile.social_media_links).map(([platform, link]) => (
+                            <a key={platform} href={link.value} target="_blank" rel="noopener noreferrer">
+                              <Button variant="link" className="inline-flex items-center">
+                                {getSocialIcon(platform)}
+                                <span className="ml-2">{platform}</span>
+                              </Button>
+                            </a>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center mt-2">
+                          <div className="mt-2 flex gap-4">
+                          {userProfile?.social_media_links && Object.entries(userProfile.social_media_links).map(([platform]) => (
+                            <div key={platform} className="inline-flex items-center">
+                              {getSocialIcon(platform)}
+                              <span className="ml-2 blur-sm">********</span>                          
+                            </div>
+                          ))}
+                           <Button 
+                             variant="outline" 
+                             size='icon' 
+                             className="relative group" 
+                             onClick={() => openLoginForm(`/profile/${userProfile?.username}`)}
+                           >
+                            <Lock className="w-4 h-4 group-hover:hidden" />
+                            <LockOpen className="w-4 h-4 hidden group-hover:block absolute" />
+                           </Button>
+                          </div>                
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
-                {isEditing ? (
-                  <>
-                    <Input
-                      type="text"
-                      name="name"
-                      value={editedUser?.name || ""}
-                      onChange={handleChange}
-                      className="mt-4"
-                    />
-                    <Textarea
-                      name="about"
-                      value={editedUser?.about || ""}
-                      onChange={handleChange}
-                      className="mt-2"
-                    />
-                    <Select onValueChange={(value) => handleSelectChange('language', value)} value={editedUser?.language || ""}>
-                      <SelectTrigger className="mt-2">
-                        <SelectValue placeholder="Select a language" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {languages.map(language => (
-                          <SelectItem key={language.value} value={language.value}>
-                            {language.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Textarea
-                      name="coliver_preferences"
-                      value={editedUser?.coliver_preferences || ""}
-                      onChange={handleChange}
-                      className="mt-2"
-                    />
-                    <Select onValueChange={(value) => handleSelectChange('travel_status', value)} value={editedUser?.travel_status || ""}>
-                      <SelectTrigger className="mt-2">
-                        <SelectValue placeholder="Select travel status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {travelStatuses.map(status => (
-                          <SelectItem key={status.value} value={status.value}>
-                            {status.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <h3 className="mt-6 text-lg font-semibold">Contacts</h3>
-                    <div className="mt-2 flex flex-col gap-3 w-full">
-                      {editedUser?.social_media_links && Object.entries(editedUser.social_media_links).map(([platform, link]) => (
-                        <div key={platform} className="flex items-center gap-2 w-full">
-                          <div className="flex items-center space-x-2">
-                            <Checkbox
-                              id={`preferable-${platform}`}
-                              checked={link.isPreferable}
-                              onCheckedChange={(checked) => handleLinkChange(platform, 'isPreferable', checked as boolean)}
-                            />
-                          </div>
-                          <div className="flex-grow">
-                            <Select value={platform} onValueChange={(value) => handleLinkPlatformChange(platform, value)}>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select a platform" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="Github">Github</SelectItem>
-                                <SelectItem value="LinkedIn">LinkedIn</SelectItem>
-                                <SelectItem value="Facebook">Facebook</SelectItem>
-                                <SelectItem value="Twitter">Twitter</SelectItem>
-                                <SelectItem value="Instagram">Instagram</SelectItem>
-                                <SelectItem value="Email">Email</SelectItem>
-                                <SelectItem value="Discord">Discord</SelectItem>
-                                <SelectItem value="Phone">Phone</SelectItem>
-                                <SelectItem value="Other">Other</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div className="flex-grow">
-                            <Input
-                              id={`link-${platform}`}
-                              placeholder="Enter a link"
-                              value={link.value}
-                              onChange={(e) => handleLinkChange(platform, 'value', e.target.value)}
-                              className="w-full"
-                            />
-                          </div>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => handleRemoveLink(platform)}
-                            className="ml-2 flex items-center justify-center min-w-[40px] h-10"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      ))}
-                      <Button variant="link" className="justify-start" onClick={handleAddLink}>Add Link</Button>
-                    </div>
-                    <div className="flex gap-2 mt-4">
-                      <Button onClick={handleSaveClick} disabled={isLoading}>
-                        {isLoading ? <LoaderCircle className="animate-spin w-4 h-4" /> : "Save"}
-                      </Button>
-                      <Button variant="outline" onClick={handleCancelClick} disabled={isLoading}>Cancel</Button>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <h2 className="mt-4 text-xl font-semibold">{userProfile.name}</h2>
-                    <div className="mt-2 text-sm text-green-6000">
-                      <Badge variant="outline">{userProfile.travel_status}</Badge>
-                    </div>
-                    <h3 className="mt-6 text-lg font-semibold">About</h3>
-                    <p className="mt-2 text-sm">{userProfile.about}</p>
-                    <h3 className="mt-6 text-lg font-semibold">Language</h3>
-                    <Badge variant="outline" className="mt-2">{userProfile.language}</Badge>
-                    <h3 className="mt-6 text-lg font-semibold">Co-livers Preferences</h3>
-                    <p className="mt-2 text-sm">{userProfile.coliver_preferences}</p>
-                    <h3 className="mt-6 text-lg font-semibold">Contacts</h3>
-                    {token ? (
-                      <div className="mt-2 flex gap-4">
-                        {userProfile.social_media_links && Object.entries(userProfile.social_media_links).map(([platform, link]) => (
-                          <a key={platform} href={link.value} target="_blank" rel="noopener noreferrer">
-                            <Button variant="link" className="inline-flex items-center">
-                              {getSocialIcon(platform)}
-                              <span className="ml-2">{platform}</span>
-                            </Button>
-                          </a>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center justify-center mt-2">
-                        <div className="mt-2 flex gap-4">
-                        {userProfile.social_media_links && Object.entries(userProfile.social_media_links).map(([platform]) => (
-                          <div key={platform} className="inline-flex items-center">
-                            {getSocialIcon(platform)}
-                            <span className="ml-2 blur-sm">********</span>                          
-                          </div>
-                        ))}
-                         <Button 
-                           variant="outline" 
-                           size='icon' 
-                           className="relative group" 
-                           onClick={() => openLoginForm(`/profile/${userProfile.username}`)}
-                         >
-                          <Lock className="w-4 h-4 group-hover:hidden" />
-                          <LockOpen className="w-4 h-4 hidden group-hover:block absolute" />
-                         </Button>
-                        </div>                
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
         </div>
         <div className="w-full lg:w-3/4">
-            {trips.length === 0 ? (
-              <div className="flex justify-center items-start h-full">
-                <ListingCardExample />
-              </div>
-            ) : (
+        {isLoadingTrips ? (
+                        <div className="grid grid-cols-1 gap-8 md:grid-cols-1 lg:grid-cols-1">
+                            {[...Array(3)].map((_, index) => (
+                <SkeletonTripCard key={index} />
+              ))}
+            </div>
+            ) : trips.length === 0 && token && currentUserId === userProfile?.id ? (
+                <div className="flex justify-center items-start h-full">
+                  <ListingCardExample />
+                </div>
+        ) : (
             <Tabs defaultValue="active" className="w-full">
               <TabsList className="flex justify-end">
                 <TabsTrigger value="active">Active</TabsTrigger>
@@ -629,7 +657,7 @@ const getActions = (status: string, trip: Trips) => {
                       createdByUsername={trip.createdByUsername}
                       photo={trip.photo}
                       actions={getActions(trip.status, trip)} 
-                      showDots={currentUserId === userProfile.id && token ? true : false}
+                      showDots={currentUserId === userProfile?.id && token ? true : false}
                     />
                   ))}
                 </div>
@@ -654,7 +682,7 @@ const getActions = (status: string, trip: Trips) => {
                     createdByUsername={trip.createdByUsername}
                     photo={trip.photo}
                     actions={getActions(trip.status, trip)}
-                    showDots={currentUserId === userProfile.id && token ? true : false}
+                    showDots={currentUserId === userProfile?.id && token ? true : false}
                   />
                 ))}
               </div>

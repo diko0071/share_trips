@@ -4,7 +4,7 @@ import { CircleUser, Menu, Package2, Search, Handshake } from "lucide-react"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { getAccessToken, getUserId, resetAuthCookies } from "../../lib/actions";
-
+import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -40,6 +40,7 @@ export function MenuBar() {
   const [token, setToken] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const handleLogout = () => {
     resetAuthCookies();
@@ -69,6 +70,7 @@ export function MenuBar() {
   useEffect(() => {
     async function fetchProfileData() {
       try {
+        setIsLoading(true);
         const response = await ApiService.get(`/api/user/data/`);
         
         if (response) {
@@ -83,6 +85,8 @@ export function MenuBar() {
         }
       } catch (error) {
         console.error("Error fetching profile data:", error);
+      } finally {
+        setIsLoading(false);
       }
     }
   
@@ -158,10 +162,14 @@ export function MenuBar() {
               </Button>
             </div>
           </div>
-          <DropdownMenu>
-          <DropdownMenuTrigger asChild>
+        <DropdownMenu>
+        <DropdownMenuTrigger asChild>
             <Button variant="secondary" size="icon" className="rounded-full">
-              {token && userProfile?.photo ? (
+              {isLoading ? (
+                <Skeleton className="h-8 w-8 rounded-full">
+                  <CircleUser className="h-8 w-8" />
+                </Skeleton>
+              ) : token && userProfile?.photo ? (
                 <img src={userProfile.photo} alt="User Photo" className="h-8 w-8 rounded-full" />
               ) : (
                 <CircleUser className="h-8 w-8" />
