@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
@@ -10,6 +10,8 @@ import { Badge } from "@/components/ui/badge"
 import ApiService from "../../services/apiService";
 import { getUserId, getAccessToken } from "../../lib/actions"
 import { useRouter } from 'next/navigation';
+import PromptWindow from '../elements/prompt_window';
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
 import {
   MessageSquareShare,
   BarChartHorizontal,
@@ -19,7 +21,8 @@ import {
   Mail,
   Pencil,
   Trash2, 
-  LoaderCircle
+  LoaderCircle,
+  Sparkles
 } from "lucide-react"
 import {
   Tabs,
@@ -85,6 +88,16 @@ export default function CreateTrip() {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const popoverTriggerRef = useRef<HTMLButtonElement>(null);
+
+  const handlePrompt = (prompt: string, action: string) => {
+    console.log('Prompt submitted:', prompt, 'Action:', action);
+    setIsPopoverOpen(false);
+  };
+
+
+
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -195,13 +208,35 @@ export default function CreateTrip() {
 };
 
 
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-      <div className="flex flex-col gap-6">
-        <Card>
-          <CardHeader>
+return (
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div className="flex flex-col gap-6">
+      <Card>
+        <CardHeader>
+          <div className="flex justify-start items-center">
             <CardTitle>Create Listing</CardTitle>
-          </CardHeader>
+            <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+              <PopoverTrigger asChild>
+                <Button 
+                  ref={popoverTriggerRef}
+                  variant="ghost" 
+                  size="icon" 
+                  className="hover:bg-transparent hover:text-purple-300 hover:scale-110"
+                  onClick={() => setIsPopoverOpen(true)}
+                >
+                  <Sparkles className="h-4 w-4 text-purple-500" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="bg-white shadow-none p-0 w-[430px] rounded-lg translate-x-[100px]">
+                <PromptWindow 
+                  onSubmit={handlePrompt} 
+                  onClose={() => setIsPopoverOpen(false)} 
+                  action="create-trip"
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+        </CardHeader>
           <CardContent>
             <form className="grid gap-5" onSubmit={handleSubmit} encType="multipart/form-data">
               <div className="grid gap-2">
