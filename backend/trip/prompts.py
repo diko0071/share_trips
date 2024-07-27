@@ -17,7 +17,7 @@ The description MUST be in the following format:
     "month": "<month>",
     "country": "<country>",
     "city": "<city>",
-    "budget": "<budget (strictly integer value) per person || 0 if user does not mention it>",
+    "budget": "<budget (strictly integer value) per person || Empty if user does not mention it>",
     "currency": "<currency (strictly value from the list) || USD by default>",
 }}
 ```

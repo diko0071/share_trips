@@ -622,7 +622,11 @@ export default function TripDetail({ tripId }: TripDetailProps) {
                               isLoadingTripDetails ? (
                                 <Skeleton className="h-4 w-1/4" />
                               ) : (
-                                <b> {tripDetails?.minBudget} {tripDetails?.currency} per person</b>
+                                <b> 
+                                  {tripDetails?.minBudget && !isNaN(tripDetails.minBudget) 
+                                  ? `${tripDetails.minBudget} ${tripDetails.currency} per person`
+                                  : " Budget not specified"}
+                                </b>
                               )
                             )}
                       </div>
