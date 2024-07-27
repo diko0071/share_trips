@@ -152,7 +152,7 @@ export function MenuBar() {
                 className="flex items-center gap-2 text-lg font-semibold"
               >
                 <Package2 className="h-6 w-6" />
-                <span className="sr-only">Acme Inc</span>
+                <span className="sr-only">Trip Sharing</span>
               </Link>
               <Link
                 href="/about"
@@ -200,7 +200,7 @@ export function MenuBar() {
               <DropdownMenuItem onSelect={() => router.push(`/profile/${userProfile?.username}`)}>
                 Profile
               </DropdownMenuItem>
-              <DropdownMenuItem>Support</DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => router.push('/support')}>Support</DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
             </>
@@ -208,7 +208,7 @@ export function MenuBar() {
             <>
               <DropdownMenuItem onClick={() => openLoginForm('/')}>Login</DropdownMenuItem>
               <DropdownMenuItem onClick={openSignupForm}>Sign Up</DropdownMenuItem>
-              <DropdownMenuItem>Support</DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => router.push('/support')}>Support</DropdownMenuItem>
             </>
           )}
         </DropdownMenuContent>

@@ -624,7 +624,7 @@ export default function TripDetail({ tripId }: TripDetailProps) {
                               ) : (
                                 <b> 
                                   {tripDetails?.minBudget && !isNaN(tripDetails.minBudget) 
-                                  ? `${tripDetails.minBudget} ${tripDetails.currency} per person`
+                                  ? ` ${tripDetails.minBudget} ${tripDetails.currency} per person`
                                   : " Budget not specified"}
                                 </b>
                               )
