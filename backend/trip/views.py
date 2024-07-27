@@ -9,6 +9,9 @@ from rest_framework.permissions import AllowAny
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from cacheops import cached_view_as
+from .prompts import generate_trip_data_prompt
+from .services import openai_call
+import json
 
 
 @cached_view_as(Trip, timeout=60*15)
@@ -80,4 +83,12 @@ def parse_airbnb_url(request):
     return Response({'content': str(soup)})
 
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def generate_trip_data(request):
+    prompt = request.data.get('prompt')
+    system_prompt = generate_trip_data_prompt
+    response = openai_call(system_prompt, prompt)
+    response_json = json.loads(response)
+    return Response({'content': response_json})
 

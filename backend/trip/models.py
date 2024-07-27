@@ -22,6 +22,7 @@ class Month(models.TextChoices):
 class Status(models.TextChoices):
     ACTIVE = 'Active', 'Active'
     ARCHIVED = 'Archived', 'Archived'
+    DRAFT = 'Draft', 'Draft'
 
 class Currency(models.TextChoices):
     USD = 'USD', 'USD'
@@ -49,3 +50,4 @@ class Trip(models.Model):
 
     def __str__(self):
         return self.name
+        

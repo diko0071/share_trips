@@ -24,3 +24,6 @@ pillow==10.2.0
 azure-core==1.30.2
 azure-storage-blob==12.20.0
 beautifulsoup4==4.12.3
+langchain-openai==0.1.17
+langchain-core==0.2.23
+langchain-community==0.2.9

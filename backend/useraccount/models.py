@@ -79,3 +79,14 @@ class User(AbstractBaseUser, PermissionsMixin):
                 counter += 1
             self.username = username
         super().save(*args, **kwargs)
+
+class Prompts(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    system_message = models.TextField()
+    user_message = models.TextField()
+    response = models.TextField()
+    cost = models.DecimalField(max_digits=10, decimal_places=10)
+    input_tokens = models.PositiveIntegerField(null=True, blank=True)
+    output_tokens = models.PositiveIntegerField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)  
+    updated_at = models.DateTimeField(auto_now=True)  

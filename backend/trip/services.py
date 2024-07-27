@@ -1,5 +1,38 @@
 import requests
 from bs4 import BeautifulSoup
+from langchain_openai import ChatOpenAI, OpenAI
+from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_community.callbacks import get_openai_callback
+from useraccount.models import User, Prompts
+import os
+from datetime import datetime
+
+def today_date():
+    return datetime.now().strftime("%Y-%m-%d")  
+
+def openai_call(human_message, system_message, user):
+
+    llm = ChatOpenAI(model_name="gpt-4o-2024-05-13", temperature=0, api_key=os.getenv("OPENAI_API_KEY"))
+    chat = llm
+
+    with get_openai_callback() as cb:
+        messages = [
+            SystemMessage(content=f'{system_message}.'),
+            HumanMessage(content=human_message),
+        ]
+        response = chat.invoke(messages)
+
+        Prompts.objects.create(
+            user=user,
+            system_message=system_message,
+            user_message=human_message,
+            response=response.content,
+            cost=cb.total_cost,
+            input_tokens=cb.prompt_tokens,
+            output_tokens=cb.completion_tokens
+        )
+
+        return response.content
 
 def fetch_airbnb_page(url):
     headers = {
