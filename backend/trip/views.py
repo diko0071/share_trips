@@ -86,9 +86,10 @@ def parse_airbnb_url(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def generate_trip_data(request):
+    user = request.user
     prompt = request.data.get('prompt')
     system_prompt = generate_trip_data_prompt
-    response = openai_call(system_prompt, prompt)
+    response = openai_call(prompt, system_prompt, user)
     response_json = json.loads(response)
-    return Response({'content': response_json})
+    return Response(response_json)
 

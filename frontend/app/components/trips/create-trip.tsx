@@ -13,6 +13,7 @@ import { useRouter } from 'next/navigation';
 import PromptWindow from '../elements/prompt_window';
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
 import { toast } from 'sonner';
+import { motion } from 'framer-motion';
 import {
   MessageSquareShare,
   BarChartHorizontal,
@@ -92,9 +93,34 @@ export default function CreateTrip() {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const popoverTriggerRef = useRef<HTMLButtonElement>(null);
 
-  const handlePrompt = (prompt: string, action: string) => {
+  const handlePrompt = (response: any) => {
     setIsPopoverOpen(false);
+    animateFormData(response);
   };
+
+  const animateFormData = (response: any) => {
+    const fields = ['name', 'description', 'country', 'city', 'month', 'budget', 'currency'];
+    fields.forEach((field, index) => {
+      setTimeout(() => {
+        animateField(field, response[field]);
+      }, index * 200);
+    });
+  };
+
+  const animateField = (field: string, value: string) => {
+    let currentIndex = 0;
+    const interval = setInterval(() => {
+      setFormData((prevData) => ({
+        ...prevData,
+        [field]: value ? value.slice(0, currentIndex + 1) : '',
+      }));
+      currentIndex++;
+      if (currentIndex === (value ? value.length : 0)) {
+        clearInterval(interval);
+      }
+    }, 20);
+  };
+
 
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -279,7 +305,7 @@ return (
           </div>
         </CardHeader>
           <CardContent>
-            <form className="grid gap-5" onSubmit={handleSubmit} encType="multipart/form-data">
+          <form className="grid gap-5" onSubmit={handleSubmit} encType="multipart/form-data">
               <div className="grid gap-2">
                 <Label htmlFor="name">Name of the you trip</Label>
                 <Input id="name" type="text" placeholder="Enter a title" value={formData.name} onChange={handleChange} />
@@ -290,7 +316,7 @@ return (
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="month">Month</Label>
-                <Select onValueChange={handleMonthChange}>
+                <Select onValueChange={handleMonthChange} value={formData.month}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select a month" />
                   </SelectTrigger>
@@ -307,7 +333,7 @@ return (
                 <Label htmlFor="cost">How much you ready to pay?</Label>
                 <div className="flex items-center gap-2">
                   <Input id="budget" type="text" placeholder="Enter a budget" value={formData.budget} onChange={handleChange} />
-                <Select onValueChange={handleCurrencyChange}>
+                <Select onValueChange={handleCurrencyChange} value={formData.currency}>
                     <SelectTrigger>
                         <SelectValue placeholder="Select a currency" />
                     </SelectTrigger>

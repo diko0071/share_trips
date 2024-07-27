@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -7,19 +7,31 @@ import {
     Sparkles,
     SendHorizontal
   } from "lucide-react"
+import ApiService from '../../services/apiService';
+
 interface PromptWindowProps {
-    onSubmit: (prompt: string, action: string) => void;
+    onSubmit: (response: any) => void;
     onClose: () => void;
     action: string;
 }
 
 export default function PromptWindow({ onSubmit, onClose, action }: PromptWindowProps) {
     const [prompt, setPrompt] = useState('');
+    const [loading, setLoading] = useState(false);
 
-    const handleSubmit = () => {
-        onSubmit(prompt, action);
-        setPrompt('');
-        onClose();
+    const handleSubmit = async () => {
+        setLoading(true);
+        try {
+            const formDataToSend = JSON.stringify({ prompt, action });
+            const data = await ApiService.post_auth('/api/trip/generate/', formDataToSend);
+            onSubmit(data);
+        } catch (error) {
+            console.error("Error submitting prompt:", error);
+        } finally {
+            setLoading(false);
+            setPrompt('');
+            onClose();
+        }
     };
 
     return (
@@ -32,8 +44,8 @@ export default function PromptWindow({ onSubmit, onClose, action }: PromptWindow
                 onChange={(e) => setPrompt(e.target.value)}
                 className="flex-1 px-2 py-1 border-none outline-none text-sm focus:outline-none focus:ring-0 focus:border-none focus-visible:outline-none focus-visible:ring-0 focus-visible:border-none focus-visible:ring-offset-0 w-full" 
             />
-            <Button variant="outline" size="icon" onClick={handleSubmit}>
-                <SendHorizontal className="w-4 h-4" />
+            <Button variant="outline" size="icon" onClick={handleSubmit} disabled={loading}>
+                {loading ? <LoaderCircle className="w-4 h-4 animate-spin" /> : <SendHorizontal className="w-4 h-4" />}
             </Button>
         </div>
     )
