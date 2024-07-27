@@ -12,6 +12,7 @@ import { LoaderCircle } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox"
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import { toast } from "sonner";
 import {
   Trash2
 } from "lucide-react"
@@ -72,7 +73,12 @@ export default function Register() {
         await HandleRegister();
         setStep((prev) => prev + 1);
       } catch (error) {
-        console.error('Registration failed:', error);
+        toast.error(`Registration failed: ${error}`, {
+          action: {
+            label: "Close",
+            onClick: () => toast.dismiss(),
+          },
+        });
       } finally {
         setIsLoading(false);
       }
@@ -96,6 +102,12 @@ export default function Register() {
     } else {
       const tmpErrors: string[] = Object.values(response).map((error: any) => error);
       setErrors(tmpErrors);
+      toast.error(`Registration failed: ${tmpErrors}`, {
+        action: {
+          label: "Close",
+          onClick: () => toast.dismiss(),
+        },
+      });
       throw new Error('Registration failed');
     }
   };
@@ -122,15 +134,19 @@ export default function Register() {
   
       const response = await ApiService.put_form('/api/user/data/update/', formData);
       
-      console.log(response);
-  
+      
       if (response.status === 200) {
-        router.push('/');
+        window.location.href = '/';
       } else {
         throw new Error('Failed to update user data');
       }
     } catch (error) {
-      setErrors(['Failed to update user data. Please try again.']);
+      toast.error(`Failed to update user data: ${error}`, {
+        action: {
+          label: "Close",
+          onClick: () => toast.dismiss(),
+        },
+      });
     } finally {
       setIsLoading(false);
     }

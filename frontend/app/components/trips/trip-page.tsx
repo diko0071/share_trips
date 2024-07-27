@@ -180,8 +180,12 @@ export default function TripDetail({ tripId }: TripDetailProps) {
         });
         router.push('/');
     } catch (error) {
-        console.error('Failed to delete trip:', error);
-        toast("Failed to delete trip");
+        toast(`Failed to delete trip: ${error}`, {
+          action: {
+            label: "Close",
+            onClick: () => toast.dismiss(),
+          },
+        });
     } finally {
         setIsLoading(prevState => ({ ...prevState, delete: false }));
     }
@@ -217,10 +221,20 @@ export default function TripDetail({ tripId }: TripDetailProps) {
           };
           setTripDetails(data);
         } else {
-          console.error("No data in response");
+          toast.error("No data in response", {
+            action: {
+              label: "Close",
+              onClick: () => toast.dismiss(),
+            },
+          });
         }
       } catch (error) {
-        console.error("Error fetching listings:", error);
+        toast.error(`Error fetching listings: ${error}`, {
+          action: {
+            label: "Close",
+            onClick: () => toast.dismiss(),
+          },
+        });
       } finally {
         setIsLoadingTripDetails(false);
       }
@@ -259,10 +273,20 @@ export default function TripDetail({ tripId }: TripDetailProps) {
             }));
           setTrips(data as TripData[]);
         } else {
-          console.error("No data in response");
+          toast.error("No data in response", {
+            action: {
+              label: "Close",
+              onClick: () => toast.dismiss(),
+            },
+          });
         }
       } catch (error) {
-        console.error("Error fetching listings:", error);
+        toast.error(`Error fetching listings: ${error}`, {
+          action: {
+            label: "Close",
+            onClick: () => toast.dismiss(),
+          },
+        });
       } finally {
         setIsLoadingTrips(false);
       }
@@ -281,7 +305,12 @@ export default function TripDetail({ tripId }: TripDetailProps) {
         },
       });
     }).catch(err => {
-      console.error("Failed to copy: ", err);
+      toast(`Failed to copy: ${err}`, {
+        action: {
+          label: "Close",
+          onClick: () => toast.dismiss(),
+        },
+      });
     });
   };
 
@@ -310,15 +339,30 @@ export default function TripDetail({ tripId }: TripDetailProps) {
             ...data
           }));
           setIsEditing(false);
-          toast("Trip details updated successfully");
+          toast("Trip details updated successfully", {
+            action: {
+              label: "Close",
+              onClick: () => toast.dismiss(),
+            },
+          });
         })
         .catch(error => {
-          console.error('Failed to update trip details:', error);
+          toast(`Failed to update trip details: ${error}`, {
+            action: {
+              label: "Close",
+              onClick: () => toast.dismiss(),
+            },
+          });
           try {
             const errorData = JSON.parse(error.message);
             setErrorMessages(errorData);
           } catch (e) {
-            toast("Failed to update trip details");
+            toast(`Failed to update trip details: ${error}`, {
+              action: {
+                label: "Close",
+                onClick: () => toast.dismiss(),
+              },
+            });
           }
         })
         .finally(() => {
@@ -366,11 +410,20 @@ export default function TripDetail({ tripId }: TripDetailProps) {
           ...prevDetails!,
           status: newStatus
         }));
-        toast(`Trip status updated to ${newStatus}`);
+        toast(`Trip status updated to ${newStatus}`, {
+          action: {
+            label: "Close",
+            onClick: () => toast.dismiss(),
+          },
+        });
       }
     } catch (error) {
-      console.error('Failed to update trip status:', error);
-      toast("Failed to update trip status");
+      toast(`Failed to update trip status: ${error}`, {
+        action: {
+          label: "Close",
+          onClick: () => toast.dismiss(),
+        },
+      });
     }
   };
 

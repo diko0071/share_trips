@@ -12,6 +12,7 @@ import TripCard from "../elements/trip-card"
 import ApiService from "../../services/apiService";
 import { Skeleton } from "@/components/ui/skeleton"
 import SkeletonTripCard from "../elements/skeleton-trip-card"
+import { toast } from "sonner"
 
 interface Trips {
   id: number;
@@ -47,7 +48,6 @@ export default function Trips() {
       try {
         setIsLoading(true)
         const response = await ApiService.get('/api/trip/')
-        console.log("API response:", response)
         if (Array.isArray(response)) {
           const data = response.map((listing: any) => ({
             id: listing.id,
@@ -81,10 +81,20 @@ export default function Trips() {
 
 
         } else {
-          console.error("No data in response")
+          toast.error("No data in response", {
+            action: {
+              label: "Close",
+              onClick: () => toast.dismiss(),
+            },
+          });
         }
       } catch (error) {
-        console.error("Error fetching listings:", error)
+        toast(`Error fetching listings: ${error}`, {
+          action: {
+            label: "Close",
+            onClick: () => toast.dismiss(),
+          },
+        });
       } finally {
         setIsLoading(false)
       }

@@ -35,7 +35,7 @@ export default function ListingCardExample() {
             </div>
             <div className="absolute inset-0 flex items-center justify-center"> 
               <Button variant="outline" size="sm">
-                <a href={url}>Add First Trip</a>
+                <a href='/create-trip'>Add First Trip</a>
               </Button>
             </div>
           </div>

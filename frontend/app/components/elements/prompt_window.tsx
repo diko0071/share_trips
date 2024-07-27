@@ -17,7 +17,6 @@ export default function PromptWindow({ onSubmit, onClose, action }: PromptWindow
     const [prompt, setPrompt] = useState('');
 
     const handleSubmit = () => {
-        console.log('Submitting prompt:', prompt);
         onSubmit(prompt, action);
         setPrompt('');
         onClose();

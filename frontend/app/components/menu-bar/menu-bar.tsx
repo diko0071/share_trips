@@ -17,6 +17,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox"
 import { LoginForm } from "../user/login-popup"
 import ApiService from "../../services/apiService";
+import { toast } from "sonner";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -59,6 +60,10 @@ export function MenuBar() {
     fetchToken();
   }, [token, userId]);
 
+  const openSignupForm = () => {
+    router.push('/register');
+  }
+
   const handleButtonClick = () => {
     if (token) {
       router.push('/create-trip');
@@ -81,10 +86,20 @@ export function MenuBar() {
           };
           setUserProfile(profileData);
         } else {
-          console.error("No data in response");
+          toast.error("No data in response", {
+            action: {
+              label: "Close",
+              onClick: () => toast.dismiss(),
+            },
+          });
         }
       } catch (error) {
-        console.error("Error fetching profile data:", error);
+        toast(`Error fetching profile data: ${error}`, {
+          action: {
+            label: "Close",
+            onClick: () => toast.dismiss(),
+          },
+        });
       } finally {
         setIsLoading(false);
       }
@@ -192,6 +207,7 @@ export function MenuBar() {
           ) : (
             <>
               <DropdownMenuItem onClick={() => openLoginForm('/')}>Login</DropdownMenuItem>
+              <DropdownMenuItem onClick={openSignupForm}>Sign Up</DropdownMenuItem>
               <DropdownMenuItem>Support</DropdownMenuItem>
             </>
           )}

@@ -139,7 +139,6 @@ export default function UserProfile({ userId }: UserProfileProps) {
       setIsLoadingTrips(true);
       try {
         const response = await ApiService.get(`/api/trip/user/${userId}/`);
-        console.log("API response:", response);
         if (Array.isArray(response)) {
           const data = response.map((listing: any) => ({
             id: listing.id,
@@ -158,13 +157,22 @@ export default function UserProfile({ userId }: UserProfileProps) {
             photo: listing.photo,
             status: listing.status
           }));
-          console.log("Mapped data:", data);
           setTrips(data);
         } else {
-          console.error("No data in response");
+          toast.error("No data in response", {
+            action: {
+              label: "Close",
+              onClick: () => toast.dismiss(),
+            },
+          });
         }
       } catch (error) {
-        console.error("Error fetching trips:", error);
+        toast.error(`Error fetching trips: ${error}`, {
+          action: {
+            label: "Close",
+            onClick: () => toast.dismiss(),
+          },
+        });
       } finally {
         setIsLoadingTrips(false);
       }
@@ -210,10 +218,20 @@ export default function UserProfile({ userId }: UserProfileProps) {
           };
           setUserProfile(profileData);
         } else {
-          console.error("No data in response");
+          toast.error("No data in response", {
+            action: {
+              label: "Close",
+              onClick: () => toast.dismiss(),
+            },
+          });
         }
       } catch (error) {
-        console.error("Error fetching profile data:", error);
+        toast.error(`Error fetching profile data: ${error}`, {
+          action: {
+            label: "Close",
+            onClick: () => toast.dismiss(),
+          },
+        });
       } finally {
         setIsLoadingProfile(false);
       }
@@ -246,10 +264,6 @@ export default function UserProfile({ userId }: UserProfileProps) {
         formData.append('social_media_links', JSON.stringify(formattedLinks));
         formData.append('username', editedUser.username);
   
-        formData.forEach((value, key) => {
-          console.log(`${key}: ${value}`);
-        });
-  
         const response = await ApiService.put_form('/api/user/data/update/', formData);
         
         if (response.status === 200) {
@@ -260,12 +274,22 @@ export default function UserProfile({ userId }: UserProfileProps) {
           throw new Error(`Failed to update profile: ${response.statusText}`);
         }
       } catch (error: any) {
-        console.error('Failed to update profile:', error);
+        toast.error(`Failed to update profile: ${error}`, {
+          action: {
+            label: "Close",
+            onClick: () => toast.dismiss(),
+          },
+        });
         try {
           const errorData = JSON.parse(error.message);
           setErrorMessages(errorData);
         } catch (e) {
-          toast("Failed to update profile");
+          toast.error("Failed to update profile", {
+            action: {
+              label: "Close",
+              onClick: () => toast.dismiss(),
+            },
+          });
         }
       } finally {
         setIsLoading(false);
@@ -335,8 +359,12 @@ export default function UserProfile({ userId }: UserProfileProps) {
         });
         setTrips((prevTrips) => prevTrips.filter(trip => trip.id !== tripId));
     } catch (error) {
-        console.error('Failed to delete trip:', error);
-        toast("Failed to delete trip");
+        toast.error(`Failed to delete trip: ${error}`, {
+            action: {
+                label: "Close",
+                onClick: () => toast.dismiss(),
+            },
+        });
     }
 };
 
@@ -351,15 +379,30 @@ const handleStatusChange = (tripId: number, newStatus: string, name: string, des
       setTrips(prevTrips => prevTrips.map(trip => 
         trip.id === tripId ? { ...trip, status: newStatus } : trip
       ));
-      toast("Trip status updated successfully");
+      toast.success("Trip status updated successfully", {
+        action: {
+          label: "Close",
+          onClick: () => toast.dismiss(),
+        },
+      });
     })
     .catch(error => {
-      console.error('Failed to update trip status:', error);
+      toast.error(`Failed to update trip status: ${error}`, {
+        action: {
+          label: "Close",
+          onClick: () => toast.dismiss(),
+        },
+      });
       try {
         const errorData = JSON.parse(error.message);
         setErrorMessages(errorData);
       } catch (e) {
-        toast("Failed to update trip status");
+        toast.error("Failed to update trip status", {
+          action: {
+            label: "Close",
+            onClick: () => toast.dismiss(),
+          },
+        });
       }
     })
     .finally(() => {

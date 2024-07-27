@@ -17,6 +17,7 @@ import { Label } from "@/components/ui/label"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import ApiService from "../../services/apiService";
 import { handleLogin } from "../../lib/actions";
+import { toast } from "sonner";
 
 interface SocialMediaLink {
   type: string;
@@ -52,14 +53,10 @@ export function ContactsPopup({ isOpen, onClose, username }: ContactsPopupProps)
     setIsLoading(true);
     setError(null);
     try {
-      console.log("Fetching contacts for username:", username);
       const response = await ApiService.get(`/api/user/data/get/${username}/`);
-      console.log("API response:", response);
   
       if (response) {
-        console.log("Response structure:", Object.keys(response));
         const userData = response;
-        console.log("Raw user data:", userData);
   
         const socialMediaLinks = userData.social_media_links
           ? Object.entries(userData.social_media_links).map(([key, value]) => ({
@@ -76,17 +73,24 @@ export function ContactsPopup({ isOpen, onClose, username }: ContactsPopupProps)
           socialMediaLinks: socialMediaLinks,
         };
   
-        console.log("Transformed contact:", transformedContact);
         setContacts([transformedContact]);
       } else {
-        console.error("No response from API");
         setContacts([]);
-        setError("No response received from the server.");
+        toast.error("No response received from the server.", {
+          action: {
+            label: "Close",
+            onClick: () => toast.dismiss(),
+          },
+        });
       }
     } catch (err) {
-      console.error("Error in fetchContacts:", err);
       setContacts([]);
-      setError("Failed to fetch contacts. Please try again.");
+      toast(`Failed to fetch contacts: ${err}`, {
+        action: {
+          label: "Close",
+          onClick: () => toast.dismiss(),
+        },
+      });
     } finally {
       setIsLoading(false);
     }

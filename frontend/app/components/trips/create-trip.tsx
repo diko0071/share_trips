@@ -12,6 +12,7 @@ import { getUserId, getAccessToken } from "../../lib/actions"
 import { useRouter } from 'next/navigation';
 import PromptWindow from '../elements/prompt_window';
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
+import { toast } from 'sonner';
 import {
   MessageSquareShare,
   BarChartHorizontal,
@@ -92,11 +93,21 @@ export default function CreateTrip() {
   const popoverTriggerRef = useRef<HTMLButtonElement>(null);
 
   const handlePrompt = (prompt: string, action: string) => {
-    console.log('Prompt submitted:', prompt, 'Action:', action);
     setIsPopoverOpen(false);
   };
 
-
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = '';
+    };
+  
+    window.addEventListener('beforeunload', handleBeforeUnload);
+  
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, []);
 
 
   useEffect(() => {
@@ -125,10 +136,20 @@ export default function CreateTrip() {
             return updatedData;
           });
         } else {
-          console.error("No data in response");
+          toast.error("No data in response", {
+            action: {
+              label: "Close",
+              onClick: () => toast.dismiss(),
+            },
+          });
         }
       } catch (error) {
-        console.error("Error fetching profile data:", error);
+        toast.error(`Error fetching profile data: ${error}`, {
+          action: {
+            label: "Close",
+            onClick: () => toast.dismiss(),
+          },
+        });
       }
     };
   
@@ -155,6 +176,17 @@ export default function CreateTrip() {
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
+    
+    if (!formData.name || !formData.description || !formData.month || !formData.country || !formData.city || !formData.image1) {
+      toast.error("Please fill in all required fields: Name, Description, Month, Country, City, and Photo.", {
+        action: {
+          label: "Close",
+          onClick: () => toast.dismiss(),
+        },
+      });
+      return;
+    }
+  
     setIsLoading(true);
     try {
       const formDataToSend = new FormData();
@@ -170,14 +202,23 @@ export default function CreateTrip() {
       if (formData.image1) {
         formDataToSend.append('image1', formData.image1);
       }
-
+  
       const response = await ApiService.post_auth_form('/api/trip/create/', formDataToSend);
-      console.log('Form data:', formData);
-      console.log('Trip created successfully:', response);
       const tripId = response.id;
+      toast.success(`Trip created successfully`, {
+        action: {
+          label: "Close",
+          onClick: () => toast.dismiss(),
+        },
+      });
       router.push(`/trip/${tripId}`);
     } catch (error) {
-      console.error('Error creating trip:', error);
+      toast.error(`Error creating trip: ${error}`, {
+        action: {
+          label: "Close",
+          onClick: () => toast.dismiss(),
+        },
+      });
     } finally {
       setIsLoading(false);
     }
