@@ -8,6 +8,7 @@ import {
     SendHorizontal
   } from "lucide-react"
 import ApiService from '../../services/apiService';
+import { toast } from "sonner";
 
 interface PromptWindowProps {
     onSubmit: (response: any) => void;
@@ -25,8 +26,13 @@ export default function PromptWindow({ onSubmit, onClose, action }: PromptWindow
             const formDataToSend = JSON.stringify({ prompt, action });
             const data = await ApiService.post_auth('/api/trip/generate/', formDataToSend);
             onSubmit(data);
-        } catch (error) {
-            console.error("Error submitting prompt:", error);
+        } catch (error) { 
+            toast.error("No response received from the server.", {
+                action: {
+                  label: "Close",
+                  onClick: () => toast.dismiss(),
+                },
+            });
         } finally {
             setLoading(false);
             setPrompt('');

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { CheckIcon, MagnifyingGlassIcon } from "@radix-ui/react-icons"
 import ApiService from "../../services/apiService";
+import { toast } from "sonner";
 import Image from 'next/image'
 
 interface GalleryImage {
@@ -67,8 +68,12 @@ export default function GalleryPopup({ isOpen, onClose, onSelectImage, defaultSe
             const response = await ApiService.get(`/api/trip/image/search/?query=${encodeURIComponent(query)}`);
             setImages(Array.isArray(response.photos) ? response.photos : []);
         } catch (error) {
-            console.error('Error fetching images:', error);
-            setError("Failed to fetch images. Please try again.");
+            toast.error("Failed to fetch images. Please try again.", {
+                action: {
+                  label: "Close",
+                  onClick: () => toast.dismiss(),
+                },
+            });
             setImages([]);
         } finally {
             setIsLoading(false);
