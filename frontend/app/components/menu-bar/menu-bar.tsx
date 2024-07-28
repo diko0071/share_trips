@@ -43,8 +43,8 @@ export function MenuBar() {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const handleLogout = () => {
-    resetAuthCookies();
+  const handleLogout = async () => {
+    await resetAuthCookies();
     window.location.href = '/';
   };
 
