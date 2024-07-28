@@ -6,12 +6,14 @@ import { MenuBar } from "./components/menu-bar/menu-bar";
 import { PopupProvider } from "./components/user/popup-context";
 import { LoginForm } from "./components/user/login-popup";
 import Footer from "./components/footer/footer";
+import { Analytics } from "@vercel/analytics/react"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Airbnb Sharing",
-  description: "Airbnb Sharing",
+  title: "Share Trips",
+  description: "Share Trips",
 };
 
 export default function RootLayout({

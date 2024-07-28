@@ -167,17 +167,21 @@ REST_FRAMEWORK = {
 }
 
 CORS_ALLOWED_ORIGINS = [
+    'https://share-trips-f7f4d4ccb64a.herokuapp.com/',
     'http://127.0.0.1:8000',
     'http://127.0.0.1:3000'
 ]
 
 CSRF_TRUSTED_ORIGINS = [
+    'https://share-trips-f7f4d4ccb64a.herokuapp.com/',
     'http://127.0.0.1:8000',
     'http://127.0.0.1:3000'                  
 ]
 
 CORS_ORIGINS_WHITELIST = [
-    'http://127.0.0.1:8000'
+    'https://share-trips-f7f4d4ccb64a.herokuapp.com/',
+    'http://127.0.0.1:8000',
+    'http://127.0.0.1:3000'
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
