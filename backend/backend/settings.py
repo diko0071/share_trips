@@ -45,7 +45,7 @@ CHANNEL_LAYERS = {
 }
 
 
-DEBUG = True 
+DEBUG = os.getenv('DEBUG', default=0)
 
 SITE_ID = 1
 
