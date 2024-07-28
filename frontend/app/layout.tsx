@@ -35,6 +35,8 @@ export default function RootLayout({
        <Footer />
        </div>
        </PopupProvider>
+       <Analytics />
+       <SpeedInsights />
       </body>
     </html>
   );
