@@ -23,12 +23,12 @@ export default function AboutPage() {
                 <div className="space-y-2">
                   <h2 className="text-2xl font-bold tracking-tighter sm:text-3xl">Became a nomad</h2>
                   <p className="text-muted-foreground md:text-lg">
-                  I left my home country more than 2.5 years ago and I have not lived since then. I haven't lived in the same city for more than 2 months in the past few years. Here how the nomand path has started.
+                  I left my home country more than 2.5 years ago. I haven't lived at the same city for more than 2 months in the past few years. Here how the nomand path has started.
                   </p>
                 </div>
               </div>
               <img
-                src="/placeholder.svg"
+                src="/view.png"
                 width="550"
                 height="310"
                 alt="Humble Beginnings"
@@ -44,12 +44,10 @@ export default function AboutPage() {
         <section className="w-full py-12 md:py-24 lg:py-32 relative">
           <div className="container px-4 md:px-6">
             <div className="grid gap-10 lg:grid-cols-2 lg:gap-16 relative">
-              <img
-                src="/placeholder.svg"
-                width="550"
-                height="310"
+            <img
+                src="/airbnb_2.png"
                 alt="Rapid Growth"
-                className="mx-auto aspect-video overflow-hidden rounded-xl object-cover object-center sm:w-full"
+                className="mx-auto w-full h-auto max-w-full rounded-xl object-cover object-center"
               />
               <div className="flex flex-col justify-center space-y-4">
                 <div className="space-y-2">
@@ -79,11 +77,11 @@ export default function AboutPage() {
                 </div>
               </div>
               <img
-                src="/placeholder.svg"
+                src="/text_and_logo.png"
                 width="550"
                 height="310"
                 alt="Continuous Innovation"
-                className="mx-auto aspect-video overflow-hidden rounded-xl object-cover object-center sm:w-full"
+                className="mx-auto w-full h-auto max-w-full rounded-xl object-cover object-center"
               />
             </div>
             <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-4 py-2 rounded-full border">

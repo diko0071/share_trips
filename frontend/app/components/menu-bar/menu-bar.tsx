@@ -118,7 +118,7 @@ export function MenuBar() {
             href="/"
             className="flex items-center gap-2 text-lg font-semibold md:text-base"
           >
-            <Handshake className="h-6 w-6" />
+            <img src="/logo.svg" alt="Logo" className="h-10 w-13" />
             <span className="sr-only">Share Trips</span>
           </Link>
           <Link
@@ -195,12 +195,11 @@ export function MenuBar() {
         <DropdownMenuContent align="end">
           {token ? (
             <>
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuLabel>Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem onSelect={() => router.push(`/profile/${userProfile?.username}`)}>
                 Profile
               </DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => router.push('/support')}>Support</DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
             </>
@@ -208,7 +207,6 @@ export function MenuBar() {
             <>
               <DropdownMenuItem onClick={() => openLoginForm('/')}>Login</DropdownMenuItem>
               <DropdownMenuItem onClick={openSignupForm}>Sign Up</DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => router.push('/support')}>Support</DropdownMenuItem>
             </>
           )}
         </DropdownMenuContent>
