@@ -151,8 +151,8 @@ export function MenuBar() {
                 href="/"
                 className="flex items-center gap-2 text-lg font-semibold"
               >
-                <Package2 className="h-6 w-6" />
-                <span className="sr-only">Trip Sharing</span>
+                <img src="/logo.svg" alt="Logo" className="h-10 w-13" />
+                <span className="sr-only">Share Trips</span>
               </Link>
               <Link
                 href="/about"
