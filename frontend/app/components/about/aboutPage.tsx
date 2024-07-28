@@ -11,8 +11,7 @@ export default function AboutPage() {
             <div className="space-y-4 text-center">
               <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl md:text-6xl">Why this tool exists?</h1>
               <p className="max-w-[700px] mx-auto text-muted-foreground md:text-xl">
-                Discover the story behind our company and how we've grown to become a leading provider of innovative
-                solutions.
+                I wanted to create something that helps me find a new friend and people during my nomad life: share experience, emotions, and maybe even split the bills on expensive Airbnb! 
               </p>
             </div>
           </div>
@@ -22,11 +21,9 @@ export default function AboutPage() {
             <div className="grid gap-10 lg:grid-cols-2 lg:gap-16 relative">
               <div className="flex flex-col justify-center space-y-4">
                 <div className="space-y-2">
-                  <h2 className="text-2xl font-bold tracking-tighter sm:text-3xl">Humble Beginnings</h2>
+                  <h2 className="text-2xl font-bold tracking-tighter sm:text-3xl">Became a nomad</h2>
                   <p className="text-muted-foreground md:text-lg">
-                    Our story began in a small garage, where two passionate individuals set out to revolutionize the
-                    industry. With limited resources but an abundance of determination, they built the foundation for
-                    what would become a thriving enterprise.
+                  I left my home country more than 2.5 years ago and I have not lived since then. I haven't lived in the same city for more than 2 months in the past few years. Here how the nomand path has started.
                   </p>
                 </div>
               </div>
@@ -40,7 +37,7 @@ export default function AboutPage() {
             </div>
             <div className="absolute lg:inset-y-0 lg:left-1/2 lg:-translate-x-1/2 lg:w-px inset-x-0 bottom-0 h-px lg:h-auto w-full bg-muted-foreground/20" />
             <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-4 py-2 rounded-full border">
-              <span className="font-bold">2019</span>
+              <span className="font-bold">2021</span>
             </div>
           </div>
         </section>
@@ -56,18 +53,16 @@ export default function AboutPage() {
               />
               <div className="flex flex-col justify-center space-y-4">
                 <div className="space-y-2">
-                  <h2 className="text-2xl font-bold tracking-tighter sm:text-3xl">Rapid Growth</h2>
+                  <h2 className="text-2xl font-bold tracking-tighter sm:text-3xl">Airbnb as a home</h2>
                   <p className="text-muted-foreground md:text-lg">
-                    As our innovative solutions gained traction, we experienced rapid growth, expanding our team and
-                    opening new offices around the world. This period of exponential development allowed us to reach
-                    more customers and make a greater impact in the industry.
+                  Every 2 months it's a new Airbnb. Over 30+ apartments in the last 2 years. Because I travel alone, it is very difficult to make new friends, social circle and generally find my own company. Especially for introverts who don't really want to go looking for a hangout. 
                   </p>
                 </div>
               </div>
             </div>
             <div className="absolute lg:inset-y-0 lg:left-1/2 lg:-translate-x-1/2 lg:w-px inset-x-0 bottom-0 h-px lg:h-auto w-full bg-muted-foreground/20" />
             <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-4 py-2 rounded-full border">
-              <span className="font-bold">2021</span>
+              <span className="font-bold">2023</span>
             </div>
           </div>
         </section>
@@ -76,11 +71,10 @@ export default function AboutPage() {
             <div className="grid gap-10 lg:grid-cols-2 lg:gap-16 relative">
               <div className="flex flex-col justify-center space-y-4">
                 <div className="space-y-2">
-                  <h2 className="text-2xl font-bold tracking-tighter sm:text-3xl">Continuous Innovation</h2>
+                  <h2 className="text-2xl font-bold tracking-tighter sm:text-3xl">Desire to share experience</h2>
                   <p className="text-muted-foreground md:text-lg">
-                    Driven by our passion for innovation, we have consistently pushed the boundaries of what's possible.
-                    By investing in research and development, we've been able to introduce groundbreaking products and
-                    services that have revolutionized the industry.
+                    This year I really want not just to travel, but to meet, communicate and share experince with other
+                    people who want the same. And want give a change to do the same for everyone. Because, it is really cool when you in the new country / citry and able to find someone with similar interests, isn't it? 
                   </p>
                 </div>
               </div>

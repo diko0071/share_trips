@@ -119,7 +119,7 @@ export function MenuBar() {
             className="flex items-center gap-2 text-lg font-semibold md:text-base"
           >
             <Handshake className="h-6 w-6" />
-            <span className="sr-only">Trip Sharing</span>
+            <span className="sr-only">Share Trips</span>
           </Link>
           <Link
             href="/about"

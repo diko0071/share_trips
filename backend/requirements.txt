@@ -28,3 +28,4 @@ langchain-openai==0.1.17
 langchain-core==0.2.23
 langchain-community==0.2.9
 pexels-api-py==0.0.5
+locust==2.16.0

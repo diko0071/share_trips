@@ -12,3 +12,15 @@ services:
       - "8000:8000"
     env_file: 
       - ./.env
+
+  # locust:
+  #   build: 
+  #     context: backend
+  #     dockerfile: Dockerfile
+  #   command: locust -f /app/locustfile.py --host=http://web:8000
+  #   volumes:
+  #     - ./backend:/app
+  #   ports:
+  #     - "8089:8089"
+  #   depends_on:
+  #     - web
