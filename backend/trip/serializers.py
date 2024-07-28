@@ -12,19 +12,34 @@ class TripDetailSerializer(serializers.ModelSerializer):
         extra_fields = ['created_by_name', 'user_coliver_preferences', 'photo', 'created_by_username', 'created_by_user_id']
 
     def get_created_by_name(self, obj):
-        return obj.created_by.name
-
+        if obj.created_by.name:
+            return obj.created_by.name
+        else:
+            return None
+        
     def get_user_coliver_preferences(self, obj):
-        return obj.created_by.coliver_preferences  
+        if obj.created_by.coliver_preferences:
+            return obj.created_by.coliver_preferences
+        else:
+            return None
 
     def get_photo(self, obj):
-        return obj.created_by.photo.url
+        if obj.created_by.photo:
+            return obj.created_by.photo.url
+        else:
+            return None
     
     def get_username(self, obj):
-        return obj.created_by.username
+        if obj.created_by.username:
+            return obj.created_by.username
+        else:
+            return None
     
     def get_user_id(self, obj):
-        return obj.created_by.id
+        if obj.created_by.id:
+            return obj.created_by.id
+        else:
+            return None
 
     def to_representation(self, instance):
         ret = super().to_representation(instance)

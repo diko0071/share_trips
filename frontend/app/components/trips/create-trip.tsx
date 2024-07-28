@@ -203,7 +203,7 @@ export default function CreateTrip() {
     const { id, value } = e.target;
     setFormData((prevData) => ({
       ...prevData,
-      [id]: value,
+      [id]: value || '',
     }));
   };
 
