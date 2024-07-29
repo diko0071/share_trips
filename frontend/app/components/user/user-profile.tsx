@@ -133,6 +133,17 @@ export default function UserProfile({ userId }: UserProfileProps) {
   const [isLoadingTrips, setIsLoadingTrips] = useState(false);
   const [ isLoadingProfile, setIsLoadingProfile] = useState(false);
 
+  const formatLink = (platform: string, value: string) => {
+    switch (platform.toLowerCase()) {
+      case 'email':
+        return `mailto:${value}`;
+      case 'phone':
+        return `tel:${value.replace(/\D/g, '')}`;
+      default:
+        return value;
+    }
+  };
+
 
   useEffect(() => {
     async function fetchTrips() {
@@ -610,7 +621,7 @@ const getActions = (status: string, trip: Trips) => {
                       {isLoadingProfile ? (
                         <Skeleton className="w-full h-20 mt-2" />
                       ) : (
-                        <p className="mt-2 text-sm">{userProfile?.about || ""}</p>
+                        <p className="mt-2 text-sm whitespace-pre-wrap">{userProfile?.about || ""}</p>
                       )}
                       <h3 className="mt-6 text-lg font-semibold">Language</h3>
                       {isLoadingProfile ? (
@@ -622,47 +633,51 @@ const getActions = (status: string, trip: Trips) => {
                       {isLoadingProfile ? (
                         <Skeleton className="w-full h-20 mt-2" />
                       ) : (
-                        <p className="mt-2 text-sm">{userProfile?.coliver_preferences || ""}</p>
+                        <p className="mt-2 text-sm whitespace-pre-wrap">{userProfile?.coliver_preferences || ""}</p>
                       )}
                       <h3 className="mt-6 text-lg font-semibold">Contacts</h3>
                       {token ? (
-                        <div className="mt-2 flex gap-4">
+                        <div className="mt-2 flex flex-wrap gap-4">
                           {userProfile?.social_media_links && Object.entries(userProfile.social_media_links).map(([platform, link]) => (
-                            <a key={platform} href={link.value} target="_blank" rel="noopener noreferrer">
+                            <a key={platform} href={formatLink(platform, link.value)} target="_blank" rel="noopener noreferrer">
                               <Button variant="link" className="inline-flex items-center">
                                 {getSocialIcon(platform)}
-                                <span className="ml-2">{platform}</span>
+                                <span className="ml-2">
+                                  {platform.toLowerCase() === 'email' ? 'Email' :
+                                  platform.toLowerCase() === 'phone' ? 'Phone' :
+                                  platform}
+                                </span>
                               </Button>
                             </a>
                           ))}
                         </div>
                       ) : (
                         <div className="flex flex-col items-center justify-center mt-2">
-                          <div className="mt-2 flex gap-4">
-                          {userProfile?.social_media_links && Object.entries(userProfile.social_media_links).map(([platform]) => (
-                            <div key={platform} className="inline-flex items-center">
-                              {getSocialIcon(platform)}
-                              <span className="ml-2 blur-sm">********</span>                          
-                            </div>
-                          ))}
-                           <Button 
-                             variant="outline" 
-                             size='icon' 
-                             className="relative group" 
-                             onClick={() => openLoginForm(`/profile/${userProfile?.username}`)}
-                           >
-                            <Lock className="w-4 h-4 group-hover:hidden" />
-                            <LockOpen className="w-4 h-4 hidden group-hover:block absolute" />
-                           </Button>
+                          <div className="mt-2 flex flex-wrap gap-4">
+                            {userProfile?.social_media_links && Object.entries(userProfile.social_media_links).map(([platform]) => (
+                              <div key={platform} className="inline-flex items-center">
+                                {getSocialIcon(platform)}
+                                <span className="ml-2 blur-sm">********</span>                          
+                              </div>
+                            ))}
+                            <Button 
+                              variant="outline" 
+                              size='icon' 
+                              className="relative group" 
+                              onClick={() => openLoginForm(`/profile/${userProfile?.username}`)}
+                            >
+                              <Lock className="w-4 h-4 group-hover:hidden" />
+                              <LockOpen className="w-4 h-4 hidden group-hover:block absolute" />
+                            </Button>
                           </div>                
                         </div>
                       )}
-                    </>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-        </div>
+                      </>
+                      )}
+                      </div>
+                      </CardContent>
+                </Card>
+          </div>
         <div className="w-full lg:w-3/4">
         {isLoadingTrips ? (
                         <div className="grid grid-cols-1 gap-8 md:grid-cols-1 lg:grid-cols-1">

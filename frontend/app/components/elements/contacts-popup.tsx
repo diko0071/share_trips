@@ -43,6 +43,17 @@ export function ContactsPopup({ isOpen, onClose, username }: ContactsPopupProps)
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const formatLink = (platform: string, value: string) => {
+    switch (platform.toLowerCase()) {
+      case 'email':
+        return `mailto:${value}`;
+      case 'phone':
+        return `tel:${value.replace(/\D/g, '')}`;
+      default:
+        return value;
+    }
+  };
+
   useEffect(() => {
     if (isOpen) {
       fetchContacts();
@@ -102,7 +113,7 @@ export function ContactsPopup({ isOpen, onClose, username }: ContactsPopupProps)
         <DialogHeader className="text-left">
           <DialogTitle className="text-2xl">Contacts</DialogTitle>
           <DialogDescription>
-            {username} prefer to be contacted on those platforms.
+            {username} prefers to be contacted on these platforms.
           </DialogDescription>
         </DialogHeader>
         <div className="text-left">
@@ -120,18 +131,22 @@ export function ContactsPopup({ isOpen, onClose, username }: ContactsPopupProps)
                 contact.socialMediaLinks
                   .filter(link => link.isPreferable)
                   .map((link, index) => (
-                      <Card key={index} className="">
-                        <CardContent className="flex justify-between items-center py-4">
-                          <span className="font-semibold">Platform: {link.type}</span>
-                          <Link href={link.value} target="_blank" rel="noopener noreferrer">
-                            <Button variant="outline" size="icon">
-                              <LinkIcon className="h-4 w-4" />
-                            </Button>
-                          </Link>
-                        </CardContent>
-                      </Card>
-                    ))
-                ))}
+                    <Card key={index} className="">
+                      <CardContent className="flex justify-between items-center py-4">
+                        <span className="font-semibold">
+                          {link.type.toLowerCase() === 'email' ? 'Email' :
+                           link.type.toLowerCase() === 'phone' ? 'Phone' :
+                           link.type}
+                        </span>
+                        <a href={formatLink(link.type, link.value)} target="_blank" rel="noopener noreferrer">
+                          <Button variant="outline" size="icon">
+                            <LinkIcon className="w-4 h-4" />
+                          </Button>
+                        </a>
+                      </CardContent>
+                    </Card>
+                  ))
+              ))}
             </div>
           ) : (
             <div className="text-sm text-gray-500">No contacts found.</div>

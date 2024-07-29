@@ -211,6 +211,22 @@ export default function Register() {
     }
   }
 
+  const aboutRef = useRef<HTMLTextAreaElement>(null);
+  const preferencesRef = useRef<HTMLTextAreaElement>(null);
+
+  const autoResize = (ref: React.RefObject<HTMLTextAreaElement>) => {
+    if (ref.current) {
+      ref.current.style.height = 'auto';
+      ref.current.style.height = ref.current.scrollHeight + 'px';
+    }
+  };
+
+  useEffect(() => {
+    autoResize(aboutRef);
+    autoResize(preferencesRef);
+  }, [about, coliverPreferences]);
+
+
   return (
     <div className="max-w-5xl mx-auto">
       <div className="mb-8">
@@ -329,22 +345,38 @@ export default function Register() {
           </div>
         </div>
       )}
-      {step === 3 && (
-        <div>
-          <h2 className="text-2xl font-bold mb-2">Step 3: About you and co-liver preferences</h2>
-          <p className="text-gray-500 mb-4">Please add 3-5 senteces about yourself and your co-liver preferences</p>
-          <div className="grid grid-cols-1 gap-4">
-            <div>
-              <Label htmlFor="about">About you</Label>
-              <Textarea id="about" placeholder="Who are you? Write 3-5 senteces about yourself!" value={about} onChange={(e) => setAbout(e.target.value)} />
-            </div>
-            <div>
-              <Label htmlFor="preferences">Co-liver preferences</Label>
-              <Textarea id="preferences" placeholder="Why you would live to live with?" value={coliverPreferences} onChange={(e) => setColiverPreferences(e.target.value)} />
-            </div>
+    {step === 3 && (
+      <div>
+        <h2 className="text-2xl font-bold mb-2">Step 3: About you and co-liver preferences</h2>
+        <p className="text-gray-500 mb-4">Please add 3-5 sentences about yourself and your co-liver preferences</p>
+        <div className="grid grid-cols-1 gap-4">
+          <div>
+            <Label htmlFor="about">About you</Label>
+            <Textarea 
+              id="about" 
+              placeholder="Who are you? Write 3-5 sentences about yourself!" 
+              value={about} 
+              onChange={(e) => setAbout(e.target.value)}
+              ref={aboutRef}
+              rows={3}
+              className="resize-none overflow-hidden"
+            />
+          </div>
+          <div>
+            <Label htmlFor="preferences">Co-liver preferences</Label>
+            <Textarea 
+              id="preferences" 
+              placeholder="Who would you like to live with?" 
+              value={coliverPreferences} 
+              onChange={(e) => setColiverPreferences(e.target.value)}
+              ref={preferencesRef}
+              rows={3}
+              className="resize-none overflow-hidden"
+            />
           </div>
         </div>
-      )}
+      </div>
+    )}
           {step === 4 && (
             <div>
               <h2 className="text-2xl font-bold mb-2">Step 4: Links</h2>

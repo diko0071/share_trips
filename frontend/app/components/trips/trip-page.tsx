@@ -576,7 +576,7 @@ export default function TripDetail({ tripId }: TripDetailProps) {
                   <div className="flex justify-between items-center">
                     <div className="space-y-4">
                       <h3 className="text-base font-semibold">{USER_DETAILS.preferencesTitle}</h3>
-                      <div className="text-muted-foreground text-sm">
+                      <div className="text-muted-foreground text-sm whitespace-pre-wrap">
                         {isLoadingTripDetails ? (
                           <Skeleton className="h-4 w-3/4" />
                         ) : (
