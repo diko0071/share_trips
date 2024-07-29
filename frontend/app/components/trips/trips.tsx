@@ -5,14 +5,22 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
 import { cn } from "@/lib/utils"
-import { Calendar as CalendarIcon, X } from "lucide-react"
+import { Calendar as CalendarIcon, X, Clover } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { format } from "date-fns"
 import TripCard from "../elements/trip-card"
 import ApiService from "../../services/apiService";
 import { Skeleton } from "@/components/ui/skeleton"
 import SkeletonTripCard from "../elements/skeleton-trip-card"
+import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
+import {
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
+  } from "@/components/ui/accordion"
+
 
 interface Trips {
   id: number;
@@ -143,12 +151,45 @@ export default function Trips() {
   };
   
   const resetMonthFilter = () => setSelectedMonth(null);
-  
-  
-  const FilterBar = (
-    <Card>
-        <CardContent className="flex justify-center items-center p-4">
-            <div className="flex flex-wrap items-center justify-center gap-4">
+
+  const applyRandomFilters = () => {
+    setSelectedCountry(null);
+    setSelectedCity(null);
+    setSelectedMonth(null);
+
+    const filterChoice = Math.floor(Math.random() * 3);
+
+    switch (filterChoice) {
+      case 0:
+        if (countries.length > 0) {
+          const randomCountry = countries[Math.floor(Math.random() * countries.length)];
+          setSelectedCountry(randomCountry);
+        }
+        break;
+      case 1:
+        if (cities.length > 0) {
+          const randomCity = cities[Math.floor(Math.random() * cities.length)];
+          setSelectedCity(randomCity);
+        }
+        break;
+      case 2:
+        if (months.length > 0) {
+          const randomMonth = months[Math.floor(Math.random() * months.length)];
+          setSelectedMonth(randomMonth);
+        }
+        break;
+    }
+  };
+
+  const resetAllFilters = () => {
+    setSelectedCountry(null);
+    setSelectedCity(null);
+    setSelectedMonth(null);
+  };
+        
+    const FilterBar = (
+        <>
+            <div className="hidden md:flex flex-wrap items-center justify-center gap-4">
                 <div className="relative">
                     <Select onValueChange={setSelectedCountry} value={selectedCountry || ""}>
                         <SelectTrigger className="w-[200px]">
@@ -216,9 +257,109 @@ export default function Trips() {
                     )}
                 </div>
             </div>
-        </CardContent>
-    </Card>
-);
+        <div className="md:hidden flex items-center justify-between gap-4">    
+        <Popover>
+        <PopoverTrigger asChild>
+            <Button variant="outline">Filters</Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-80">
+          <div className="grid gap-4">
+            <div className="space-y-2">
+              <h4 className="font-medium leading-none">Trip Filters</h4>
+              <p className="text-sm text-muted-foreground">
+                Set your preferences for the trip.
+              </p>
+            </div>
+            <div className="grid gap-4">
+              <div className="grid grid-cols-3 items-center gap-4">
+                <Label htmlFor="country">Country</Label>
+                <div className="col-span-2 relative">
+                  <Select onValueChange={setSelectedCountry} value={selectedCountry || ""}>
+                    <SelectTrigger className="h-8">
+                      <SelectValue placeholder="Select country" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {countries.map((country) => (
+                        <SelectItem key={country} value={country}>{country}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {selectedCountry && (
+                    <Button
+                      className="absolute top-1/2 right-3 transform -translate-y-1/2 cursor-pointer w-4 h-4 border-none"
+                      onClick={resetCountryFilter}
+                      variant="outline"
+                      size="icon"
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+              <div className="grid grid-cols-3 items-center gap-4">
+                <Label htmlFor="city">City</Label>
+                <div className="col-span-2 relative">
+                  <Select onValueChange={setSelectedCity} value={selectedCity || ""}>
+                    <SelectTrigger className="h-8">
+                      <SelectValue placeholder="Select city" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {cities.map((city) => (
+                        <SelectItem key={city} value={city}>{city}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {selectedCity && (
+                    <Button
+                      className="absolute top-1/2 right-3 transform -translate-y-1/2 cursor-pointer w-4 h-4 border-none"
+                      onClick={resetCityFilter}
+                      variant="outline"
+                      size="icon"
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+              <div className="grid grid-cols-3 items-center gap-4">
+                <Label htmlFor="month">When?</Label>
+                <div className="col-span-2 relative">
+                  <Select onValueChange={setSelectedMonth} value={selectedMonth || ""}>
+                    <SelectTrigger className="h-8">
+                      <SelectValue placeholder="Select month" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {months.map((month) => (
+                        <SelectItem key={month} value={month}>{month}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {selectedMonth && (
+                    <Button
+                      className="absolute top-1/2 right-3 transform -translate-y-1/2 cursor-pointer w-4 h-4 border-none"
+                      onClick={resetMonthFilter}
+                      variant="outline"
+                      size="icon"
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </PopoverContent>
+        </Popover>
+        <Button 
+          onClick={applyRandomFilters}
+          className="flex items-center gap-2"
+        >
+          <Clover className="w-4 h-4" />
+          Feeling Lucky
+        </Button>
+      </div>
+    </>
+  );
 
   const filteredListings: Trips[] = trips.filter((trip: Trips) => {
     return (
