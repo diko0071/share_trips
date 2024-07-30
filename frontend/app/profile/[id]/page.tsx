@@ -1,5 +1,5 @@
 'use client';
-import UserProfile from "../../components/user/user-profile";
+import UserProfile from "../../modules/profile/pages/user-profile";
 import { useParams } from "next/navigation";
 
 const ProfilePage = () => {

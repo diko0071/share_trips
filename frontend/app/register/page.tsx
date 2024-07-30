@@ -1,5 +1,5 @@
 'use client';
-import Register from "../components/user/register";
+import Register from "../modules/profile/pages/register";
 
 const RegisterPage = () => {
     return (

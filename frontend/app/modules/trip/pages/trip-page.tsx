@@ -7,13 +7,13 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { useEffect, useState } from "react";
 import { toast } from "sonner"
 import TripCard from "../elements/trip-card"
-import { getUserId, getAccessToken } from "../../lib/actions"
+import { getUserId, getAccessToken } from "../../../lib/actions"
 import { useRouter } from 'next/navigation';
 import { Input } from "@/components/ui/input"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { DotsHorizontalIcon } from '@radix-ui/react-icons'
 import { ContactsPopup } from "../elements/contacts-popup";
-import { usePopup } from "../user/popup-context";
+import { usePopup } from "../../profile/elements/popup-context";
 import SkeletonTripCard from "../elements/skeleton-trip-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -21,7 +21,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card"
-import ApiService from "../../services/apiService";
+import ApiService from "../../../services/apiService";
 import { Textarea } from "@/components/ui/textarea"
 import {
   Sheet,
@@ -47,53 +47,12 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-
-type TripDetail = {
-  id: number;
-  title: string;
-  imgSrc: string;
-  alt: string;
-  country: string;
-  city: string;
-  description: string;
-  minBudget: number;
-  url: string | null;
-  month: string;
-  isFlexible: boolean;
-  createdBy: string;
-  createdByPhoto: string;
-  createdByPreferences: string;
-  created_by_user_id: string;
-  created_by_username: string;
-  status: string;
-  currency: string;
-};
+import { fetchTripDetails, updateTrip, fetchTrips, deleteTrip } from "../tripAPIs";
+import type { TripDetail as TripDetailType, TripData } from "../tripAPIs";
 
 type TripDetailProps = {
   tripId: string;
 };
-
-type TripData = {
-  id: number;
-  title: string;
-  imgSrc: string;
-  alt: string;
-  dateRange: string;
-  country: string;
-  city: string;
-  description: string;
-  minBudget: number;
-  url: string | null;
-  month: string;
-  isFlexible: boolean;
-  created_by_name: string;
-  isAvailable: boolean;
-  created_by_user_id: string;
-  created_by_username: string;
-  status: string;
-  photo: string;
-  currency: string;
-}
 
 const USER_DETAILS = {
   preferencesTitle: "Co-Liver's preferences",
@@ -111,13 +70,13 @@ const currencies = [
 ];
 
 export default function TripDetail({ tripId }: TripDetailProps) {
-  const [tripDetails, setTripDetails] = useState<TripDetail | null>(null);
-  const [trips, setTrips] = useState<TripData[]>([]);
+  const [tripDetails, setTripDetails] = useState<TripDetailType | null>(null);
+  const [relevantTrips, setRelevantTrips] = useState<TripData[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState({ save: false, delete: false });
   const [token, setToken] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [editedTrip, setEditedTrip] = useState<TripDetail | null>(null);
+  const [editedTrip, setEditedTrip] = useState<TripDetailType | null>(null);
   const [errorMessages, setErrorMessages] = useState<{ [key: string]: string[] }>({});
   const router = useRouter();
   const [selectedMonth, setSelectedMonth] = useState(tripDetails?.month || "");
@@ -166,134 +125,78 @@ export default function TripDetail({ tripId }: TripDetailProps) {
 };
 
 
-  const handleDeleteClick = async () => {
-    if (!tripDetails) return;
+const handleDeleteClick = async () => {
+  if (!tripDetails) return;
 
-    setIsLoading(prevState => ({ ...prevState, delete: true }));
-    try {
-        await ApiService.delete(`/api/trip/${tripDetails.id}/delete/`);
-        toast("Trip deleted successfully", {
-          action: {
-            label: "Close",
-            onClick: () => toast.dismiss(),
-          },
-        });
-        router.push('/');
-    } catch (error) {
-        toast(`Failed to delete trip: ${error}`, {
-          action: {
-            label: "Close",
-            onClick: () => toast.dismiss(),
-          },
-        });
-    } finally {
-        setIsLoading(prevState => ({ ...prevState, delete: false }));
-    }
+  setIsLoading(prevState => ({ ...prevState, delete: true }));
+  try {
+      await deleteTrip(tripDetails.id);
+      toast("Trip deleted successfully", {
+        action: {
+          label: "Close",
+          onClick: () => toast.dismiss(),
+        },
+      });
+      router.push('/');
+  } catch (error) {
+      toast(`Failed to delete trip: ${error}`, {
+        action: {
+          label: "Close",
+          onClick: () => toast.dismiss(),
+        },
+      });
+  } finally {
+      setIsLoading(prevState => ({ ...prevState, delete: false }));
+  }
 };
 
-  useEffect(() => {
-    if (!tripId) return;
+useEffect(() => {
+  if (!tripId) return;
 
-    async function fetchListingDetail() {
-      try {
-        setIsLoadingTripDetails(true);
-        const response = await ApiService.get(`/api/trip/${tripId}`);
-        if (response) {
-          const data: TripDetail = {
-            id: response.id,
-            title: response.name,
-            imgSrc: response.image1,
-            alt: response.name,
-            country: response.country,
-            city: response.city,
-            description: response.description,
-            minBudget: parseFloat(response.budget),
-            currency: response.currency,
-            url: response.url,
-            month: response.month.charAt(0).toUpperCase() + response.month.slice(1),
-            isFlexible: response.is_flexible,
-            createdBy: response.created_by_name,
-            createdByPhoto: response.photo,
-            createdByPreferences: response.user_coliver_preferences,
-            created_by_user_id: response.created_by_user_id,
-            created_by_username: response.created_by_username,
-            status: response.status
-          };
-          setTripDetails(data);
-        } else {
-          toast.error("No data in response", {
-            action: {
-              label: "Close",
-              onClick: () => toast.dismiss(),
-            },
-          });
-        }
-      } catch (error) {
-        toast.error(`Error fetching listings: ${error}`, {
-          action: {
-            label: "Close",
-            onClick: () => toast.dismiss(),
-          },
-        });
-      } finally {
-        setIsLoadingTripDetails(false);
-      }
+  async function fetchAndSetTripDetails() {
+    try {
+      setIsLoadingTripDetails(true);
+      const data = await fetchTripDetails(tripId);
+      setTripDetails(data);
+    } catch (error) {
+      toast.error(`Error fetching trip details: ${error}`, {
+        action: {
+          label: "Close",
+          onClick: () => toast.dismiss(),
+        },
+      });
+    } finally {
+      setIsLoadingTripDetails(false);
     }
+  }
 
-    fetchListingDetail();
-  }, [tripId]); 
+  fetchAndSetTripDetails();
+}, [tripId]);
 
 
-  useEffect(() => {
-    async function fetchTrips() {
-      try {
-        setIsLoadingTrips(true);
-        const response = await ApiService.get('/api/trip/')
-        if (Array.isArray(response)) {
-          const data = response
-            .filter((listing: any) => listing.id !== parseInt(tripId))
-            .slice(0, 3)
-            .map((listing: any) => ({
-              id: listing.id,
-              title: listing.name,
-              imgSrc: listing.image1,
-              alt: listing.name,
-              country: listing.country,
-              city: listing.city,
-              description: listing.description,
-              minBudget: parseFloat(listing.budget),
-              url: listing.url,
-              month: listing.month.charAt(0).toUpperCase() + listing.month.slice(1),
-              isFlexible: listing.is_flexible,
-              created_by_name: listing.created_by_name,
-              created_by_username: listing.created_by_username,
-              status: listing.status,
-              photo: listing.photo,
-              currency: listing.currency
-            }));
-          setTrips(data as TripData[]);
-        } else {
-          toast.error("No data in response", {
-            action: {
-              label: "Close",
-              onClick: () => toast.dismiss(),
-            },
-          });
-        }
-      } catch (error) {
-        toast.error(`Error fetching listings: ${error}`, {
-          action: {
-            label: "Close",
-            onClick: () => toast.dismiss(),
-          },
-        });
-      } finally {
-        setIsLoadingTrips(false);
-      }
+useEffect(() => {
+  async function fetchRelevantTrips() {
+    try {
+      setIsLoadingTrips(true);
+      const allTrips = await fetchTrips();
+      const filtered = allTrips
+        .filter(trip => trip.id !== parseInt(tripId))
+        .slice(0, 3);
+      setRelevantTrips(filtered);
+    } catch (error) {
+      toast.error(`Error fetching relevant trips: ${error}`, {
+        action: {
+          label: "Close",
+          onClick: () => toast.dismiss(),
+        },
+      });
+    } finally {
+      setIsLoadingTrips(false);
     }
+  }
 
-    fetchTrips();
-  }, [tripId]);
+  fetchRelevantTrips();
+}, [tripId]);
 
   const handleShareClick = () => {
     const url = window.location.href;
@@ -319,55 +222,48 @@ export default function TripDetail({ tripId }: TripDetailProps) {
     setEditedTrip(tripDetails);
   };
 
-  const handleSaveClick = () => {
+  const handleSaveClick = async () => {
     if (editedTrip) {
       setIsLoading(prevState => ({ ...prevState, save: true }));
-      ApiService.put(`/api/trip/${editedTrip.id}/update/`, JSON.stringify({
-        name: editedTrip.title,
-        description: editedTrip.description,
-        country: editedTrip.country,
-        city: editedTrip.city,
-        month: editedTrip.month,
-        imgSrc: editedTrip.imgSrc,
-        budget: editedTrip.minBudget,
-        currency: editedTrip.currency,
-        url: editedTrip.url
-      }))
-        .then(data => {
-          setTripDetails(prevDetails => ({
-            ...prevDetails,
-            ...data
-          }));
-          setIsEditing(false);
-          toast("Trip details updated successfully", {
-            action: {
-              label: "Close",
-              onClick: () => toast.dismiss(),
-            },
-          });
-        })
-        .catch(error => {
-          toast(`Failed to update trip details: ${error}`, {
-            action: {
-              label: "Close",
-              onClick: () => toast.dismiss(),
-            },
-          });
+      try {
+        const updatedTripData = {
+          name: editedTrip.title,
+          description: editedTrip.description,
+          country: editedTrip.country,
+          city: editedTrip.city,
+          month: editedTrip.month,
+          budget: editedTrip.minBudget.toString(),
+          currency: editedTrip.currency,
+          url: editedTrip.url || ''
+        };
+
+        const updatedTrip = await updateTrip(editedTrip.id, updatedTripData);
+        setTripDetails(updatedTrip);
+        setIsEditing(false);
+        toast("Trip details updated successfully", {
+          action: {
+            label: "Close",
+            onClick: () => toast.dismiss(),
+          },
+        });
+      } catch (error) {
+        toast(`Failed to update trip details: ${error}`, {
+          action: {
+            label: "Close",
+            onClick: () => toast.dismiss(),
+          },
+        });
+        if (error instanceof Error) {
           try {
             const errorData = JSON.parse(error.message);
             setErrorMessages(errorData);
           } catch (e) {
-            toast(`Failed to update trip details: ${error}`, {
-              action: {
-                label: "Close",
-                onClick: () => toast.dismiss(),
-              },
-            });
+            console.error("Error parsing error message:", e);
           }
-        })
-        .finally(() => {
-          setIsLoading(prevState => ({ ...prevState, save: false }));
-        });
+        }
+      } finally {
+        setIsLoading(prevState => ({ ...prevState, save: false }));
+      }
     }
   };
 
@@ -399,13 +295,15 @@ export default function TripDetail({ tripId }: TripDetailProps) {
     if (!tripDetails) return;
   
     try {
-      const response = await ApiService.put(`/api/trip/${tripDetails.id}/update/`, JSON.stringify({
+      const updatedTripData = {
         status: newStatus,
-        description: tripDetails?.description,
-        name: tripDetails?.title
-      }));
+        description: tripDetails.description,
+        name: tripDetails.title
+      };
+
+      const updatedTrip = await updateTrip(tripDetails.id, updatedTripData);
   
-      if (response) {
+      if (updatedTrip) {
         setTripDetails(prevDetails => ({
           ...prevDetails!,
           status: newStatus
@@ -562,7 +460,7 @@ export default function TripDetail({ tripId }: TripDetailProps) {
               {isLoadingTripDetails ? (
                 <Skeleton className="h-20 w-full" />
               ) : (
-                <div className="text-muted-foreground">
+                <div className="text-muted-foreground whitespace-pre-wrap">
                   {tripDetails?.description}
                 </div>
               )}
@@ -690,7 +588,7 @@ export default function TripDetail({ tripId }: TripDetailProps) {
           Array.from({ length: 3 }).map((_, index) => (
             <SkeletonTripCard key={index} />
           ))
-        ) : trips.map((trip) => (
+        ) : relevantTrips.map((trip) => (
           <TripCard
             key={trip.id}
             id={trip.id}

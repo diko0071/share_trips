@@ -9,10 +9,11 @@ import { Calendar as CalendarIcon, X, Clover } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { format } from "date-fns"
 import TripCard from "../elements/trip-card"
-import ApiService from "../../services/apiService";
+import ApiService from "../../../services/apiService";
 import { Skeleton } from "@/components/ui/skeleton"
 import SkeletonTripCard from "../elements/skeleton-trip-card"
 import { Label } from "@/components/ui/label"
+import { fetchTrips, TripData } from "../tripAPIs";
 import { toast } from "sonner"
 import {
     Accordion,
@@ -22,24 +23,7 @@ import {
   } from "@/components/ui/accordion"
 
 
-interface Trips {
-  id: number;
-  title: string;
-  imgSrc: string;
-  alt: string;
-  country: string;
-  city: string;
-  description: string;
-  minBudget: number;
-  url: string | null;
-  month: string;
-  isFlexible: boolean;
-  created_by_name: string;
-  created_by_username: string;
-  photo: string;
-  created_at: string;
-}
-
+  interface Trips extends TripData {}
 
 export default function Trips() {
   const [trips, setTrips] = useState<Trips[]>([])
@@ -52,50 +36,22 @@ export default function Trips() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    async function fetchListings() {
+    async function fetchAndSetTrips() {
       try {
         setIsLoading(true)
-        const response = await ApiService.get('/api/trip/')
-        if (Array.isArray(response)) {
-          const data = response.map((listing: any) => ({
-            id: listing.id,
-            title: listing.name,
-            imgSrc: listing.image1,
-            alt: listing.name,
-            country: listing.country,
-            city: listing.city,
-            description: listing.description,
-            minBudget: parseFloat(listing.budget),
-            url: listing.url,
-            month: listing.month.charAt(0).toUpperCase() + listing.month.slice(1),
-            isFlexible: listing.is_flexible,
-            created_by_name: listing.created_by_name,
-            created_by_username: listing.created_by_username,
-            photo: listing.photo,
-            created_at: listing.created_at
-          }))
-          
-          data.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-          
-          setTrips(data as Trips[])
+        const data = await fetchTrips()
+        
+        data.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        
+        setTrips(data as Trips[])
 
-          const uniqueCountries = Array.from(new Set(data.map((trip: Trips) => trip.country)))
-          const uniqueCities = Array.from(new Set(data.map((trip: Trips) => trip.city)))
-          const uniqueMonths = Array.from(new Set(data.map((trip: Trips) => trip.month)))
+        const uniqueCountries = Array.from(new Set(data.map((trip: Trips) => trip.country)))
+        const uniqueCities = Array.from(new Set(data.map((trip: Trips) => trip.city)))
+        const uniqueMonths = Array.from(new Set(data.map((trip: Trips) => trip.month)))
 
-          setCountries(uniqueCountries)
-          setCities(uniqueCities)
-          setMonths(uniqueMonths)
-
-
-        } else {
-          toast.error("No data in response", {
-            action: {
-              label: "Close",
-              onClick: () => toast.dismiss(),
-            },
-          });
-        }
+        setCountries(uniqueCountries)
+        setCities(uniqueCities)
+        setMonths(uniqueMonths)
       } catch (error) {
         toast(`Error fetching listings: ${error}`, {
           action: {
@@ -108,7 +64,7 @@ export default function Trips() {
       }
     }
 
-    fetchListings()
+    fetchAndSetTrips()
   }, [])
 
   useEffect(() => {

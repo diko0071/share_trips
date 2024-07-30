@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
-import { MenuBar } from "./components/menu-bar/menu-bar";
-import { PopupProvider } from "./components/user/popup-context";
-import { LoginForm } from "./components/user/login-popup";
-import Footer from "./components/footer/footer";
+import { MenuBar } from "./modules/profile/elements/menu-bar";
+import { PopupProvider } from "./modules/profile/elements/popup-context";
+import { LoginForm } from "./modules/profile/elements/login-popup";
+import Footer from "./modules/static-content/elements/footer";
 import { Analytics } from "@vercel/analytics/react"
 import { SpeedInsights } from "@vercel/speed-insights/next"
 

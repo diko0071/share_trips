@@ -1,5 +1,5 @@
 'use client';
-import CreateTrip from "../components/trips/create-trip";
+import CreateTrip from "../modules/trip/pages/create-trip";
 
 const CreateTripPage = () => {
     return (

@@ -3,29 +3,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { CheckIcon, MagnifyingGlassIcon } from "@radix-ui/react-icons"
-import ApiService from "../../services/apiService";
+import ApiService from "../../../services/apiService";
 import { toast } from "sonner";
 import Image from 'next/image'
-
-interface GalleryImage {
-    id: number;
-    width: number;
-    height: number;
-    url: string;
-    photographer: string;
-    photographer_url: string;
-    photographer_id: number;
-    avg_color: string;
-    src: {
-        original: string;
-        large2x: string;
-        large: string;
-        medium: string;
-        small: string;
-    };
-    liked: boolean;
-    alt: string;
-}
+import { searchImages, type GalleryImage } from '../tripAPIs';
 
 interface GalleryPopupProps {
     isOpen: boolean;
@@ -65,8 +46,8 @@ export default function GalleryPopup({ isOpen, onClose, onSelectImage, defaultSe
         setError(null);
 
         try {
-            const response = await ApiService.get(`/api/trip/image/search/?query=${encodeURIComponent(query)}`);
-            setImages(Array.isArray(response.photos) ? response.photos : []);
+            const fetchedImages = await searchImages(query);
+            setImages(fetchedImages);
         } catch (error) {
             toast.error("Failed to fetch images. Please try again.", {
                 action: {

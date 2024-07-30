@@ -1,5 +1,5 @@
 'use client';
-import TripDetail from "../../components/trips/trip-page";
+import TripDetail from "../../modules/trip/pages/trip-page";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect } from "react";
 

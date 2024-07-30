@@ -7,8 +7,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import ApiService from "../../services/apiService";
-import { getUserId, getAccessToken } from "../../lib/actions"
+import ApiService from "../../../services/apiService";
+import { getUserId, getAccessToken } from "../../../lib/actions"
 import { useRouter } from 'next/navigation';
 import PromptWindow from '../elements/prompt_window';
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
@@ -16,6 +16,8 @@ import { toast } from 'sonner';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import GalleryPopup from "../elements/gallery_popup"; 
+import { FeatchPersonalProfile, type UserProfileType } from '../../profile/profileAPIs';
+import { createTrip } from '../tripAPIs';
 import {
   MessageSquareShare,
   BarChartHorizontal,
@@ -36,19 +38,6 @@ import {
 } from "@/components/ui/tabs"
 
 import TripCard from "../elements/trip-card"; 
-
-interface UserProfile {
-  name: string;
-  email: string;
-  photo: string;
-  id: string;
-  about: string;
-  coliver_preferences: string;
-  language: string;
-  social_media_links: Record<string, string>;
-  travel_status: string;
-  username: string;
-}
 
 const months = [
   { value: 'Flexible', label: 'Flexible' },
@@ -89,7 +78,7 @@ export default function CreateTrip() {
     created_by: '',
   });
 
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfileType | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
@@ -141,30 +130,15 @@ export default function CreateTrip() {
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
-        const response = await ApiService.get(`/api/user/data/`);
-        if (response) {
-          const profileData: UserProfile = {
-            name: response.name,
-            email: response.email,
-            photo: response.photo,
-            id: response.id,
-            about: response.about,
-            coliver_preferences: response.coliver_preferences,
-            language: response.language,
-            social_media_links: response.social_media_links,
-            travel_status: response.travel_status,
-            username: response.username,
-          };
+        const profileData = await FeatchPersonalProfile();
+        if (profileData) {
           setUserProfile(profileData);
-          setFormData((prevData) => {
-            const updatedData = {
-              ...prevData,
-              created_by: response.id,
-            };
-            return updatedData;
-          });
+          setFormData((prevData) => ({
+            ...prevData,
+            created_by: profileData.id,
+          }));
         } else {
-          toast.error("No data in response", {
+          toast.error("No profile data received", {
             action: {
               label: "Close",
               onClick: () => toast.dismiss(),
@@ -231,15 +205,14 @@ export default function CreateTrip() {
         formDataToSend.append('image1', formData.image1);
       }
   
-      const response = await ApiService.post_auth_form('/api/trip/create/', formDataToSend);
-      const tripId = response.id;
+      const response = await createTrip(formDataToSend);
       toast.success(`Trip created successfully`, {
         action: {
           label: "Close",
           onClick: () => toast.dismiss(),
         },
       });
-      router.push(`/trip/${tripId}`);
+      router.push(`/trip/${response.id}`);
     } catch (error) {
       toast.error(`Error creating trip: ${error}`, {
         action: {
@@ -478,7 +451,7 @@ return (
               month={formData.month || "Anytime"}
               createdBy={userProfile?.name || "John Doe"}
               createdByUsername={userProfile?.username || "john.doe"}
-              photo={userProfile?.photo || "/photo.png"}
+              photo={typeof userProfile?.photo === 'string' ? userProfile.photo : ""}
               blur={!formData.image1}
             />
           </CardContent>

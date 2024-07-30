@@ -16,39 +16,35 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { usePopup } from "./popup-context";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import ApiService from "../../services/apiService";
 import { toast } from "sonner";
-import { handleLogin } from "../../lib/actions";
+import { loginUser } from "../profileAPIs";
 
 export function LoginForm() {
-    const { isLoginFormOpen, closeLoginForm, redirectUrl } = usePopup();
-    const router = useRouter();
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState<string[]>([]);
-    const [isLoading, setIsLoading] = useState(false);
+  const { isLoginFormOpen, closeLoginForm, redirectUrl } = usePopup();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-    const submitLogin = async () => {
-      setIsLoading(true);
-      setError([]);
-      const formData = {
-        email: email,
-        password: password,
-      }
-  
-      const response = await ApiService.post('/api/login/', JSON.stringify(formData));
-      if (response.access) {
-        handleLogin(response.user.pk, response.access, response.refresh).then(() => {
-            setIsLoading(false);
-            closeLoginForm();
-            window.location.href = redirectUrl;
-          });
-      } else {
-        setError(response.non_field_errors);
-        setIsLoading(false);
-      }
+  const submitLogin = async () => {
+    setIsLoading(true);
+    setError([]);
+    const formData = {
+      email: email,
+      password: password,
     }
-  
+
+    const result = await loginUser(formData);
+    if (result.success) {
+      setIsLoading(false);
+      closeLoginForm();
+      window.location.href = redirectUrl;
+    } else {
+      setError(result.errors || []);
+      setIsLoading(false);
+    }
+  }
+
     if (!isLoginFormOpen) return null;
   
     return (

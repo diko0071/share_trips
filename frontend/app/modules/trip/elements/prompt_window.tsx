@@ -7,8 +7,8 @@ import {
     Sparkles,
     SendHorizontal
   } from "lucide-react"
-import ApiService from '../../services/apiService';
 import { toast } from "sonner";
+import { generateTripDescription } from "../tripAPIs";
 
 interface PromptWindowProps {
     onSubmit: (response: any) => void;
@@ -23,8 +23,7 @@ export default function PromptWindow({ onSubmit, onClose, action }: PromptWindow
     const handleSubmit = async () => {
         setLoading(true);
         try {
-            const formDataToSend = JSON.stringify({ prompt, action });
-            const data = await ApiService.post_auth('/api/trip/generate/', formDataToSend);
+            const data = await generateTripDescription(prompt, action);
             onSubmit(data);
         } catch (error) { 
             toast.error("No response received from the server.", {

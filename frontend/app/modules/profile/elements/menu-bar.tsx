@@ -3,7 +3,7 @@ import Link from "next/link"
 import { CircleUser, Menu, Package2, Search, Handshake } from "lucide-react"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { getAccessToken, getUserId, resetAuthCookies } from "../../lib/actions";
+import { getAccessToken, getUserId, resetAuthCookies } from "../../../lib/actions";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button"
 import {
@@ -15,8 +15,8 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
-import { LoginForm } from "../user/login-popup"
-import ApiService from "../../services/apiService";
+import { LoginForm } from "../elements/login-popup"
+import ApiService from "../../../services/apiService";
 import { toast } from "sonner";
 import {
   DropdownMenu,
@@ -28,24 +28,18 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { usePopup } from "../user/popup-context"
-
-interface UserProfile {
-  photo: string;
-  id: string;
-  username: string;
-}
+import { usePopup } from "./popup-context"
+import { FeatchPersonalProfile, logoutUser, type UserProfileType } from "../profileAPIs";
 
 export function MenuBar() {
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfileType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const handleLogout = async () => {
-    await resetAuthCookies();
-    window.location.href = '/';
+    await logoutUser();
   };
 
   const { openLoginForm } = usePopup();
@@ -76,23 +70,8 @@ export function MenuBar() {
     async function fetchProfileData() {
       try {
         setIsLoading(true);
-        const response = await ApiService.get(`/api/user/data/`);
-        
-        if (response) {
-          const profileData: UserProfile = {
-            photo: response.photo,
-            id: response.id,
-            username: response.username,
-          };
-          setUserProfile(profileData);
-        } else {
-          toast.error("No data in response", {
-            action: {
-              label: "Close",
-              onClick: () => toast.dismiss(),
-            },
-          });
-        }
+        const profileData = await FeatchPersonalProfile();
+        setUserProfile(profileData);
       } catch (error) {
         toast(`Error fetching profile data: ${error}`, {
           action: {
@@ -108,7 +87,7 @@ export function MenuBar() {
     if (token) {
       fetchProfileData();
     }
-  }, [userId, token]);
+  }, [token]);
 
 
   return (
@@ -185,7 +164,7 @@ export function MenuBar() {
                   <CircleUser className="h-8 w-8" />
                 </Skeleton>
               ) : token && userProfile?.photo ? (
-                <img src={userProfile.photo} alt="User Photo" className="h-8 w-8 rounded-full" />
+                <img src={typeof userProfile?.photo === 'string' ? userProfile.photo : ""} alt="User Photo" className="h-8 w-8 rounded-full" />
               ) : (
                 <CircleUser className="h-8 w-8" />
               )}

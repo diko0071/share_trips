@@ -6,20 +6,23 @@ import { Card, CardContent } from "@/components/ui/card"
 import React, { useEffect, useState } from "react"
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge"
-import ListingCard from "../elements/trip-card"
-import ListingCardExample from "../elements/trip-card-blur-example"
-import ApiService from "../../services/apiService";
-import { getUserId, getAccessToken } from "../../lib/actions"
+import ListingCard from "../../trip/elements/trip-card"
+import ListingCardExample from "../../trip/elements/trip-card-blur-example"
+import ApiService from "../../../services/apiService";
+import { getUserId, getAccessToken } from "../../../lib/actions"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { DotsHorizontalIcon, DiscordLogoIcon,  } from '@radix-ui/react-icons'
-import TripCard from "../elements/trip-card"
-import { usePopup } from "../user/popup-context";
+import TripCard from "../../trip/elements/trip-card"
+import { usePopup } from "../elements/popup-context";
 import { toast } from "sonner"
 import { Skeleton } from "@/components/ui/skeleton"
-import SkeletonTripCard from "../elements/skeleton-trip-card"
+import SkeletonTripCard from "../../trip/elements/skeleton-trip-card"
+import { type UserProfileType, fetchUserProfile, updateUserProfile, type SocialMediaLink } from '../profileAPIs';
+import { type TripData, fetchUserTrips, updateTrip, deleteTrip } from '../../trip/tripAPIs';
+
 import {
     MessageSquareShare,
     BarChartHorizontal,
@@ -37,45 +40,8 @@ import {
     BookUser
 } from "lucide-react"
 
-
-interface SocialMediaLink {
-  value: string;
-  isPreferable: boolean;
-}
-
 interface UserProfileProps {
   userId: string;
-}
-
-interface UserProfile {
-  name: string;
-  email: string;
-  photo: string;
-  id: string;
-  about: string;
-  coliver_preferences: string;
-  language: string;
-  social_media_links: Record<string, SocialMediaLink>;
-  travel_status: string;
-  username: string;
-}
-
-interface Trips {
-  id: number;
-  title: string;
-  imgSrc: string;
-  alt: string;
-  country: string;
-  city: string;
-  description: string;
-  minBudget: number;
-  url: string;
-  month: string;
-  isFlexible: boolean;
-  createdBy: string;
-  createdByUsername: string;
-  photo: string;
-  status: string; 
 }
 
 function getSocialIcon(platform: string) {
@@ -121,17 +87,17 @@ const travelStatuses = [
 
 export default function UserProfile({ userId }: UserProfileProps) {
   const router = useRouter();
-  const [trips, setTrips] = useState<Trips[]>([]);
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [trips, setTrips] = useState<TripData[]>([]);
+  const [userProfile, setUserProfile] = useState<UserProfileType | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [editedUser, setEditedUser] = useState<UserProfile | null>(null);
+  const [editedUser, setEditedUser] = useState<UserProfileType | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessages, setErrorMessages] = useState<{ [key: string]: string[] }>({});
   const { openLoginForm } = usePopup();
   const [isLoadingTrips, setIsLoadingTrips] = useState(false);
-  const [ isLoadingProfile, setIsLoadingProfile] = useState(false);
+  const [isLoadingProfile, setIsLoadingProfile] = useState(false);
 
   const formatLink = (platform: string, value: string) => {
     switch (platform.toLowerCase()) {
@@ -149,34 +115,8 @@ export default function UserProfile({ userId }: UserProfileProps) {
     async function fetchTrips() {
       setIsLoadingTrips(true);
       try {
-        const response = await ApiService.get(`/api/trip/user/${userId}/`);
-        if (Array.isArray(response)) {
-          const data = response.map((listing: any) => ({
-            id: listing.id,
-            title: listing.name,
-            imgSrc: listing.image1,
-            alt: listing.name,
-            country: listing.country,
-            city: listing.city,
-            description: listing.description,
-            minBudget: parseFloat(listing.budget),
-            url: listing.url,
-            month: listing.month.charAt(0).toUpperCase() + listing.month.slice(1),
-            isFlexible: listing.is_flexible,
-            createdBy: listing.created_by_name,
-            createdByUsername: listing.created_by_username,
-            photo: listing.photo,
-            status: listing.status
-          }));
-          setTrips(data);
-        } else {
-          toast.error("No data in response", {
-            action: {
-              label: "Close",
-              onClick: () => toast.dismiss(),
-            },
-          });
-        }
+        const data = await fetchUserTrips(userId);
+        setTrips(data);
       } catch (error) {
         toast.error(`Error fetching trips: ${error}`, {
           action: {
@@ -212,30 +152,8 @@ export default function UserProfile({ userId }: UserProfileProps) {
     async function fetchProfileData() {
       setIsLoadingProfile(true);
       try {
-        const response = await ApiService.get(`/api/user/data/get/${userId}/`);
-        
-        if (response) {
-          const profileData: UserProfile = {
-            name: response.name,
-            email: response.email,
-            photo: response.photo,
-            id: response.id,
-            about: response.about,
-            coliver_preferences: response.coliver_preferences,
-            language: response.language,
-            social_media_links: response.social_media_links,
-            travel_status: response.travel_status,
-            username: response.username,
-          };
-          setUserProfile(profileData);
-        } else {
-          toast.error("No data in response", {
-            action: {
-              label: "Close",
-              onClick: () => toast.dismiss(),
-            },
-          });
-        }
+        const profileData = await fetchUserProfile(userId);
+        setUserProfile(profileData);
       } catch (error) {
         toast.error(`Error fetching profile data: ${error}`, {
           action: {
@@ -261,29 +179,13 @@ export default function UserProfile({ userId }: UserProfileProps) {
     if (editedUser) {
       setIsLoading(true);
       try {
-        const formattedLinks = Object.entries(editedUser.social_media_links).reduce((acc: Record<string, SocialMediaLink>, [platform, link]) => {
-          acc[platform] = link;
-          return acc;
-        }, {});
-  
-        const formData = new FormData();
-        formData.append('name', editedUser.name);
-        formData.append('language', editedUser.language);
-        formData.append('travel_status', editedUser.travel_status);
-        formData.append('about', editedUser.about);
-        formData.append('coliver_preferences', editedUser.coliver_preferences);
-        formData.append('social_media_links', JSON.stringify(formattedLinks));
-        formData.append('username', editedUser.username);
-  
-        const response = await ApiService.put_form('/api/user/data/update/', formData);
-        
-        if (response.status === 200) {
-          setUserProfile(response.data);
-          setIsEditing(false);
-          toast("Profile updated successfully");
-        } else {
-          throw new Error(`Failed to update profile: ${response.statusText}`);
-        }
+        const updatedProfile = await updateUserProfile(editedUser);
+        setUserProfile(prevProfile => ({
+          ...prevProfile,
+          ...updatedProfile
+        }));
+        setIsEditing(false);
+        toast("Profile updated successfully");
       } catch (error: any) {
         toast.error(`Failed to update profile: ${error}`, {
           action: {
@@ -291,17 +193,7 @@ export default function UserProfile({ userId }: UserProfileProps) {
             onClick: () => toast.dismiss(),
           },
         });
-        try {
-          const errorData = JSON.parse(error.message);
-          setErrorMessages(errorData);
-        } catch (e) {
-          toast.error("Failed to update profile", {
-            action: {
-              label: "Close",
-              onClick: () => toast.dismiss(),
-            },
-          });
-        }
+        setErrorMessages(error.response?.data || {});
       } finally {
         setIsLoading(false);
       }
@@ -361,68 +253,61 @@ export default function UserProfile({ userId }: UserProfileProps) {
 
   const handleDeleteClick = async (tripId: number) => {
     try {
-        await ApiService.delete(`/api/trip/${tripId}/delete/`);
-        toast("Trip deleted successfully", {
-            action: {
-                label: "Close",
-                onClick: () => toast.dismiss(),
-            },
-        });
-        setTrips((prevTrips) => prevTrips.filter(trip => trip.id !== tripId));
+      await deleteTrip(tripId);
+      toast("Trip deleted successfully", {
+        action: {
+          label: "Close",
+          onClick: () => toast.dismiss(),
+        },
+      });
+      setTrips((prevTrips) => prevTrips.filter(trip => trip.id !== tripId));
     } catch (error) {
-        toast.error(`Failed to delete trip: ${error}`, {
-            action: {
-                label: "Close",
-                onClick: () => toast.dismiss(),
-            },
-        });
+      toast.error(`Failed to delete trip: ${error}`, {
+        action: {
+          label: "Close",
+          onClick: () => toast.dismiss(),
+        },
+      });
     }
-};
+  };
 
-const handleStatusChange = (tripId: number, newStatus: string, name: string, description: string) => {
-  setIsLoading(true);
-  ApiService.put(`/api/trip/${tripId}/update/`, JSON.stringify({
-    status: newStatus,
-    name: name,
-    description: description
-  }))
-    .then(data => {
-      setTrips(prevTrips => prevTrips.map(trip => 
-        trip.id === tripId ? { ...trip, status: newStatus } : trip
-      ));
-      toast.success("Trip status updated successfully", {
-        action: {
-          label: "Close",
-          onClick: () => toast.dismiss(),
-        },
-      });
-    })
-    .catch(error => {
-      toast.error(`Failed to update trip status: ${error}`, {
-        action: {
-          label: "Close",
-          onClick: () => toast.dismiss(),
-        },
-      });
-      try {
-        const errorData = JSON.parse(error.message);
-        setErrorMessages(errorData);
-      } catch (e) {
-        toast.error("Failed to update trip status", {
+  const handleStatusChange = (tripId: number, newStatus: string, name: string, description: string) => {
+    setIsLoading(true);
+    const updateData = {
+      status: newStatus,
+      name: name,
+      description: description
+    };
+  
+    updateTrip(tripId, updateData)
+      .then(updatedTrip => {
+        console.log('Updated trip:', updatedTrip);
+        setTrips(prevTrips => prevTrips.map(trip => 
+          trip.id === tripId ? { ...trip, ...updatedTrip } : trip
+        ));
+        toast.success("Trip status updated successfully", {
           action: {
             label: "Close",
             onClick: () => toast.dismiss(),
           },
         });
-      }
-    })
-    .finally(() => {
-      setIsLoading(false);
-    });
-};
+      })
+      .catch(error => {
+        toast.error(`Failed to update trip status: ${error}`, {
+          action: {
+            label: "Close",
+            onClick: () => toast.dismiss(),
+          },
+        });
+        setErrorMessages(error.response?.data || {});
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  };
 
 
-const getActions = (status: string, trip: Trips) => {
+const getActions = (status: string, trip: TripData) => {
   if (status === "Active") {
     return [
       {
@@ -492,7 +377,7 @@ const getActions = (status: string, trip: Trips) => {
                 <div className="flex flex-col items-start mt-4">
                   <div className="flex items-start w-full">
                     <Avatar className="w-24 h-24 rounded-[10px]">
-                      <AvatarImage src={userProfile?.photo || ""} />
+                    <AvatarImage src={typeof userProfile?.photo === 'string' ? userProfile.photo : ""} />
                       <AvatarFallback>D</AvatarFallback>
                     </Avatar>
                     {currentUserId === userProfile?.id && token && (
@@ -708,11 +593,11 @@ const getActions = (status: string, trip: Trips) => {
                       city={trip.city}
                       description={trip.description}
                       minBudget={trip.minBudget}
-                      url={trip.url}
+                      url={trip.url || ""}
                       month={trip.month}
-                      createdBy={trip.createdBy}
+                      createdBy={trip.created_by_user_id}
                       showUser={false}
-                      createdByUsername={trip.createdByUsername}
+                      createdByUsername={trip.created_by_username || ""}
                       photo={trip.photo}
                       actions={getActions(trip.status, trip)} 
                       showDots={currentUserId === userProfile?.id && token ? true : false}
@@ -733,11 +618,11 @@ const getActions = (status: string, trip: Trips) => {
                     city={trip.city}
                     description={trip.description}
                     minBudget={trip.minBudget}
-                    url={trip.url}
+                    url={trip.url || ""}
                     month={trip.month}
-                    createdBy={trip.createdBy}
+                    createdBy={trip.created_by_user_id}
                     showUser={false}
-                    createdByUsername={trip.createdByUsername}
+                    createdByUsername={trip.created_by_username || ""}
                     photo={trip.photo}
                     actions={getActions(trip.status, trip)}
                     showDots={currentUserId === userProfile?.id && token ? true : false}

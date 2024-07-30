@@ -5,13 +5,14 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { getAccessToken } from "../../lib/actions";
-import ApiService from "../../services/apiService";
-import { handleLogin } from "../../lib/actions";
+import { getAccessToken } from "../../../lib/actions";
+import ApiService from "../../../services/apiService";
+import { handleLogin } from "../../../lib/actions";
 import { LoaderCircle } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox"
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import { registerUser, updateUserProfile, UserProfileType, SocialMediaLink } from "../profileAPIs";
 import { toast } from "sonner";
 import {
   Trash2
@@ -71,7 +72,6 @@ export default function Register() {
       setIsLoading(true);
       try {
         await HandleRegister();
-        setStep((prev) => prev + 1);
       } catch (error) {
         toast.error(`Registration failed: ${error}`, {
           action: {
@@ -93,16 +93,14 @@ export default function Register() {
       password1: password,
       password2: repeatPassword
     };
-
-    const response = await ApiService.post('/api/register/', JSON.stringify(formData));
-
-    if (response.access) {
-      await handleLogin(response.user.pk, response.access, response.refresh);
+  
+    const result = await registerUser(formData);
+    if (result.success) {
       setRefuseBackStepOne(true);
+      setStep(2);
     } else {
-      const tmpErrors: string[] = Object.values(response).map((error: any) => error);
-      setErrors(tmpErrors);
-      toast.error(`Registration failed: ${tmpErrors}`, {
+      setErrors(result.errors || []);
+      toast.error(`Registration failed: ${result.errors?.join(', ')}`, {
         action: {
           label: "Close",
           onClick: () => toast.dismiss(),
@@ -115,27 +113,25 @@ export default function Register() {
   const UpdateUserData = async () => {
     setIsLoading(true);
     try {
-      const formattedLinks = links.reduce((acc: Record<string, { value: string, isPreferable: number }>, link) => {
-        acc[link.platform] = { value: link.value, isPreferable: link.isPreferable ? 1 : 0 };
+      const formattedLinks: Record<string, SocialMediaLink> = links.reduce((acc, link) => {
+        acc[link.platform] = { value: link.value, isPreferable: link.isPreferable };
         return acc;
-      }, {});
+      }, {} as Record<string, SocialMediaLink>);
   
-      const formData = new FormData();
-      formData.append('email', email);
-      formData.append('name', name);
-      formData.append('language', language);
-      formData.append('travel_status', travelStatus);
-      formData.append('about', about);
-      formData.append('coliver_preferences', coliverPreferences);
-      if (photo) {
-        formData.append('photo', photo);
-      }
-      formData.append('social_media_links', JSON.stringify(formattedLinks));
+      const userData: Partial<UserProfileType> = {
+        email,
+        name,
+        language,
+        travel_status: travelStatus,
+        about,
+        coliver_preferences: coliverPreferences,
+        photo,
+        social_media_links: formattedLinks,
+      };
   
-      const response = await ApiService.put_form('/api/user/data/update/', formData);
+      const updatedProfile = await updateUserProfile(userData);
       
-      
-      if (response.status === 200) {
+      if (updatedProfile) {
         window.location.href = '/';
       } else {
         throw new Error('Failed to update user data');
