@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/hover-card"
 import ApiService from "../../../services/apiService";
 import { Textarea } from "@/components/ui/textarea"
+import MetaTags from "../../../utils/metatags";
 import {
   Sheet,
   SheetClose,
@@ -328,6 +329,14 @@ useEffect(() => {
 
   return (
     <div>
+      {tripDetails && (
+        <MetaTags
+          title={tripDetails.title || 'Trip Details'}
+          description={tripDetails.description || 'Check out this amazing trip!'}
+          imageUrl={tripDetails.imgSrc || '/default-image.png'}
+          url={`${process.env.DOMAIN_URL}/trip/${tripId}`}
+        />
+      )}
       <div className="flex justify-between items-center mb-1">
         <Link href="/">
           <Button variant="ghost" size="icon" className="flex items-center gap-2">

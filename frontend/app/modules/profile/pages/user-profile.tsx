@@ -22,7 +22,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import SkeletonTripCard from "../../trip/elements/skeleton-trip-card"
 import { type UserProfileType, fetchUserProfile, updateUserProfile, type SocialMediaLink } from '../profileAPIs';
 import { type TripData, fetchUserTrips, updateTrip, deleteTrip } from '../../trip/tripAPIs';
-
+import MetaTags from "../../../utils/metatags";
 import {
     MessageSquareShare,
     BarChartHorizontal,
@@ -370,6 +370,14 @@ const getActions = (status: string, trip: TripData) => {
   
     return (
       <div className="flex flex-col items-left justify-left min-h-screen">
+      {userProfile && (
+        <MetaTags
+          title={userProfile.name || 'User Profile'}
+          description={userProfile.about || 'Check out this amazing trip!'}
+          imageUrl={typeof userProfile.photo === 'string' ? userProfile.photo : ""}
+          url={`${process.env.DOMAIN_URL}/profile/${userProfile.username}`}
+        />
+      )}
         <div className="flex flex-col lg:flex-row w-full max-w-full bg-white gap-10">
           <div className="w-full lg:w-3/4">
             <Card>
