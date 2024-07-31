@@ -4,6 +4,8 @@ import requests
 import uuid 
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, UserManager
+from datetime import datetime, timedelta
+from django.utils import timezone
 
 
 class CustomUserManager(UserManager):
@@ -20,11 +22,13 @@ class CustomUserManager(UserManager):
     def create_user(self, name=None, email=None, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', False)
         extra_fields.setdefault('is_superuser', False)
+        extra_fields.setdefault('is_active', False)
         return self._create_user(email, name, password, **extra_fields)
     
     def create_superuser(self, name=None, email=None, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('is_active', True)
         return self._create_user(email, name, password, **extra_fields)   
 
 class Language(models.TextChoices):
@@ -55,8 +59,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     travel_status = models.CharField(max_length=255, choices=TravelStatus.choices, null=True, blank=True)
     username = models.CharField(max_length=255, unique=True, null=True, blank=True)
 
+    otp = models.CharField(max_length=6, null=True, blank=True)
+    otp_created_at = models.DateTimeField(null=True, blank=True)
 
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
 
@@ -79,6 +85,17 @@ class User(AbstractBaseUser, PermissionsMixin):
                 counter += 1
             self.username = username
         super().save(*args, **kwargs)
+
+    def is_otp_expired(self):
+        if self.otp_created_at:
+            expiration_time = self.otp_created_at + timedelta(minutes=5)
+            return timezone.now() > expiration_time
+        return True
+
+    def clear_expired_otp(self):
+        self.otp = None
+        self.otp_created_at = None
+        self.save()
 
 class Prompts(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
