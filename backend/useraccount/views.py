@@ -9,6 +9,8 @@ from dj_rest_auth.views import UserDetailsView
 from rest_framework.permissions import AllowAny
 from rest_framework import status
 from cacheops import cached_view_as
+import requests
+import os
 
 
 class CustomUserDetailsView(UserDetailsView):
@@ -31,3 +33,7 @@ def get_profile(request, username):
     serializer = UserDetailSerializer(user, many=False)
     return Response(serializer.data)
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def send_onetime_code_email(request):
+    ...
