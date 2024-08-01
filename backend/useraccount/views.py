@@ -13,6 +13,10 @@ from cacheops import cached_view_as
 from datetime import datetime
 import requests
 import os
+from dotenv import load_dotenv
+from trip.services import send_transactional_email
+
+load_dotenv()
 
 class CustomUserDetailsView(UserDetailsView):
     serializer_class = UserDetailSerializer
@@ -46,15 +50,29 @@ def send_otp(request):
     except User.DoesNotExist:
         return Response({"detail": "User not found"}, status=status.HTTP_404_NOT_FOUND)
     
+    # {change 1}
+    if user.is_active:
+        return Response({"detail": "User is already active"}, status=status.HTTP_400_BAD_REQUEST)
+    
     otp = get_random_string(length=6, allowed_chars='0123456789')
     user.otp = otp
     user.otp_created_at = datetime.now()
     user.save()
+
+    data_variables = {
+        "one-time-code": otp,
+    }
+    try:
+        transactional_id = str(os.getenv('OTP_TRANSACTION_ID'))
+        email = send_transactional_email(transactional_id, email, data_variables)
+
+        print(email)
     
-    return Response({
-        "message": "OTP sent successfully",
-        "otp": otp,
-    })
+    except Exception as e:
+        print(e)
+        return Response({"detail": "An error occurred while sending the OTP"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    return Response({"message": "OTP sent successfully"})
 
 @api_view(['POST'])
 @permission_classes([AllowAny])

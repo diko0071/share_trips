@@ -85,13 +85,13 @@ def fetch_airbnb_data(api_url):
     
     return response.json()
 
-def send_email(transactional_id, email, data_variables):
+def send_transactional_email(transactional_id, email, data_variables):
+
     payload = {
         "transactionalId": transactional_id,
         "email": email,
         "dataVariables": data_variables
     }
-
     try:
         response = requests.post(
             "https://app.loops.so/api/v1/transactional",
@@ -101,12 +101,14 @@ def send_email(transactional_id, email, data_variables):
                 "Content-Type": "application/json"
             }
         )
+
         response.raise_for_status()
         
         if response.status_code == 200:
             return {"message": "The email has been sent successfully."}
+        else:
+            return {"error": f"Unexpected status code: {response.status_code}", "details": response.text}
     
     except requests.exceptions.RequestException as e:
-        return {"error": str(e)}
-
-    return response.json()
+        return {"error": str(e), "details": getattr(e.response, 'text', 'No response text')}
+    
