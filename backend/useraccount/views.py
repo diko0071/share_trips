@@ -37,8 +37,10 @@ def get_profile(request, username):
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
+@authentication_classes([])
 def send_otp(request):
     email = request.data.get('email')
+    
     try:
         user = User.objects.get(email=email)
     except User.DoesNotExist:
@@ -56,8 +58,15 @@ def send_otp(request):
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
+@authentication_classes([])
 def verify_otp(request):
-    user = request.user
+    email = request.data.get('email')
+
+    try:
+        user = User.objects.get(email=email)
+    except User.DoesNotExist:
+        return Response({"detail": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+    
     otp = request.data.get('otp')
 
     if user.is_otp_expired():
