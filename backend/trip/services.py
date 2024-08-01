@@ -85,10 +85,10 @@ def fetch_airbnb_data(api_url):
     
     return response.json()
 
-def send_transactional_email(transactional_id, email, data_variables):
+def send_transactional_email(email, data_variables):
 
     payload = {
-        "transactionalId": transactional_id,
+        "transactionalId": os.getenv("OTP_TRANSACTION_ID"),
         "email": email,
         "dataVariables": data_variables
     }

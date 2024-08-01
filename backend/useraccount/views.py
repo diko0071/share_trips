@@ -50,7 +50,6 @@ def send_otp(request):
     except User.DoesNotExist:
         return Response({"detail": "User not found"}, status=status.HTTP_404_NOT_FOUND)
     
-    # {change 1}
     if user.is_active:
         return Response({"detail": "User is already active"}, status=status.HTTP_400_BAD_REQUEST)
     
@@ -63,10 +62,7 @@ def send_otp(request):
         "one-time-code": otp,
     }
     try:
-        transactional_id = str(os.getenv('OTP_TRANSACTION_ID'))
-        email = send_transactional_email(transactional_id, email, data_variables)
-
-        print(email)
+        email = send_transactional_email(email, data_variables)
     
     except Exception as e:
         print(e)
@@ -84,6 +80,9 @@ def verify_otp(request):
         user = User.objects.get(email=email)
     except User.DoesNotExist:
         return Response({"detail": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+    
+    if user.is_active:
+        return Response({"detail": "User is already active"}, status=status.HTTP_400_BAD_REQUEST)
     
     otp = request.data.get('otp')
 
