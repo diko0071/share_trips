@@ -18,6 +18,7 @@ export type UserProfileType = {
     social_media_links: Record<string, SocialMediaLink>;
     travel_status: string;
     username: string | null;
+    is_email_verified: boolean;
   };
 
   export type UserProfileUpdateType = Omit<UserProfileType, 'photo'> & {
@@ -84,6 +85,7 @@ export const FeatchPersonalProfile = async (): Promise<UserProfileType> => {
       language: response.language,
       social_media_links: response.social_media_links,
       travel_status: response.travel_status,
+      is_email_verified: response.is_email_verified,
     };
   } else {
     throw new Error("No data in response");
@@ -103,6 +105,7 @@ export const fetchUserProfile = async (userId: string): Promise<UserProfileType>
     social_media_links: response.social_media_links,
     travel_status: response.travel_status,
     username: response.username,
+    is_email_verified: response.is_email_verified,
   };
 };
 
@@ -151,6 +154,7 @@ export const updateUserProfile = async (data: Partial<UserProfileUpdateType>): P
         social_media_links: responseData.social_media_links || data.social_media_links || {},
         travel_status: responseData.travel_status || data.travel_status || '',
         username: responseData.username || data.username || null,
+        is_email_verified: responseData.is_email_verified || data.is_email_verified || false,
     };
 
     return updatedProfile;
@@ -158,7 +162,7 @@ export const updateUserProfile = async (data: Partial<UserProfileUpdateType>): P
 
 export const sendOTP = async (email: string): Promise<{ success: boolean; message?: string; error?: string }> => {
   try {
-    const response = await ApiService.post('/api/user/otp/send/', JSON.stringify({ email }));
+    const response = await ApiService.post_auth('/api/user/otp/send/', JSON.stringify({ email }));
     return { success: true, message: response.message };
   } catch (error) {
     return { success: false, error: 'An unexpected error occurred while sending OTP' };
@@ -167,7 +171,7 @@ export const sendOTP = async (email: string): Promise<{ success: boolean; messag
 
 export const verifyOTP = async (email: string, otp: string): Promise<{ success: boolean; message?: string; error?: string }> => {
   try {
-    const response = await ApiService.post('/api/user/otp/verify/', JSON.stringify({ email, otp }));
+    const response = await ApiService.post_auth('/api/user/otp/verify/', JSON.stringify({ email, otp }));
     return { success: true, message: response.message };
   } catch (error) {
     return { success: false, error: 'An unexpected error occurred while verifying OTP' };

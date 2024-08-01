@@ -44,7 +44,6 @@ export default function Register() {
   const handleLinkPreferableChange = (id: number, isPreferable: boolean) => {
     setLinks(links.map(link => link.id === id ? { ...link, isPreferable } : link))
   }
-  
 
   useEffect(() => {
     async function fetchTokenAndSetStep() {
