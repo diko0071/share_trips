@@ -38,7 +38,6 @@ export const loginUser = async (formData: {
         return { success: false, errors: response.non_field_errors || ['An unexpected error occurred'] };
       }
     } catch (error) {
-      console.error('Login error:', error);
       return { success: false, errors: ['An unexpected error occurred'] };
     }
   };
@@ -65,7 +64,6 @@ export const loginUser = async (formData: {
         return { success: false, errors };
       }
     } catch (error) {
-      console.error('Registration error:', error);
       return { success: false, errors: ['An unexpected error occurred'] };
     }
   };
@@ -156,4 +154,22 @@ export const updateUserProfile = async (data: Partial<UserProfileUpdateType>): P
     };
 
     return updatedProfile;
+};
+
+export const sendOTP = async (email: string): Promise<{ success: boolean; message?: string; error?: string }> => {
+  try {
+    const response = await ApiService.post('/api/user/otp/send/', JSON.stringify({ email }));
+    return { success: true, message: response.message };
+  } catch (error) {
+    return { success: false, error: 'An unexpected error occurred while sending OTP' };
+  }
+};
+
+export const verifyOTP = async (email: string, otp: string): Promise<{ success: boolean; message?: string; error?: string }> => {
+  try {
+    const response = await ApiService.post('/api/user/otp/verify/', JSON.stringify({ email, otp }));
+    return { success: true, message: response.message };
+  } catch (error) {
+    return { success: false, error: 'An unexpected error occurred while verifying OTP' };
+  }
 };
