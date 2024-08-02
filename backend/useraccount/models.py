@@ -22,7 +22,6 @@ class CustomUserManager(UserManager):
     def create_user(self, name=None, email=None, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', False)
         extra_fields.setdefault('is_superuser', False)
-        extra_fields.setdefault('is_active', False)
         return self._create_user(email, name, password, **extra_fields)
     
     def create_superuser(self, name=None, email=None, password=None, **extra_fields):
@@ -65,6 +64,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     is_superuser = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
+    is_email_verified = models.BooleanField(default=False)
 
     date_joined = models.DateTimeField(auto_now=True)
     last_login = models.DateTimeField(blank=True, null=True)

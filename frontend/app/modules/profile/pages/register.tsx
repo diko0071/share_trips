@@ -10,8 +10,6 @@ import ApiService from "../../../services/apiService";
 import { handleLogin } from "../../../lib/actions";
 import { LoaderCircle } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox"
-import { DndProvider, useDrag, useDrop } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
 import { registerUser, updateUserProfile, UserProfileType, SocialMediaLink } from "../profileAPIs";
 import { toast } from "sonner";
 import {

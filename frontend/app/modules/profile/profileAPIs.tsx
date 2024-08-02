@@ -160,20 +160,11 @@ export const updateUserProfile = async (data: Partial<UserProfileUpdateType>): P
     return updatedProfile;
 };
 
-export const sendOTP = async (email: string): Promise<{ success: boolean; message?: string; error?: string }> => {
+export const sendOTP = async (email: string, token: string): Promise<{ success: boolean; message?: string; error?: string }> => {
   try {
-    const response = await ApiService.post_auth('/api/user/otp/send/', JSON.stringify({ email }));
+    const response = await ApiService.post('/api/user/otp/send/', JSON.stringify({ email, token }));
     return { success: true, message: response.message };
   } catch (error) {
     return { success: false, error: 'An unexpected error occurred while sending OTP' };
-  }
-};
-
-export const verifyOTP = async (email: string, otp: string): Promise<{ success: boolean; message?: string; error?: string }> => {
-  try {
-    const response = await ApiService.post_auth('/api/user/otp/verify/', JSON.stringify({ email, otp }));
-    return { success: true, message: response.message };
-  } catch (error) {
-    return { success: false, error: 'An unexpected error occurred while verifying OTP' };
   }
 };
