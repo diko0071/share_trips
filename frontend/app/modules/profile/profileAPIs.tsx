@@ -33,7 +33,7 @@ export const loginUser = async (formData: {
       const response = await ApiService.post('/api/login/', JSON.stringify(formData));
   
       if (response.access) {
-        await handleLogin(response.user.pk, response.access, response.refresh);
+        await handleLogin(response.user.pk, response.access, response.refresh, response.is_verified);
         return { success: true, user: response.user, access: response.access, refresh: response.refresh };
       } else {
         return { success: false, errors: response.non_field_errors || ['An unexpected error occurred'] };
@@ -58,7 +58,7 @@ export const loginUser = async (formData: {
       const response = await ApiService.post('/api/register/', JSON.stringify(formData));
   
       if (response.access) {
-        await handleLogin(response.user.pk, response.access, response.refresh);
+        await handleLogin(response.user.pk, response.access, response.refresh, response.is_verified);
         return { success: true };
       } else {
         const errors: string[] = Object.values(response).map((error: any) => error);
@@ -73,11 +73,6 @@ export const loginUser = async (formData: {
   export const FeatchPersonalProfile = async (): Promise<UserProfileType> => {
     try {
       const response = await ApiService.get('/api/user/data/');
-      
-      if (!response.is_active) {
-        await logoutUser();
-        throw new Error("User is not active");
-      }
       
       if (response) {
         return {
@@ -97,7 +92,7 @@ export const loginUser = async (formData: {
         throw new Error("No data in response");
       }
     } catch (error) {
-      await logoutUser();
+      
       throw error;
     }
   };
