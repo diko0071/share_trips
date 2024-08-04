@@ -40,29 +40,62 @@ def get_profile(request, username):
 
 
 @api_view(['POST'])
+@permission_classes([AllowAny])
 @authentication_classes([])
-@permission_classes([])
 def send_otp(request):
     email = request.data.get('email')
-    token = request.data.get('token')
-    print(f"Received request with email: {email} and token: {token}")
+    
+    try:
+        user = User.objects.get(email=email)
+    except User.DoesNotExist:
+        return Response({"detail": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+    
+    if user.is_active:
+        return Response({"detail": "User is already active"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    otp = get_random_string(length=6, allowed_chars='0123456789')
+    user.otp = otp
+    user.otp_created_at = datetime.now()
+    user.save()
 
-    if not email or not token:
-        return Response({"detail": "Email and token are required", "success": False}, status=status.HTTP_400_BAD_REQUEST)
+    data_variables = {
+        "one-time-code": otp,
+    }
+    try:
+        email = send_transactional_email(email, data_variables)
+    
+    except Exception as e:
+        print(e)
+        return Response({"detail": "An error occurred while sending the OTP"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    return Response({"message": "OTP sent successfully"})
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+@authentication_classes([])
+def verify_otp(request):
+    email = request.data.get('email')
 
     try:
-        data_variables = {
-            "one-time-code": token,
-        }
-        send_transactional_email(email, data_variables)
-        
-        return Response({
-            "message": "OTP sent successfully", 
-            "success": True
-        })
-    except Exception as e:
-        print(f"Error processing OTP: {str(e)}")
-        return Response({"detail": f"An error occurred while processing the OTP: {str(e)}", "success": False}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        user = User.objects.get(email=email)
+    except User.DoesNotExist:
+        return Response({"detail": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+    
+    if user.is_active:
+        return Response({"detail": "User is already active"}, status=status.HTTP_400_BAD_REQUEST)
+
+    otp = request.data.get('otp')
+
+    if user.is_otp_expired():
+        return Response({'error': 'OTP has expired'}, status=status.HTTP_400_BAD_REQUEST)
+
+    if user.otp == otp:
+        user.clear_expired_otp()
+        user.is_active = True
+        user.save()
+        return Response({'message': 'OTP verified successfully'}, status=status.HTTP_200_OK)
+    else:
+        return Response({'error': 'Invalid OTP'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 

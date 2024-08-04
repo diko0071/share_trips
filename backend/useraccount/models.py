@@ -57,14 +57,15 @@ class User(AbstractBaseUser, PermissionsMixin):
     social_media_links = models.JSONField(null=True, blank=True)
     travel_status = models.CharField(max_length=255, choices=TravelStatus.choices, null=True, blank=True)
     username = models.CharField(max_length=255, unique=True, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     otp = models.CharField(max_length=6, null=True, blank=True)
     otp_created_at = models.DateTimeField(null=True, blank=True)
 
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
-    is_email_verified = models.BooleanField(default=False)
 
     date_joined = models.DateTimeField(auto_now=True)
     last_login = models.DateTimeField(blank=True, null=True)
