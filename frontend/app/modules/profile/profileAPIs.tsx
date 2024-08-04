@@ -172,8 +172,14 @@ export const sendOTP = async (email: string | null): Promise<{ success: boolean;
 export const verifyOTP = async (email: string, otp: string): Promise<{ success: boolean; message?: string; error?: string }> => {
   try {
     const response = await ApiService.post('/api/user/otp/verify/', JSON.stringify({ email, otp }));
-    return { success: true, message: response.message };
-  } catch (error) {
-    return { success: false, error: 'An unexpected error occurred while sending OTP' };
+
+    if (response && response.message) {
+      return { success: true, message: response.message };
+    } else {
+      return { success: false, error: response.error || 'Failed to verify OTP' };
+    }
+  } catch (error: any) {
+    console.error('Error in verifyOTP:', error);
+    return { success: false, error: error.message || 'An unexpected error occurred while verifying OTP' };
   }
 };

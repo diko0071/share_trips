@@ -79,19 +79,23 @@ export function Signup() {
   }
 
   const handleConfirmation = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    const result = await verifyOTP(email, confirmationCode)
-    if (result.success) {
-      toast.success("OTP verified successfully")
-      setIsLoading(false)
-      router.push('/register')
-    } else {
-      toast.error(result.error || "Failed to verify OTP")
-      setIsLoading(false)
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      const result = await verifyOTP(email, confirmationCode);
+      if (result.success) {
+        toast.success(result.message);
+        router.push('/register');
+      } else {
+        toast.error(result.error);
+      }
+    } catch (error) {
+      console.error("Error verifying OTP:", error);
+      toast.error("An unexpected error occurred while verifying OTP");
+    } finally {
+      setIsLoading(false);
     }
-  }
-
+  };
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
     if (resendTimer > 0) {
