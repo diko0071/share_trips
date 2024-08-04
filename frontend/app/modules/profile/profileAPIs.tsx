@@ -1,6 +1,6 @@
 import ApiService from "../../services/apiService";
 import { handleLogin, resetAuthCookies } from "../../lib/actions";
-
+import { useRouter } from "next/navigation";
 
 export type SocialMediaLink = {
   value: string;
@@ -18,7 +18,7 @@ export type UserProfileType = {
     social_media_links: Record<string, SocialMediaLink>;
     travel_status: string;
     username: string | null;
-    is_email_verified: boolean;
+    is_active: boolean;
   };
 
   export type UserProfileUpdateType = Omit<UserProfileType, 'photo'> & {
@@ -70,27 +70,37 @@ export const loginUser = async (formData: {
   };
 
 
-export const FeatchPersonalProfile = async (): Promise<UserProfileType> => {
-  const response = await ApiService.get('/api/user/data/');
-  
-  if (response) {
-    return {
-      photo: response.photo,
-      id: response.id,
-      username: response.username,
-      name: response.name,
-      email: response.email,
-      about: response.about,
-      coliver_preferences: response.coliver_preferences,
-      language: response.language,
-      social_media_links: response.social_media_links,
-      travel_status: response.travel_status,
-      is_email_verified: response.is_email_verified,
-    };
-  } else {
-    throw new Error("No data in response");
-  }
-};
+  export const FeatchPersonalProfile = async (): Promise<UserProfileType> => {
+    try {
+      const response = await ApiService.get('/api/user/data/');
+      
+      if (!response.is_active) {
+        await logoutUser();
+        throw new Error("User is not active");
+      }
+      
+      if (response) {
+        return {
+          photo: response.photo,
+          id: response.id,
+          username: response.username,
+          name: response.name,
+          email: response.email,
+          about: response.about,
+          coliver_preferences: response.coliver_preferences,
+          language: response.language,
+          social_media_links: response.social_media_links,
+          travel_status: response.travel_status,
+          is_active: response.is_active,
+        };
+      } else {
+        throw new Error("No data in response");
+      }
+    } catch (error) {
+      await logoutUser();
+      throw error;
+    }
+  };
 
 export const fetchUserProfile = async (userId: string): Promise<UserProfileType> => {
   const response = await ApiService.get(`/api/user/data/get/${userId}/`);
@@ -105,7 +115,7 @@ export const fetchUserProfile = async (userId: string): Promise<UserProfileType>
     social_media_links: response.social_media_links,
     travel_status: response.travel_status,
     username: response.username,
-    is_email_verified: response.is_email_verified,
+    is_active: response.is_active,
   };
 };
 
@@ -154,7 +164,7 @@ export const updateUserProfile = async (data: Partial<UserProfileUpdateType>): P
         social_media_links: responseData.social_media_links || data.social_media_links || {},
         travel_status: responseData.travel_status || data.travel_status || '',
         username: responseData.username || data.username || null,
-        is_email_verified: responseData.is_email_verified || data.is_email_verified || false,
+        is_active: responseData.is_active || data.is_active || false,
     };
 
     return updatedProfile;

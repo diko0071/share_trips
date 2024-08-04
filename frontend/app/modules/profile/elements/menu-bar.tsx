@@ -73,12 +73,16 @@ export function MenuBar() {
         const profileData = await FeatchPersonalProfile();
         setUserProfile(profileData);
       } catch (error) {
+        console.error('Error fetching profile:', error);
         toast(`Error fetching profile data: ${error}`, {
           action: {
             label: "Close",
             onClick: () => toast.dismiss(),
           },
         });
+        setToken(null);
+        setUserId(null);
+        setUserProfile(null);
       } finally {
         setIsLoading(false);
       }
@@ -172,7 +176,7 @@ export function MenuBar() {
             </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          {token ? (
+          {token && userProfile?.is_active ? (
             <>
               <DropdownMenuLabel>Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
