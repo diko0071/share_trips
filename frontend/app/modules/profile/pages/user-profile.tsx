@@ -375,7 +375,7 @@ const getActions = (status: string, trip: TripData) => {
           title={userProfile.name || 'User Profile'}
           description={userProfile.about || 'Check out this amazing trip!'}
           imageUrl={typeof userProfile.photo === 'string' ? userProfile.photo : ""}
-          url={`${process.env.DOMAIN_URL}/profile/${userProfile.username}`}
+          url={`${process.env.NEXT_PUBLIC_DOMAIN_URL}/profile/${userProfile.username}`}
         />
       )}
         <div className="flex flex-col lg:flex-row w-full max-w-full bg-white gap-10">

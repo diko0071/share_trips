@@ -334,7 +334,7 @@ useEffect(() => {
           title={tripDetails.title || 'Trip Details'}
           description={tripDetails.description || 'Check out this amazing trip!'}
           imageUrl={tripDetails.imgSrc || '/default-image.png'}
-          url={`${process.env.DOMAIN_URL}/trip/${tripId}`}
+          url={`${process.env.NEXT_PUBLIC_DOMAIN_URL}/trip/${tripId}`}
         />
       )}
       <div className="flex justify-between items-center mb-1">
