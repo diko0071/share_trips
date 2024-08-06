@@ -59,7 +59,7 @@ def send_otp(request):
     user.save()
 
     data_variables = {
-        "one-time-code": otp,
+        "confirmation_url": f"{os.environ.get('FRONTEND_URL')}/email-confirmation?email={email}&token={otp}",
     }
     try:
         email = send_transactional_email(email, data_variables)
@@ -75,7 +75,8 @@ def send_otp(request):
 @authentication_classes([])
 def verify_otp(request):
     email = request.data.get('email')
-
+    token = request.data.get('token')
+    
     try:
         user = User.objects.get(email=email)
     except User.DoesNotExist:
