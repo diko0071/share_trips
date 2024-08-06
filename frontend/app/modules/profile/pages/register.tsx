@@ -5,12 +5,12 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { getAccessToken } from "../../../lib/actions";
+import { getAccessToken, getIsEmailVerified } from "../../../lib/actions";
 import ApiService from "../../../services/apiService";
 import { handleLogin } from "../../../lib/actions";
 import { LoaderCircle } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox"
-import { registerUser, updateUserProfile, UserProfileType, SocialMediaLink } from "../profileAPIs";
+import { registerUser, updateUserProfile, UserProfileType, SocialMediaLink, sendOTP } from "../profileAPIs";
 import { toast } from "sonner";
 import {
   Trash2
@@ -94,7 +94,18 @@ export default function Register() {
     const result = await registerUser(formData);
     if (result.success) {
       setRefuseBackStepOne(true);
-      setStep(2);
+      
+      const otpResult = await sendOTP(email);
+      if (!otpResult.success) {
+        toast.error(`Failed to send OTP: ${otpResult.error}`, {
+          action: {
+            label: "Close",
+            onClick: () => toast.dismiss(),
+          },
+        });
+      }
+      
+      setStep((prev) => prev + 1);
     } else {
       setErrors(result.errors || []);
       toast.error(`Registration failed: ${result.errors?.join(', ')}`, {
@@ -129,7 +140,12 @@ export default function Register() {
       const updatedProfile = await updateUserProfile(userData);
       
       if (updatedProfile) {
-        window.location.href = '/';
+        const isEmailVerified = await getIsEmailVerified();
+        if (isEmailVerified) {
+          window.location.href = '/';
+        } else {
+          window.location.href = '/email-confirmation-send';
+        }
       } else {
         throw new Error('Failed to update user data');
       }

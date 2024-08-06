@@ -1,10 +1,10 @@
 import Link from "next/link"
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from 'next/navigation'
 import { verifyOTP, loginUser } from "../profileAPIs"
 import { Button } from "@/components/ui/button"
 import { toast } from 'sonner' 
-import { LoaderCircle } from "lucide-react";
+import { LoaderCircle, MailCheck, TriangleAlert } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -14,9 +14,9 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { getAccessToken } from "../../../lib/actions"
+import { getAccessToken, setIsEmailVerified } from "../../../lib/actions"
 
-export function EmailConfirmation() {
+function EmailConfirmationContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [token, setToken] = useState<string | null>(null)
@@ -26,6 +26,9 @@ export function EmailConfirmation() {
   const [showLoginForm, setShowLoginForm] = useState(false)
   const [password, setPassword] = useState('')
   const [loginError, setLoginError] = useState<string | null>(null)
+  const [isVerified, setIsVerified] = useState(false)
+  const [verificationStatus, setVerificationStatus] = useState<'pending' | 'success' | 'already-verified' | 'error'>('pending')
+  const [statusMessage, setStatusMessage] = useState('')
 
   useEffect(() => {
     const fetchToken = async () => {
@@ -44,22 +47,53 @@ export function EmailConfirmation() {
     fetchToken()
   }, [searchParams])
 
-  const handleConfirmation = async (token: string | null, email: string | null) => {
-    if (!token || !email) {
+  const handleConfirmation = async (otp: string | null, email: string | null) => {
+    if (!otp || !email) {
       toast.error("No confirmation token or email found")
       return
     }
     setIsLoading(true)
     try {
-      const response = await verifyOTP(email, token)
+      const response = await verifyOTP(email, otp)
       if (response.success) {
-        toast.success("Email confirmed successfully")
-        router.push('/')
+        setVerificationStatus('success')
+        setStatusMessage("Email confirmed successfully")
+        toast.success("Email confirmed successfully", {
+          action: {
+            label: "Close",
+            onClick: () => toast.dismiss(),
+          },
+        })
+        await setIsEmailVerified(true)
+      } else if (response.error === 'Email already verified') {
+        setVerificationStatus('already-verified')
+        setStatusMessage("Email already verified")
+        toast.info("Email already verified", {
+          action: {
+            label: "Close",
+            onClick: () => toast.dismiss(),
+          },
+        })
+        await setIsEmailVerified(true)
       } else {
-        toast.error(response.error || "Failed to confirm email")
+        setVerificationStatus('error')
+        setStatusMessage(response.error || "Failed to confirm email")
+        toast.error(response.error || "Failed to confirm email", {
+          action: {
+            label: "Close",
+            onClick: () => toast.dismiss(),
+          },
+        })
       }
     } catch (error) {
-      toast.error(`Error confirming email: ${error}`)
+      setVerificationStatus('error')
+      setStatusMessage(`Error confirming email: ${error}`)
+      toast.error(`Error confirming email: ${error}`, {
+        action: {
+          label: "Close",
+          onClick: () => toast.dismiss(),
+        },
+      })
     } finally {
       setIsLoading(false)
     }
@@ -125,7 +159,9 @@ export function EmailConfirmation() {
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Email Confirmation</CardTitle>
-          <CardDescription>We're confirming your email address...</CardDescription>
+          <CardDescription>
+            {verificationStatus === 'pending' ? "We're confirming your email address..." : statusMessage}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -133,10 +169,42 @@ export function EmailConfirmation() {
               <LoaderCircle className="animate-spin" />
             </div>
           ) : (
-            <p>Please wait while we confirm your email address.</p>
+            <div className="flex flex-col items-center space-y-4">
+              {verificationStatus === 'success' && (
+                <>
+                  <MailCheck className="text-green-500 w-16 h-16" />
+                  <p className="text-center">Email verified successfully!</p>
+                </>
+              )}
+              {verificationStatus === 'already-verified' && (
+                <>
+                  <TriangleAlert className="text-blue-500 w-16 h-16" />
+                  <p className="text-center">Email was already verified.</p>
+                </>
+              )}
+              {verificationStatus === 'error' && (
+                <>
+                  <TriangleAlert className="text-red-500 w-16 h-16" />
+                  <p className="text-center">{statusMessage}</p>
+                </>
+              )}
+              {verificationStatus !== 'pending' && (
+                <Button onClick={() => router.push('/')} className="mt-4">
+                  Continue to Homepage
+                </Button>
+              )}
+            </div>
           )}
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+export function EmailConfirmation() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <EmailConfirmationContent />
+    </Suspense>
   )
 }

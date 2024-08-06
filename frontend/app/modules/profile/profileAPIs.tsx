@@ -18,7 +18,7 @@ export type UserProfileType = {
     social_media_links: Record<string, SocialMediaLink>;
     travel_status: string;
     username: string | null;
-    is_active: boolean;
+    is_email_verified: boolean;
   };
 
   export type UserProfileUpdateType = Omit<UserProfileType, 'photo'> & {
@@ -26,22 +26,33 @@ export type UserProfileType = {
 };
 
 export const loginUser = async (formData: {
-    email: string;
-    password: string;
-  }): Promise<{ success: boolean; errors?: string[]; user?: any; access?: string; refresh?: string }> => {
-    try {
-      const response = await ApiService.post('/api/login/', JSON.stringify(formData));
-  
-      if (response.access) {
-        await handleLogin(response.user.pk, response.access, response.refresh, response.is_verified);
-        return { success: true, user: response.user, access: response.access, refresh: response.refresh };
-      } else {
-        return { success: false, errors: response.non_field_errors || ['An unexpected error occurred'] };
-      }
-    } catch (error) {
+  email: string;
+  password: string;
+}): Promise<{ success: boolean; errors?: string[]; user?: any; access?: string; refresh?: string }> => {
+  try {
+    const response = await ApiService.post('/api/login/', JSON.stringify(formData));
+
+    if (response.access && response.user) {
+      await handleLogin(
+        response.user.id,
+        response.access,
+        response.refresh,
+        response.user.is_email_verified
+      );
+      return { 
+        success: true, 
+        user: response.user, 
+        access: response.access, 
+        refresh: response.refresh 
+      };
+    } else {
       return { success: false, errors: ['An unexpected error occurred'] };
     }
-  };
+  } catch (error) {
+    console.error('Login error:', error);
+    return { success: false, errors: ['An unexpected error occurred'] };
+  }
+};
 
   export const logoutUser = async (): Promise<void> => {
     await resetAuthCookies();
@@ -86,7 +97,7 @@ export const loginUser = async (formData: {
           language: response.language,
           social_media_links: response.social_media_links,
           travel_status: response.travel_status,
-          is_active: response.is_active,
+          is_email_verified: response.is_email_verified,
         };
       } else {
         throw new Error("No data in response");
@@ -110,7 +121,7 @@ export const fetchUserProfile = async (userId: string): Promise<UserProfileType>
     social_media_links: response.social_media_links,
     travel_status: response.travel_status,
     username: response.username,
-    is_active: response.is_active,
+    is_email_verified: response.is_email_verified,
   };
 };
 
@@ -159,7 +170,7 @@ export const updateUserProfile = async (data: Partial<UserProfileUpdateType>): P
         social_media_links: responseData.social_media_links || data.social_media_links || {},
         travel_status: responseData.travel_status || data.travel_status || '',
         username: responseData.username || data.username || null,
-        is_active: responseData.is_active || data.is_active || false,
+        is_email_verified: responseData.is_email_verified || data.is_email_verified || false,
     };
 
     return updatedProfile;
@@ -167,7 +178,7 @@ export const updateUserProfile = async (data: Partial<UserProfileUpdateType>): P
 
 export const sendOTP = async (email: string | null): Promise<{ success: boolean; message?: string; error?: string }> => {
   try {
-    const response = await ApiService.post('/api/user/otp/send/', JSON.stringify({ email }));
+    const response = await ApiService.post_auth('/api/user/otp/send/', JSON.stringify({ email }));
     return { success: true, message: response.message };
   } catch (error) {
     return { success: false, error: 'An unexpected error occurred while sending OTP' };
@@ -176,12 +187,13 @@ export const sendOTP = async (email: string | null): Promise<{ success: boolean;
 
 export const verifyOTP = async (email: string, otp: string): Promise<{ success: boolean; message?: string; error?: string }> => {
   try {
-    const response = await ApiService.post('/api/user/otp/verify/', JSON.stringify({ email, otp }));
+    const response = await ApiService.post_auth('/api/user/otp/verify/', JSON.stringify({ email, otp }));
 
     if (response && response.message) {
       return { success: true, message: response.message };
     } else {
-      return { success: false, error: response.error || 'Failed to verify OTP' };
+      console.error('Error verifying OTP:', response.detail)
+      return { success: false, error: response.detail || 'Failed to verify OTP' };
     }
   } catch (error: any) {
     console.error('Error in verifyOTP:', error);

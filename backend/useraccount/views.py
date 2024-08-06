@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from django.utils.crypto import get_random_string
 from .models import User
-from .serializers import UserDetailSerializer
+from .serializers import UserDetailSerializer, CustomLoginResponseSerializer
 from dj_rest_auth.views import UserDetailsView
 from rest_framework.permissions import AllowAny
 from rest_framework import status
@@ -15,8 +15,24 @@ import base64
 import os
 from dotenv import load_dotenv
 from .services import send_transactional_email
+from dj_rest_auth.views import LoginView
 
 load_dotenv()
+
+class CustomLoginView(LoginView):
+    def get_response(self):
+        response = super().get_response()
+        user_data = {
+            'id': self.user.id,
+            'username': self.user.username,
+            'email': self.user.email,
+            'is_email_verified': self.user.is_email_verified
+        }
+        return Response({
+            'access': response.data.get('access'),
+            'refresh': response.data.get('refresh'),
+            'user': user_data
+        })
 
 class CustomUserDetailsView(UserDetailsView):
     serializer_class = UserDetailSerializer
@@ -40,20 +56,15 @@ def get_profile(request, username):
 
 
 @api_view(['POST'])
-@permission_classes([AllowAny])
-@authentication_classes([])
+@permission_classes([IsAuthenticated])
 def send_otp(request):
-    email = request.data.get('email')
+    user = request.user
+    email = user.email
     
-    try:
-        user = User.objects.get(email=email)
-    except User.DoesNotExist:
-        return Response({"detail": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+    if user.is_email_verified:
+        return Response({"detail": "Email already verified"}, status=status.HTTP_400_BAD_REQUEST)
     
-    if user.is_active:
-        return Response({"detail": "User is already active"}, status=status.HTTP_400_BAD_REQUEST)
-    
-    otp = get_random_string(length=6, allowed_chars='0123456789')
+    otp = get_random_string(length=10, allowed_chars='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
     user.otp = otp
     user.otp_created_at = datetime.now()
     user.save()
@@ -65,34 +76,29 @@ def send_otp(request):
         email = send_transactional_email(email, data_variables)
     
     except Exception as e:
-        print(e)
         return Response({"detail": "An error occurred while sending the OTP"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     return Response({"message": "OTP sent successfully"})
 
 @api_view(['POST'])
-@permission_classes([AllowAny])
-@authentication_classes([])
+@permission_classes([IsAuthenticated])
 def verify_otp(request):
+    user = request.user
     email = request.data.get('email')
-    token = request.data.get('token')
-    
-    try:
-        user = User.objects.get(email=email)
-    except User.DoesNotExist:
-        return Response({"detail": "User not found"}, status=status.HTTP_404_NOT_FOUND)
-    
-    if user.is_active:
-        return Response({"detail": "User is already active"}, status=status.HTTP_400_BAD_REQUEST)
-
     otp = request.data.get('otp')
+
+    if email != user.email:
+        return Response({"detail": "Invalid email"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    if user.is_email_verified:
+        return Response({"detail": "Email already verified"}, status=status.HTTP_400_BAD_REQUEST)
 
     if user.is_otp_expired():
         return Response({'error': 'OTP has expired'}, status=status.HTTP_400_BAD_REQUEST)
 
     if user.otp == otp:
         user.clear_expired_otp()
-        user.is_active = True
+        user.is_email_verified = True
         user.save()
         return Response({'message': 'OTP verified successfully'}, status=status.HTTP_200_OK)
     else:

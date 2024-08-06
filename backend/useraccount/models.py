@@ -60,7 +60,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     created_at = models.DateTimeField(auto_now=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    otp = models.CharField(max_length=6, null=True, blank=True)
+    otp = models.CharField(max_length=10, null=True, blank=True)
     otp_created_at = models.DateTimeField(null=True, blank=True)
 
     is_email_verified = models.BooleanField(default=False)
@@ -91,7 +91,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def is_otp_expired(self):
         if self.otp_created_at:
-            expiration_time = self.otp_created_at + timedelta(minutes=5)
+            expiration_time = self.otp_created_at + timedelta(hours=24)
             return timezone.now() > expiration_time
         return True
 

@@ -176,7 +176,7 @@ export function MenuBar() {
             </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          {token && userProfile?.is_active ? (
+          {token ? (
             <>
               <DropdownMenuLabel>Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
