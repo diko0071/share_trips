@@ -12,6 +12,10 @@ export default function Footer() {
             <p className="text-sm text-muted-foreground tracking-tighter">Participate. Meet. Split bills.</p>
           </div>
           <p className="text-sm text-muted-foreground tracking-tighter">dmitry@sharetrips.app</p>
+          <div className="flex flex-row items-center gap-2 justify-between">
+            <Link href="/privacy-policy" className="text-sm text-muted-foreground tracking-tighter hover:cursor-pointer">Privacy Policy</Link>
+            <Link href="/terms" className="text-sm text-muted-foreground tracking-tighter hover:cursor-pointer">Terms of Service</Link>
+          </div>
         </div>
       </footer>
     )
