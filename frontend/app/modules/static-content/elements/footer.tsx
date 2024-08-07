@@ -7,7 +7,7 @@ export default function Footer() {
         <div className="max-w-full flex flex-col items-center gap-4">
           <div className="flex flex-col items-center gap-2">
             <Link href="#" className="flex flex-col items-center gap-2" prefetch={false}>
-              <img src="/logo.svg" alt="Logo" className="h-10 w-13" /> {/* Added logo.svg */}
+              <img src="/logo.svg" alt="Logo" className="h-10 w-13" />
             </Link>
             <p className="text-sm text-muted-foreground tracking-tighter">Participate. Meet. Split bills.</p>
           </div>

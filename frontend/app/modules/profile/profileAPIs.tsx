@@ -200,3 +200,24 @@ export const verifyOTP = async (email: string, otp: string): Promise<{ success: 
     return { success: false, error: error.message || 'An unexpected error occurred while verifying OTP' };
   }
 };
+
+
+export const handleGoogleLogin = async (code: string): Promise<{ success: boolean; errors?: string[] }> => {
+  try {
+    const response = await ApiService.post('/api/auth/google/', JSON.stringify({ code: code }));
+    if (response.access && response.user) {
+      await handleLogin(
+        response.user.id,
+        response.access,
+        response.refresh,
+        response.user.is_email_verified
+      );
+      return { success: true };
+    } else {
+      return { success: false, errors: ['An unexpected error occurred'] };
+    }
+  } catch (error) {
+    console.error('Google login error:', error);
+    return { success: false, errors: ['An unexpected error occurred'] };
+  }
+};
