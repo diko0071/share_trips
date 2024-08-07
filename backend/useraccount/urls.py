@@ -19,4 +19,5 @@ urlpatterns = [
     path('user/data/get/<str:username>/', get_profile, name='get_profile'),
     path('user/otp/send/', send_otp, name='send_otp'),
     path('user/otp/verify/', verify_otp, name='verify_otp'),
+    path("auth/google/", GoogleLogin.as_view(), name='google_login')
 ]

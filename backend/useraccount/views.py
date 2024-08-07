@@ -16,8 +16,35 @@ import os
 from dotenv import load_dotenv
 from .services import send_transactional_email
 from dj_rest_auth.views import LoginView
+from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
+from dj_rest_auth.registration.views import SocialLoginView
+from rest_framework_simplejwt.tokens import RefreshToken
+from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 
 load_dotenv()
+
+class GoogleLogin(SocialLoginView):
+    adapter_class = GoogleOAuth2Adapter
+    permission_classes = [AllowAny]
+    authentication_classes = []
+    callback_url = os.environ.get('FRONTEND_URL')
+    client_class = OAuth2Client
+
+    def get_response(self):
+        response = super().get_response()
+        user = self.user
+        refresh = RefreshToken.for_user(user)
+        response.data = {
+            'access': str(refresh.access_token),
+            'refresh': str(refresh),
+            'user': {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'is_email_verified': user.is_email_verified
+            }
+        }
+        return response
 
 class CustomLoginView(LoginView):
     def get_response(self):
