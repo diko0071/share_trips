@@ -449,14 +449,7 @@ export default function Register() {
                 Register
               </Button>
             )}
-          </div>
-          {errors.length > 0 && (
-            <div className="mt-4 text-red-500">
-              {errors.map((error, index) => (
-                <p key={index}>{error}</p>
-              ))}
-            </div>
-          )}
-          </div>
+        </div>
+    </div>
   );
 }
