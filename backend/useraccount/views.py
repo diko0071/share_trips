@@ -20,6 +20,7 @@ from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from dj_rest_auth.registration.views import SocialLoginView
 from rest_framework_simplejwt.tokens import RefreshToken
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
+from allauth.socialaccount.providers.oauth2.client import OAuth2Error
 
 load_dotenv()
 
@@ -31,20 +32,66 @@ class GoogleLogin(SocialLoginView):
     client_class = OAuth2Client
 
     def get_response(self):
-        response = super().get_response()
-        user = self.user
-        refresh = RefreshToken.for_user(user)
-        response.data = {
-            'access': str(refresh.access_token),
-            'refresh': str(refresh),
-            'user': {
-                'id': user.id,
-                'username': user.username,
-                'email': user.email,
-                'is_email_verified': user.is_email_verified
+        try:
+            response = super().get_response()
+            user_data = response.data.get('user', {})
+            email = user_data.get('email')
+            
+            user = User.objects.filter(email=email).first()
+            if not user:
+                return Response({"detail": "You are not registered with us. Please sign up to continue."}, status=status.HTTP_400_BAD_REQUEST)
+            
+            if not user.is_email_verified:
+                user.is_email_verified = True
+                user.save()
+            refresh = RefreshToken.for_user(user)
+            response.data = {
+                'access': str(refresh.access_token),
+                'refresh': str(refresh),
+                'user': {
+                    'id': user.id,
+                    'username': user.username,
+                    'email': user.email,
+                    'is_email_verified': user.is_email_verified
+                }
             }
-        }
-        return response
+            return response
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    
+class GoogleRegistration(SocialLoginView):
+    adapter_class = GoogleOAuth2Adapter
+    permission_classes = [AllowAny]
+    authentication_classes = []
+    callback_url = os.environ.get('FRONTEND_URL_REGISTRATION')
+    client_class = OAuth2Client
+
+    def get_response(self):
+        try:
+            response = super().get_response()
+            user = self.user
+            
+            if not user.is_email_verified:
+                user.is_email_verified = True
+                user.save()
+            refresh = RefreshToken.for_user(user)
+            response.data = {
+                'access': str(refresh.access_token),
+                'refresh': str(refresh),
+                'user': {
+                    'id': user.id,
+                    'username': user.username,
+                    'email': user.email,
+                    'is_email_verified': user.is_email_verified
+                }
+            }
+            return response
+        except OAuth2Error as e:
+            return Response({'error': str(e), 'details': e.args}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            print(e)
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        
 
 class CustomLoginView(LoginView):
     def get_response(self):
@@ -130,6 +177,7 @@ def verify_otp(request):
         return Response({'message': 'OTP verified successfully'}, status=status.HTTP_200_OK)
     else:
         return Response({'error': 'Invalid OTP'}, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 

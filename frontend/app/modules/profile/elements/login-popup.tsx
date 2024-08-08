@@ -19,33 +19,14 @@ import { toast } from "sonner";
 import { loginUser, handleGoogleLogin } from "../profileAPIs";
 
 export function LoginForm() {
-  const { isLoginFormOpen, closeLoginForm, redirectUrl } = usePopup();
+  const { isLoginFormOpen, closeLoginForm, redirectUrl, isLoading, setLoading, isGoogleLoading, setGoogleLoading } = usePopup();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  useEffect(() => {
-    const handleGoogleCallback = async () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const code = urlParams.get('code');
-
-      if (code) {
-        const result = await handleGoogleLogin(code);
-        if (result.success) {
-          window.location.href = redirectUrl;
-        } else {
-          toast.error('An error occurred during Google login');
-        }
-      }
-    };
-
-    handleGoogleCallback();
-  }, []);
-
   const submitLogin = async () => {
-    setIsLoading(true);
+    setLoading(true);
     setError([]);
     const formData = {
       email: email,
@@ -54,12 +35,12 @@ export function LoginForm() {
 
     const result = await loginUser(formData);
     if (result.success) {
-      setIsLoading(false);
+      setLoading(false);
       closeLoginForm();
       window.location.href = redirectUrl;
     } else {
       setError(result.errors || []);
-      setIsLoading(false);
+      setLoading(false);
     }
   }
 
@@ -76,10 +57,41 @@ export function LoginForm() {
     window.location.href = googleOAuthUrl;
   };
 
-  if (!isLoginFormOpen) return null;
+  useEffect(() => {
+    const handleGoogleCallback = async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const code = urlParams.get('code');
+      console.log(code);
+  
+      if (code && window.location.pathname !== '/register') {
+        setGoogleLoading(true);
+        try {
+          const result = await handleGoogleLogin(code);
+          if (result.success) {
+            window.location.href = redirectUrl;
+          } else {
+            toast.error(result.errors?.[0] || 'An error occurred during Google login', {
+              action: {
+                label: "Close",
+                onClick: () => toast.dismiss(),
+              },
+            });
+          }
+        } finally {
+          setGoogleLoading(false);
+          urlParams.delete('code');
+          window.history.replaceState({}, document.title, `${window.location.pathname}?${urlParams.toString()}`);
+        }
+      }
+    };
+  
+    handleGoogleCallback();
+  }, []);
+
+  if (!isLoginFormOpen && !isLoading && !isGoogleLoading) return null;
 
   return (
-    <Dialog open={isLoginFormOpen} onOpenChange={closeLoginForm}>
+    <Dialog open={isLoginFormOpen || isLoading || isGoogleLoading} onOpenChange={closeLoginForm}>
       <DialogContent className="w-full max-w-sm mx-auto">
         <DialogHeader className="text-left">
           <DialogTitle className="text-2xl">Login</DialogTitle>
@@ -105,9 +117,13 @@ export function LoginForm() {
             <Button type="submit" className="w-full" onClick={submitLogin} disabled={isLoading}>
               {isLoading ? <LoaderCircle className="animate-spin" /> : 'Login'}
             </Button>
-            <Button type="button" variant="outline" className="w-full mt-2">
-              <Image src="/google.svg" alt="Google Icon" width={20} height={20} className="mr-2" />
-              Login with Google
+            <Button type="button" variant="outline" className="w-full mt-2" onClick={handleGoogleLoginClick} disabled={isGoogleLoading}>
+              {isGoogleLoading ? <LoaderCircle className="animate-spin" /> : (
+                <>
+                  <Image src="/google.svg" alt="Google Icon" width={20} height={20} className="mr-2" />
+                  Login with Google
+                </>
+              )}
             </Button>
           </div>
           <div className="mt-4 text-center text-sm">

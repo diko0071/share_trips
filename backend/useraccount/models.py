@@ -79,14 +79,13 @@ class User(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = ['name']
 
     def save(self, *args, **kwargs):
-        if (self.username is None or self.username == '') and (self.name is not None and self.name != ''):
-            base_username = ''.join(self.name.split()).lower()
-            username = base_username
-            counter = 1
-            while User.objects.filter(username=username).exists():
-                username = f"{base_username}_{counter}"
-                counter += 1
-            self.username = username
+        base_username = self.email.split('@')[0]
+        username = base_username
+        counter = 1
+        while User.objects.filter(username=username).exists():
+            username = f"{base_username}_{counter}"
+            counter += 1
+        self.username = username
         super().save(*args, **kwargs)
 
     def is_otp_expired(self):

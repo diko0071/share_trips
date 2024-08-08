@@ -10,6 +10,10 @@ interface PopupContextType {
   openLoginForm: (redirectUrl?: string) => void;
   closeLoginForm: () => void;
   redirectUrl: string;
+  isLoading: boolean;
+  setLoading: (loading: boolean) => void;
+  isGoogleLoading: boolean;
+  setGoogleLoading: (loading: boolean) => void;
 }
 
 const PopupContext = createContext<PopupContextType | undefined>(undefined);
@@ -18,6 +22,8 @@ export const PopupProvider = ({ children }: { children: ReactNode }) => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isLoginFormOpen, setIsLoginFormOpen] = useState(false);
   const [redirectUrl, setRedirectUrl] = useState('/'); 
+  const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   const openPopup = () => setIsPopupOpen(true);
   const closePopup = () => setIsPopupOpen(false);
@@ -28,7 +34,7 @@ export const PopupProvider = ({ children }: { children: ReactNode }) => {
   const closeLoginForm = () => setIsLoginFormOpen(false);
 
   return (
-    <PopupContext.Provider value={{ isPopupOpen, openPopup, closePopup, isLoginFormOpen, openLoginForm, closeLoginForm, redirectUrl }}> 
+    <PopupContext.Provider value={{ isPopupOpen, openPopup, closePopup, isLoginFormOpen, openLoginForm, closeLoginForm, redirectUrl, isLoading, setLoading: setIsLoading, isGoogleLoading, setGoogleLoading: setIsGoogleLoading }}> 
       {children}
     </PopupContext.Provider>
   );

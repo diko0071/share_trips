@@ -348,7 +348,6 @@ export default function Trips() {
                 ))
             ) : filteredListings.length > 0 ? (
                 filteredListings.map((trip) => (
-                  <Link href={`/trip/${trip.id}`}>
                     <TripCard
                         key={trip.id}
                         id={trip.id}
@@ -366,7 +365,6 @@ export default function Trips() {
                         createdBy={trip.created_by_name}
                         createdByUsername={trip.created_by_username}
                     />
-                  </Link>
                 ))
             ) : (
                 <p>No listings available</p>

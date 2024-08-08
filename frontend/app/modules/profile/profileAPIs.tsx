@@ -214,10 +214,32 @@ export const handleGoogleLogin = async (code: string): Promise<{ success: boolea
       );
       return { success: true };
     } else {
-      return { success: false, errors: ['An unexpected error occurred'] };
+      return { success: false, errors: [response.detail || 'An unexpected error occurred'] };
     }
   } catch (error) {
     console.error('Google login error:', error);
-    return { success: false, errors: ['An unexpected error occurred'] };
+    const errorMessage = (error as any).response?.data?.detail || 'An unexpected error occurred';
+    return { success: false, errors: [errorMessage] };
+  }
+};
+
+export const handleGoogleRegistration = async (code: string): Promise<{ success: boolean; errors?: string[] }> => {
+  try {
+    const response = await ApiService.post('/api/auth/google/registration/', JSON.stringify({ code: code }));
+    if (response.access && response.user) {
+      await handleLogin(
+        response.user.id,
+        response.access,
+        response.refresh,
+        response.user.is_email_verified
+      );
+      return { success: true };
+    } else {
+      return { success: false, errors: [response.detail || 'An unexpected error occurred'] };
+    }
+  } catch (error) {
+    console.error('Google registration error:', error);
+    const errorMessage = (error as any).response?.data?.detail || 'An unexpected error occurred';
+    return { success: false, errors: [errorMessage] };
   }
 };

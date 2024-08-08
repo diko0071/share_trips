@@ -10,8 +10,9 @@ import ApiService from "../../../services/apiService";
 import { handleLogin } from "../../../lib/actions";
 import { LoaderCircle } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox"
-import { registerUser, updateUserProfile, UserProfileType, SocialMediaLink, sendOTP } from "../profileAPIs";
+import { registerUser, updateUserProfile, UserProfileType, SocialMediaLink, sendOTP, handleGoogleRegistration } from "../profileAPIs";
 import { toast } from "sonner";
+import Image from "next/image";
 import {
   Trash2
 } from "lucide-react"
@@ -235,6 +236,48 @@ export default function Register() {
     autoResize(preferencesRef);
   }, [about, coliverPreferences]);
 
+  const [googleLoadingRegistration, setGoogleLoadingRegistration] = useState(false);
+  const [isGoogleLoadingRegistration, setIsGoogleLoadingRegistration] = useState(false);
+
+  const handleGoogleRegistrationClick = () => {
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+    const redirectUri = process.env.NEXT_PUBLIC_GOOGLE_REDIRECT_URI_REGISTRATION;
+    const scope = process.env.NEXT_PUBLIC_GOOGLE_SCOPE;
+    const responseType = process.env.NEXT_PUBLIC_GOOGLE_RESPONSE_TYPE;
+    const accessType = process.env.NEXT_PUBLIC_GOOGLE_ACCESS_TYPE;
+    const prompt = process.env.NEXT_PUBLIC_GOOGLE_PROMPT;
+
+    const googleOAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?redirect_uri=${redirectUri}&prompt=${prompt}&response_type=${responseType}&client_id=${clientId}&scope=${scope}&access_type=${accessType}`;
+
+    window.location.href = googleOAuthUrl;
+  };
+
+  useEffect(() => {
+    const handleGoogleRegistrationCallback = async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const code = urlParams.get('code');
+      console.log(code);
+  
+      if (code) {
+        setGoogleLoadingRegistration(true);
+        const result = await handleGoogleRegistration(code);
+        setGoogleLoadingRegistration(false);
+        if (result.success) {
+          window.location.href = '/register';
+        } else {
+          toast.error(result.errors?.[0] || 'An error occurred during Google registration', {
+            action: {
+              label: "Close",
+              onClick: () => toast.dismiss(),
+            },
+          });
+        }
+      }
+    };
+  
+    handleGoogleRegistrationCallback();
+  }, []);
+
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -438,17 +481,29 @@ export default function Register() {
             <Button variant="outline" onClick={handlePrev} disabled={step === 1 || step === 2 || isLoading}>
               Previous
             </Button>
-            {step < totalSteps ? (
-              <Button onClick={handleNext} disabled={isNextDisabled || isLoading}>
-                {isLoading ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : null}
-                Next
-              </Button>
-            ) : (
-              <Button onClick={UpdateUserData} disabled={isNextDisabled || isLoading}>
-                {isLoading ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : null}
-                Register
-              </Button>
-            )}
+            <div className="flex space-x-2">
+          {step === 1 && (
+            <Button type="button" variant="outline" onClick={handleGoogleRegistrationClick} disabled={isGoogleLoadingRegistration}>
+              {isGoogleLoadingRegistration ? <LoaderCircle className="animate-spin" /> : (
+                <>
+                  <Image src="/google.svg" alt="Google Icon" width={20} height={20} className="mr-2" />
+                  Continue with Google
+                </>
+              )}
+            </Button>
+          )}
+          {step < totalSteps ? (
+            <Button onClick={handleNext} disabled={isNextDisabled || isLoading}>
+              {isLoading ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : null}
+              Next
+            </Button>
+          ) : (
+            <Button onClick={UpdateUserData} disabled={isNextDisabled || isLoading}>
+              {isLoading ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : null}
+              Register
+            </Button>
+          )}
+      </div>
         </div>
     </div>
   );
