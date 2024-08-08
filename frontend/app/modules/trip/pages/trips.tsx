@@ -15,6 +15,7 @@ import SkeletonTripCard from "../elements/skeleton-trip-card"
 import { Label } from "@/components/ui/label"
 import { fetchTrips, TripData } from "../tripAPIs";
 import { toast } from "sonner"
+import Link from "next/link"
 import {
     Accordion,
     AccordionContent,
@@ -347,6 +348,7 @@ export default function Trips() {
                 ))
             ) : filteredListings.length > 0 ? (
                 filteredListings.map((trip) => (
+                  <Link href={`/trip/${trip.id}`}>
                     <TripCard
                         key={trip.id}
                         id={trip.id}
@@ -364,6 +366,7 @@ export default function Trips() {
                         createdBy={trip.created_by_name}
                         createdByUsername={trip.created_by_username}
                     />
+                  </Link>
                 ))
             ) : (
                 <p>No listings available</p>
