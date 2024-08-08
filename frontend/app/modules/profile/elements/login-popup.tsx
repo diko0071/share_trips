@@ -89,6 +89,8 @@ export function LoginForm() {
 
   if (!isLoginFormOpen && !isLoading && !isGoogleLoading) return null;
 
+  const isFormDisabled = isLoading || isGoogleLoading;
+
   return (
     <Dialog open={isLoginFormOpen || isLoading || isGoogleLoading} onOpenChange={closeLoginForm}>
       <DialogContent className="w-full max-w-sm mx-auto">
@@ -102,13 +104,13 @@ export function LoginForm() {
           <div className="grid gap-4">
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="m@example.com" required onChange={(e) => setEmail(e.target.value)} />
+              <Input id="email" type="email" placeholder="m@example.com" required onChange={(e) => setEmail(e.target.value)} disabled={isFormDisabled} />
             </div>
             <div className="grid gap-2">
               <div className="flex items-center">
                 <Label htmlFor="password">Password</Label>
               </div>
-              <Input id="password" type="password" required onChange={(e) => setPassword(e.target.value)} />
+              <Input id="password" type="password" required onChange={(e) => setPassword(e.target.value)} disabled={isFormDisabled} />
             </div>
             {error.map((error, index) => (
               <div key={index} className="text-red-500 text-sm">{error}</div>
