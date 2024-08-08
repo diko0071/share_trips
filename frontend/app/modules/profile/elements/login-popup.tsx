@@ -61,7 +61,6 @@ export function LoginForm() {
     const handleGoogleCallback = async () => {
       const urlParams = new URLSearchParams(window.location.search);
       const code = urlParams.get('code');
-      console.log(code);
   
       if (code && window.location.pathname !== '/register') {
         setGoogleLoading(true);

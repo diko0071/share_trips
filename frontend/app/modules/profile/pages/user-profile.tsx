@@ -281,7 +281,6 @@ export default function UserProfile({ userId }: UserProfileProps) {
   
     updateTrip(tripId, updateData)
       .then(updatedTrip => {
-        console.log('Updated trip:', updatedTrip);
         setTrips(prevTrips => prevTrips.map(trip => 
           trip.id === tripId ? { ...trip, ...updatedTrip } : trip
         ));

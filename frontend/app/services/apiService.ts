@@ -2,7 +2,6 @@ import { getAccessToken } from "../lib/actions";
 
 const ApiService = {
     get: async function (url: string): Promise<any> {
-        console.log('get', url);
         const token = await getAccessToken();
         
         return new Promise((resolve, reject) => {
@@ -16,7 +15,6 @@ const ApiService = {
             })
             .then(response => response.json())
             .then((json) => {
-                console.log('json', json);
                 resolve(json);
 
             })
@@ -38,7 +36,6 @@ const ApiService = {
             })
             .then(response => response.json())
             .then((json) => {
-                console.log('json', json);
                 resolve(json);
 
             })
@@ -64,11 +61,9 @@ const ApiService = {
             })
             .then(response => response.json())
             .then((json) => {
-                console.log('json', json);
                 resolve(json);
             })
             .catch((error) => {
-                console.error('API POST Auth Error:', error);
                 reject(error);
             });
         });
@@ -86,11 +81,9 @@ const ApiService = {
             })
             .then(response => response.json())
             .then((json) => {
-                console.log('json', json);
                 resolve(json);
             })
             .catch((error) => {
-                console.error('API POST Auth Error:', error);
                 reject(error);
             });
         });
@@ -111,11 +104,9 @@ const ApiService = {
             })
             .then(response => response.json())
             .then((json) => {
-                console.log('json', json);
                 resolve(json);
             })
             .catch((error) => {
-                console.error('API PUT Error:', error);
                 reject(error);
             });
         });
@@ -165,7 +156,6 @@ const ApiService = {
             })
             .then((json) => {
                 if (json !== null) { 
-                    console.log('json', json);
                     resolve(json);
                 } else {
                     resolve(null); 

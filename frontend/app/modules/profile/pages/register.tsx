@@ -256,7 +256,6 @@ export default function Register() {
     const handleGoogleRegistrationCallback = async () => {
       const urlParams = new URLSearchParams(window.location.search);
       const code = urlParams.get('code');
-      console.log(code);
   
       if (code) {
         setGoogleLoadingRegistration(true);
