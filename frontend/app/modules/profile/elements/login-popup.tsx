@@ -105,7 +105,7 @@ export function LoginForm() {
             <Button type="submit" className="w-full" onClick={submitLogin} disabled={isLoading}>
               {isLoading ? <LoaderCircle className="animate-spin" /> : 'Login'}
             </Button>
-            <Button type="button" variant="outline" className="w-full mt-2" onClick={handleGoogleLoginClick} disabled={isLoading}>
+            <Button type="button" variant="outline" className="w-full mt-2">
               <Image src="/google.svg" alt="Google Icon" width={20} height={20} className="mr-2" />
               Login with Google
             </Button>
