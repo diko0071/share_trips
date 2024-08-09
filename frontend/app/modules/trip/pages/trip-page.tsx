@@ -50,6 +50,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { fetchTripDetails, updateTrip, fetchTrips, deleteTrip } from "../tripAPIs";
 import type { TripDetail as TripDetailType, TripData } from "../tripAPIs";
+import Head from 'next/head';
 
 type TripDetailProps = {
   tripId: string;
@@ -328,15 +329,14 @@ useEffect(() => {
 
 
   return (
-    <div>
-      {tripDetails && (
-        <MetaTags
-          title={tripDetails.title || 'Trip Details'}
-          description={tripDetails.description || 'Check out this amazing trip!'}
-          imageUrl={tripDetails.imgSrc || '/default-image.png'}
-          url={`${process.env.NEXT_PUBLIC_DOMAIN_URL}/trip/${tripId}`}
-        />
-      )}
+    <>
+      <MetaTags
+        title={tripDetails?.title || 'Trip Details'}
+        description={tripDetails?.description || 'Check out this amazing trip!'}
+        imageUrl={tripDetails?.imgSrc || '/default-image.png'}
+        url={`${process.env.NEXT_PUBLIC_DOMAIN_URL}/trip/${tripId}`}
+      />
+      <div>
       <div className="flex justify-between items-center mb-1">
         <Link href="/">
           <Button variant="ghost" size="icon" className="flex items-center gap-2">
@@ -624,5 +624,6 @@ useEffect(() => {
         username={tripDetails?.created_by_username || ''}
       />
     </div>
+    </>
   )
 } 
