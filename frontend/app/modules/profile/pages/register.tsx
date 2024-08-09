@@ -260,7 +260,6 @@ export default function Register() {
       if (code) {
         setGoogleLoadingRegistration(true);
         const result = await handleGoogleRegistration(code);
-        setGoogleLoadingRegistration(false);
         if (result.success) {
           window.location.href = '/register';
         } else {
@@ -270,6 +269,7 @@ export default function Register() {
               onClick: () => toast.dismiss(),
             },
           });
+          setIsGoogleLoadingRegistration(false);
         }
       }
     };

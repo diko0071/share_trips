@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import { getAccessToken, getUserId, resetAuthCookies } from "../../../lib/actions";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button"
+import BannerWarningFillProfile from "./banner-warning-fill-profile"
 import {
   Card,
   CardContent,
@@ -95,6 +96,10 @@ export function MenuBar() {
 
 
   return (
+    <>
+      {token && userProfile && (!userProfile.photo || !userProfile.name) && (
+        <BannerWarningFillProfile />
+      )}
     <header className="sticky top-0 z-50 flex h-16 items-center gap-4 border-b bg-white px-4 md:px-6">
       <nav className="hidden flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6">
         <Link
@@ -196,5 +201,6 @@ export function MenuBar() {
       </DropdownMenu>
     </div>
   </header>
+  </>
 )
 }
