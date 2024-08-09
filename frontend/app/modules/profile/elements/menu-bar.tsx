@@ -3,7 +3,7 @@ import Link from "next/link"
 import { CircleUser, Menu, Package2, Search, Handshake } from "lucide-react"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { getAccessToken, getUserId, resetAuthCookies } from "../../../lib/actions";
+import { getAccessToken, getUserId, getIsEmailVerified, resetAuthCookies } from "../../../lib/actions";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button"
 import BannerWarningFillProfile from "./banner-warning-fill-profile"
@@ -36,6 +36,7 @@ export function MenuBar() {
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  const [isEmailVerified, setIsEmailVerified] = useState<boolean | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfileType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -51,9 +52,11 @@ export function MenuBar() {
       setToken(accessToken);
       const userId = await getUserId();
       setUserId(userId);
+      const isEmailVerified = await getIsEmailVerified();
+      setIsEmailVerified(isEmailVerified);
     };
     fetchToken();
-  }, [token, userId]);
+  }, [token, userId, isEmailVerified]);
 
   const openSignupForm = () => {
     router.push('/register');
