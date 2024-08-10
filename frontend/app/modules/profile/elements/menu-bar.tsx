@@ -77,7 +77,6 @@ export function MenuBar() {
         const profileData = await FeatchPersonalProfile();
         setUserProfile(profileData);
       } catch (error) {
-        console.error('Error fetching profile:', error);
         toast(`Error fetching profile data: ${error}`, {
           action: {
             label: "Close",

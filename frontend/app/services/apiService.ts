@@ -127,7 +127,6 @@ const ApiService = {
                 resolve({ status: response.status, data: json });
             })
             .catch((error) => {
-                console.error('API PUT Error:', error);
                 reject(error);
             });
         });
@@ -162,7 +161,6 @@ const ApiService = {
                 }
             })
             .catch((error) => {
-                console.error('API DELETE Error:', error);
                 reject(error);
             });
         });

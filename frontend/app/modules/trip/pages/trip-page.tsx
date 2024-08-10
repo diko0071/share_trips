@@ -260,7 +260,6 @@ useEffect(() => {
             const errorData = JSON.parse(error.message);
             setErrorMessages(errorData);
           } catch (e) {
-            console.error("Error parsing error message:", e);
           }
         }
       } finally {

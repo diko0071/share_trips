@@ -49,7 +49,6 @@ export const loginUser = async (formData: {
       return { success: false, errors: ['An unexpected error occurred'] };
     }
   } catch (error) {
-    console.error('Login error:', error);
     return { success: false, errors: ['An unexpected error occurred'] };
   }
 };
@@ -192,11 +191,9 @@ export const verifyOTP = async (email: string, otp: string): Promise<{ success: 
     if (response && response.message) {
       return { success: true, message: response.message };
     } else {
-      console.error('Error verifying OTP:', response.detail)
       return { success: false, error: response.detail || 'Failed to verify OTP' };
     }
   } catch (error: any) {
-    console.error('Error in verifyOTP:', error);
     return { success: false, error: error.message || 'An unexpected error occurred while verifying OTP' };
   }
 };
@@ -217,7 +214,6 @@ export const handleGoogleLogin = async (code: string): Promise<{ success: boolea
       return { success: false, errors: [response.detail || 'An unexpected error occurred'] };
     }
   } catch (error) {
-    console.error('Google login error:', error);
     const errorMessage = (error as any).response?.data?.detail || 'An unexpected error occurred';
     return { success: false, errors: [errorMessage] };
   }
@@ -238,7 +234,6 @@ export const handleGoogleRegistration = async (code: string): Promise<{ success:
       return { success: false, errors: [response.detail || 'An unexpected error occurred'] };
     }
   } catch (error) {
-    console.error('Google registration error:', error);
     const errorMessage = (error as any).response?.data?.detail || 'An unexpected error occurred';
     return { success: false, errors: [errorMessage] };
   }
