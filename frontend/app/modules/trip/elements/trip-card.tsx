@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { MapPin } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { DotsHorizontalIcon } from '@radix-ui/react-icons'
 import { useState } from "react"
 import {
@@ -43,10 +44,24 @@ export default function TripCard({
   id, title, imgSrc, alt, showUser = true, blur = false, lockview = false,
   country, city, description, minBudget, url, month, createdBy, createdByUsername, photo, actions = [], showDots = false
 }: TripCardProps) {
+
+  const router = useRouter();
+
+  const handleProfileClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+  };
+
+  const PushToDeitals = () => {
+    router.push(`/trip/${id}`);
+  };
+  
   return (
-      <Card className="w-full rounded-lg shadow-lg overflow-hidden">
+    <Card 
+      className={`w-full rounded-lg shadow-lg overflow-hidden ${!lockview ? 'cursor-pointer' : ''}`}
+      onClick={!lockview ? PushToDeitals : undefined}
+    >
       <div className="relative">
-        <img
+        <img  
           src={imgSrc}
           alt={alt}
           width={500}
@@ -84,7 +99,7 @@ export default function TripCard({
           )}
           {showUser ? (
             <Link href={`/profile/${createdByUsername}`}>
-            <Button variant="link" size="sm" className="flex items-center gap-2">
+            <Button variant="link" size="sm" className="flex items-center gap-2" onClick={handleProfileClick}>
               <Avatar className="w-5 h-5">
                 <AvatarImage src={photo} />
                 <AvatarFallback>{createdBy.charAt(0)}</AvatarFallback>

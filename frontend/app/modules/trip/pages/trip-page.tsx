@@ -327,7 +327,6 @@ useEffect(() => {
     }
   };
 
-
   return (
     <>
       <MetaTags

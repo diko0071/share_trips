@@ -1,6 +1,7 @@
 "use client"
 import { Button } from "@/components/ui/button"
 import React, { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
@@ -35,6 +36,8 @@ export default function Trips() {
   const [cities, setCities] = useState<string[]>([])
   const [months, setMonths] = useState<string[]>([])    
   const [isLoading, setIsLoading] = useState(true)
+  const router = useRouter()
+
 
   useEffect(() => {
     async function fetchAndSetTrips() {
@@ -136,12 +139,6 @@ export default function Trips() {
         }
         break;
     }
-  };
-
-  const resetAllFilters = () => {
-    setSelectedCountry(null);
-    setSelectedCity(null);
-    setSelectedMonth(null);
   };
         
     const FilterBar = (
@@ -339,7 +336,7 @@ export default function Trips() {
                 {FilterBar}
             </div>
         </div>
-        <section className="grid grid-cols-1 gap-8 mt-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+        <section className="grid grid-cols-1 gap-8 mt-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3" > 
             {isLoading ? (
                 Array.from({ length: 6 }).map((_, index) => (
                     <div key={index} className="space-y-4">
