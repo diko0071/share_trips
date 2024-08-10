@@ -1,5 +1,6 @@
 # ShareTrips — app for creating and sharing trips. 
 
+![Preivew](/images/preview.png)
 
 ## Structure
 ### Backend
@@ -50,3 +51,7 @@ NEXT_PUBLIC_GOOGLE_RESPONSE_TYPE=
 NEXT_PUBLIC_GOOGLE_ACCESS_TYPE=
 NEXT_PUBLIC_GOOGLE_PROMPT=
 ```
+
+## Contacts 
+- Email: korzhov.work2019@gmail.com
+- X: [Link](https://x.com/korzhov_dm)
