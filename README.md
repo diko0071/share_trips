@@ -3,6 +3,7 @@
 ![Preivew](/images/preview.png)
 
 ## Structure
+
 ### Backend
 - Django — backend
 - Supabase — database
@@ -35,6 +36,12 @@ FRONTEND_URL =
 FRONTEND_URL_REGISTRATION = 
 ```
 
+To run backend:
+```
+docker compose build
+docker compose up
+```
+
 ### Frontend
 - NextJS — frontend
 
@@ -50,6 +57,12 @@ NEXT_PUBLIC_GOOGLE_SCOPE=
 NEXT_PUBLIC_GOOGLE_RESPONSE_TYPE=
 NEXT_PUBLIC_GOOGLE_ACCESS_TYPE=
 NEXT_PUBLIC_GOOGLE_PROMPT=
+```
+
+To run frontend:
+```
+npm run build
+npm run dev
 ```
 
 ## Contacts 
