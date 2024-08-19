@@ -162,14 +162,14 @@ export function MenuBar() {
         <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
           <div className="ml-auto flex-1 sm:flex-initial">
             <div className="relative">
-              <Button variant="outline" onClick={handleButtonClick}>
+              <Button variant="outline" disabled>
                 Add Trip
               </Button>
             </div>
           </div>
         <DropdownMenu>
         <DropdownMenuTrigger asChild>
-            <Button variant="secondary" size="icon" className="rounded-full">
+            <Button variant="secondary" size="icon" className="rounded-full" disabled>
               {isLoading ? (
                 <Skeleton className="h-8 w-8 rounded-full">
                   <CircleUser className="h-8 w-8" />
@@ -195,8 +195,8 @@ export function MenuBar() {
             </>
           ) : (
             <>
-              <DropdownMenuItem onClick={() => openLoginForm('/')}>Login</DropdownMenuItem>
-              <DropdownMenuItem onClick={openSignupForm}>Sign Up</DropdownMenuItem>
+              <DropdownMenuItem>Login</DropdownMenuItem>
+              <DropdownMenuItem>Sign Up</DropdownMenuItem>
             </>
           )}
         </DropdownMenuContent>
